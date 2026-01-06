@@ -1,92 +1,111 @@
 # 👗 DressGenius
 
-**DressGenius** é uma plataforma inovadora de **consultoria de moda com inteligência artificial**, criada para entregar recomendações personalizadas de estilo com base em preferências, contexto e dados do usuário.
+**DressGenius** is an innovative **AI-powered fashion consulting platform**, designed to deliver personalized outfit recommendations based on user preferences, context, and behavioral data.
 
-Este projeto também funciona como um **laboratório técnico full-stack**, onde são aplicados conceitos modernos de desenvolvimento utilizando **Laravel, React, Docker e PostgreSQL**, simulando um produto real no modelo **SaaS**.
+This project also serves as a **full-stack technical playground**, where modern development practices are applied using **Laravel, React, Docker, and PostgreSQL**, simulating a real-world **SaaS product**.
 
 ---
 
 ## 🚀 Pitch (Startup Style)
 
 > *Dress smarter. Powered by AI.*
-> Uma consultoria de moda inteligente que transforma dados em estilo.
+> An intelligent fashion consulting platform that turns data into style.
 
 ---
 
-## 🎯 Objetivos do Projeto
+## 🎯 Project Goals
 
-* Aplicar na prática uma **arquitetura full-stack moderna**
-* Consolidar conhecimentos em **Laravel + React**
-* Utilizar **Docker** para padronização de ambiente
-* Trabalhar com **PostgreSQL** em cenários reais de performance
-* Explorar o uso de **IA para recomendações personalizadas**
-* Simular a evolução de um **produto SaaS escalável**
-
----
-
-## 🧠 Funcionalidades (em evolução)
-
-* Cadastro e autenticação de usuários
-* Perfil de estilo pessoal (preferências, medidas, ocasiões)
-* Recomendações inteligentes de looks
-* Histórico de sugestões
-* API RESTful
-* Painel administrativo
+* Apply a **modern full-stack architecture** in a real-world scenario
+* Deepen knowledge in **Laravel + React** integration
+* Use **Docker** for environment standardization
+* Work with **PostgreSQL** in performance-oriented use cases
+* Explore **AI-driven recommendation systems**
+* Simulate the lifecycle of a **scalable SaaS product**
 
 ---
 
-## 🛠️ Stack Tecnológica
+## 🧠 Features (Work in Progress)
+
+* User registration and authentication
+* Personal style profile (preferences, measurements, occasions)
+* AI-powered outfit recommendations
+* Recommendation history
+* RESTful API
+* Admin dashboard
+
+---
+
+## 🛠️ Tech Stack
 
 ### Backend
 
 * Laravel
 * PHP 8+
 * PostgreSQL
-* API REST
+* REST API
 
 ### Frontend
 
 * React
 * Vite
-* Tailwind CSS (planejado)
+* Tailwind CSS (planned)
 
-### Infraestrutura
+### Infrastructure
 
 * Docker
 * Docker Compose
 
 ---
 
-## 📦 Arquitetura
+## 📦 Architecture Overview
 
-* Backend desacoplado via API
-* Frontend SPA em React
-* Banco de dados relacional (PostgreSQL)
-* Containers isolados para cada serviço
+* Decoupled backend via REST API
+* SPA frontend built with React
+* Relational database (PostgreSQL)
+* Isolated containers per service
 
 ---
 
 ## 🗺️ Roadmap
 
-* [ ] Setup inicial com Docker
-* [ ] Estrutura base do Laravel
-* [ ] Autenticação
-* [ ] Integração Frontend (React)
-* [ ] Engine inicial de recomendações
-* [ ] Otimizações de performance
-* [ ] Deploy
+* [ ] Initial Docker setup
+* [ ] Laravel base structure
+* [ ] Authentication system
+* [ ] Frontend integration (React)
+* [ ] Initial recommendation engine
+* [ ] Performance optimizations
+* [ ] Deployment pipeline
 
 ---
 
-## 🌍 English Description
+## 📁 Suggested Project Structure
 
-**DressGenius** is an innovative **AI-powered fashion consulting platform**, designed to deliver personalized outfit recommendations based on user preferences and contextual data.
-
-This repository serves as a hands-on project to explore **Laravel, React, Docker, and PostgreSQL**, following modern full-stack and SaaS-oriented development practices.
+```text
+DressGenius/
+├── backend/            # Laravel API
+├── frontend/           # React application
+├── docker/             # Docker & Docker Compose configs
+├── docs/               # Technical documentation
+├── .env.example
+├── docker-compose.yml
+└── README.md
+```
 
 ---
 
-## 📌 Repository Short Description (EN)
+## 🤝 Contributing
+
+Contributions are welcome!
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Commit your changes (`git commit -m 'Add new feature'`)
+4. Push to the branch (`git push origin feature/my-feature`)
+5. Open a Pull Request
+
+---
+
+## 📌 Repository Short Description
 
 AI-powered fashion consulting platform built with **Laravel, React, Docker, and PostgreSQL**.
 
