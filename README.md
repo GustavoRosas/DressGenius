@@ -100,6 +100,199 @@ DressGenius/
 
 ---
 
+## 🐳 Docker Setup
+
+The project uses **Docker Compose** to provide a consistent local development environment.
+
+### Services
+
+* **backend**: Laravel API (PHP 8+)
+* **frontend**: React application (Vite)
+* **db**: PostgreSQL database
+
+### docker-compose.yml
+
+```yaml
+version: '3.9'
+
+services:
+  backend:
+    container_name: dressgenius-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/var/www/html
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      APP_ENV: local
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: dressgenius
+      DB_USERNAME: dressgenius
+      DB_PASSWORD: secret
+
+  frontend:
+    container_name: dressgenius-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+  db:
+    container_name: dressgenius-db
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: dressgenius
+      POSTGRES_USER: dressgenius
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+```
+
+### Running the project
+
+```bash
+docker-compose up --build
+```
+
+Backend will be available at:
+
+* [http://localhost:8000](http://localhost:8000)
+
+Frontend will be available at:
+
+* [http://localhost:5173](http://localhost:5173)
+
+---
+
+## 🐘 Backend Dockerfile (Laravel)
+
+Create `backend/Dockerfile`:
+
+```dockerfile
+FROM php:8.2-cli
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libpq-dev \
+    && docker-php-ext-install pdo pdo_pgsql
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+EXPOSE 8000
+
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+```
+
+---
+
+## ⚛️ Frontend Dockerfile (React + Vite)
+
+Create `frontend/Dockerfile`:
+
+```dockerfile
+FROM node:18-alpine
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 5173
+
+CMD ["npm", "run", "dev", "--", "--host"]
+```
+
+---
+
+## 🔐 Environment Files
+
+### backend/.env.example
+
+```env
+APP_NAME=DressGenius
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+
+DB_CONNECTION=pgsql
+DB_HOST=db
+DB_PORT=5432
+DB_DATABASE=dressgenius
+DB_USERNAME=dressgenius
+DB_PASSWORD=secret
+```
+
+### frontend/.env.example
+
+```env
+VITE_API_URL=http://localhost:8000/api
+```
+
+---
+
+## 🧪 Project Bootstrap
+
+### 1️⃣ Create Laravel project
+
+```bash
+docker-compose run --rm backend composer create-project laravel/laravel .
+```
+
+Generate app key:
+
+```bash
+docker-compose run --rm backend php artisan key:generate
+```
+
+### 2️⃣ Create React project (Vite)
+
+```bash
+npm create vite@latest frontend -- --template react
+cd frontend
+npm install
+```
+
+---
+
+## 🩺 Health Check Endpoint (Laravel)
+
+Create a simple API endpoint to test integration:
+
+```php
+Route::get('/health', fn () => response()->json(['status' => 'ok']));
+```
+
+Access it at:
+
+* [http://localhost:8000/api/health](http://localhost:8000/api/health)
+
+---
+
 ## 📌 Repository Short Description
 
 AI-powered fashion consulting platform built with **Laravel, React, Docker, and PostgreSQL**.
