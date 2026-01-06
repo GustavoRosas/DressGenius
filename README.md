@@ -93,18 +93,6 @@ DressGenius/
 
 ---
 
-## 🤝 Contributing
-
-Contributions are welcome!
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/my-feature`)
-3. Commit your changes (`git commit -m 'Add new feature'`)
-4. Push to the branch (`git push origin feature/my-feature`)
-5. Open a Pull Request
-
----
-
 ## 📌 Repository Short Description
 
 AI-powered fashion consulting platform built with **Laravel, React, Docker, and PostgreSQL**.
