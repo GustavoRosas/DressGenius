@@ -1,5 +1,12 @@
 # 👗 DressGenius
 
+![Laravel](https://img.shields.io/badge/Laravel-10.x-red)
+![React](https://img.shields.io/badge/React-18.x-blue)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-blue)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)
+![Status](https://img.shields.io/badge/Status-Work%20in%20Progress-yellow)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 **DressGenius** is an innovative **AI-powered fashion consulting platform**, designed to deliver personalized outfit recommendations based on user preferences, context, and behavioral data.
 
 This project also serves as a **full-stack technical playground**, where modern development practices are applied using **Laravel, React, Docker, and PostgreSQL**, simulating a real-world **SaaS product**.
