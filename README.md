@@ -66,7 +66,7 @@ This repository is intentionally starting from scratch: this README is a step-by
 
 Optional (only if you want to run the frontend outside Docker):
 
-- Node.js 18+
+- Node.js 20.19+ (or 22.12+)
 
 ---
 

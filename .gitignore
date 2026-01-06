@@ -1,0 +1,40 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+.pnpm-store/
+.npm/
+.yarn/
+
+# Logs
+*.log
+
+# Laravel
+/backend/vendor/
+/backend/storage/*.key
+/backend/storage/logs/
+/backend/storage/framework/cache/
+/backend/storage/framework/sessions/
+/backend/storage/framework/views/
+/backend/bootstrap/cache/
+
+# Build outputs
+/frontend/dist/
+/frontend/.vite/
+
+# Docker
+**/.docker/
+
+# Misc
+*.swp
