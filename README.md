@@ -137,10 +137,10 @@ docker-compose exec backend php artisan migrate
 
 ## Roadmap
 
-- [ ] Docker setup stabilized (DX improvements, faster rebuilds)
-- [ ] Laravel base structure
+- [x] Docker setup (Docker Compose + services)
+- [x] Laravel base structure
 - [ ] Authentication system
-- [ ] Frontend integration (React)
+- [x] Frontend integration (React)
 - [ ] Initial recommendation engine
 - [ ] Performance optimizations
 - [ ] Deployment pipeline
