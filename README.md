@@ -9,7 +9,7 @@
 
 DressGenius is an AI-powered fashion consulting platform designed to deliver personalized outfit recommendations based on user preferences, context, and behavioral data.
 
-This repository is intentionally starting from scratch: this README is a step-by-step bootstrap guide that helps you create the full stack (Laravel API + React SPA + PostgreSQL) and run it locally with Docker.
+This repository contains a working full-stack baseline (Laravel API + React SPA + PostgreSQL) and is designed to be run locally using Docker Compose.
 
 ---
 
@@ -64,15 +64,9 @@ This repository is intentionally starting from scratch: this README is a step-by
 - Docker Desktop (with Docker Compose)
 - Git
 
-Optional (only if you want to run the frontend outside Docker):
-
-- Node.js 20.19+ (or 22.12+)
-
 ---
 
-## Suggested project structure
-
-After completing the steps below, your repository will look like this:
+## Project structure
 
 ```text
 DressGenius/
@@ -84,299 +78,52 @@ DressGenius/
 
 ---
 
-## Quick start (after you bootstrap once)
+## Quickstart
 
-Once you have created the files and initialized the apps, the typical run command is:
-
-```bash
-docker-compose up --build
-```
-
-Then open:
-
-- Backend: http://localhost:8000
-- Frontend: http://localhost:5173
-
----
-
-## Bootstrap from scratch
-
-### 1) Create folders
-
-Create these folders in the repository root:
-
-```text
-backend/
-frontend/
-```
-
----
-
-### 2) Create `docker-compose.yml`
-
-Create `docker-compose.yml` in the repository root:
-
-```yaml
-version: '3.9'
-
-services:
-  backend:
-    container_name: dressgenius-backend
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    volumes:
-      - ./backend:/var/www/html
-    ports:
-      - "8000:8000"
-    depends_on:
-      - db
-
-  frontend:
-    container_name: dressgenius-frontend
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    ports:
-      - "5173:5173"
-    depends_on:
-      - backend
-
-  db:
-    container_name: dressgenius-db
-    image: postgres:15
-    restart: always
-    environment:
-      POSTGRES_DB: dressgenius
-      POSTGRES_USER: dressgenius
-      POSTGRES_PASSWORD: secret
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-
-volumes:
-  postgres_data:
-```
-
-Notes:
-
-- The DB credentials above are for local development only.
-
----
-
-### 3) Create `backend/Dockerfile` (Laravel)
-
-Create `backend/Dockerfile`:
-
-```dockerfile
-FROM php:8.2-cli
-
-RUN apt-get update && apt-get install -y \
-    git \
-    unzip \
-    libpq-dev \
-    && docker-php-ext-install pdo pdo_pgsql
-
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-WORKDIR /var/www/html
-
-EXPOSE 8000
-
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
-```
-
----
-
-### 4) Create `frontend/Dockerfile` (React + Vite)
-
-Create `frontend/Dockerfile`:
-
-```dockerfile
-FROM node:18-alpine
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm install
-
-COPY . .
-
-EXPOSE 5173
-
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]
-```
-
----
-
-### 5) Create environment example files
-
-Create `backend/.env.example`:
-
-```env
-APP_NAME=DressGenius
-APP_ENV=local
-APP_KEY=
-APP_DEBUG=true
-APP_URL=http://localhost:8000
-
-DB_CONNECTION=pgsql
-DB_HOST=db
-DB_PORT=5432
-DB_DATABASE=dressgenius
-DB_USERNAME=dressgenius
-DB_PASSWORD=secret
-```
-
-Create `frontend/.env.example`:
-
-```env
-VITE_API_URL=http://localhost:8000/api
-```
-
----
-
-### 6) Initialize the Laravel backend
-
-From the repository root:
-
-1. Create the Laravel project into `backend/`:
+### 1) Clone
 
 ```bash
-docker-compose run --rm backend composer create-project laravel/laravel .
+git clone https://github.com/GustavoRosas/DressGenius.git
+cd DressGenius
 ```
 
-2. Create your local env file:
+### 2) Create local env files
+
+Create the local environment files from the examples:
 
 ```bash
 copy backend\.env.example backend\.env
-```
-
-3. Generate the app key:
-
-```bash
-docker-compose run --rm backend php artisan key:generate
-```
-
-4. Start the database container:
-
-```bash
-docker-compose up -d db
-```
-
-5. Run migrations:
-
-```bash
-docker-compose run --rm backend php artisan migrate
-```
-
----
-
-### 7) Add a health endpoint
-
-In `backend/routes/api.php`, add:
-
-```php
-use Illuminate\Support\Facades\Route;
-
-Route::get('/health', fn () => response()->json(['status' => 'ok']));
-```
-
-Verify after starting containers:
-
-- http://localhost:8000/api/health
-
----
-
-### 8) Initialize the React frontend (Vite)
-
-If you want the frontend to run in Docker, you still need to create the Vite project files on your host first.
-
-From the repository root:
-
-```bash
-npm create vite@latest frontend -- --template react
-```
-
-Then:
-
-```bash
 copy frontend\.env.example frontend\.env
 ```
 
-Optional: install dependencies locally (not required if you only use Docker, but helpful for editor tooling):
+### 3) Start the stack
 
 ```bash
-cd frontend
-npm install
+docker-compose up -d --build
 ```
 
----
-
-## Frontend to backend integration
-
-### CORS
-
-If your frontend makes requests to the API (different ports), you may need to allow CORS.
-
-Laravel includes CORS support out of the box. Check `backend/config/cors.php` and ensure it allows `api/*`.
-
-The default is usually enough, but if requests fail in the browser due to CORS, update `backend/config/cors.php` so `paths` includes:
-
-```php
-'paths' => ['api/*', 'sanctum/csrf-cookie'],
-```
-
-Then restart containers:
+### 4) First-time Laravel setup (key + migrations)
 
 ```bash
-docker-compose up --build
+docker-compose exec backend php artisan key:generate
+docker-compose exec backend php artisan migrate
 ```
 
-### Minimal API call from React
-
-In `frontend/src/App.jsx`, you can temporarily add a basic API call to confirm everything is wired:
-
-```jsx
-import { useEffect, useState } from 'react';
-
-export default function App() {
-  const [status, setStatus] = useState('loading');
-
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/health`)
-      .then((r) => r.json())
-      .then((data) => setStatus(data.status ?? 'unknown'))
-      .catch(() => setStatus('error'));
-  }, []);
-
-  return (
-    <div style={{ padding: 24, fontFamily: 'system-ui' }}>
-      <h1>DressGenius</h1>
-      <p>API health: {status}</p>
-    </div>
-  );
-}
-```
-
----
-
-## Running the project
-
-From the repository root:
-
-```bash
-docker-compose up --build
-```
-
-Access:
+### 5) Open the app
 
 - Backend: http://localhost:8000
+- Health check: http://localhost:8000/api/health
 - Frontend: http://localhost:5173
+
+---
+
+## Useful commands
+
+- Start: `docker-compose up -d`
+- Stop: `docker-compose down`
+- Tail logs: `docker-compose logs -f`
+- Backend shell: `docker-compose exec backend sh`
+- Frontend shell: `docker-compose exec frontend sh`
 
 ---
 
@@ -411,13 +158,22 @@ Access:
 - Ensure `backend/.env` exists and run:
 
 ```bash
-docker-compose run --rm backend php artisan key:generate
+docker-compose exec backend php artisan key:generate
 ```
 
 ### Database connection errors
 
 - Confirm your Laravel `.env` uses `DB_HOST=db` (not `localhost`).
 - Confirm the database container is up before running migrations.
+
+### API health route returns 404
+
+- Ensure `backend/bootstrap/app.php` registers API routes.
+- Confirm the route exists:
+
+```bash
+docker-compose exec backend php artisan route:list
+```
 
 ### Laravel filesystem / cache permission issues
 
@@ -428,15 +184,6 @@ docker-compose run --rm backend php artisan optimize:clear
 ```
 
 If needed, ensure those directories exist inside `backend/` after project creation.
-
-### Frontend dependency issues in Docker
-
-- If the frontend container fails due to missing dependencies, make sure the `frontend/` folder contains a valid Vite project (`package.json` exists).
-- Rebuild after creating the Vite project:
-
-```bash
-docker-compose up --build
-```
 
 ---
 
