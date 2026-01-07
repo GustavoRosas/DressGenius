@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import './App.css'
-import AuthPage from './AuthPage'
-import HomePage from './HomePage'
-import logo from './assets/dressgenius_transparent.svg'
+import '../styles/app.css'
+import AuthPage from '../pages/AuthPage'
+import HomePage from '../pages/HomePage'
+import logo from '../assets/dressgenius.svg'
 
 function App() {
   const [apiStatus, setApiStatus] = useState('loading')
@@ -165,7 +165,6 @@ function App() {
             <HomePage user={user} isSubmitting={isSubmitting} onLogout={logout} />
           ) : (
             <AuthPage
-              apiBase={apiBase}
               error={error}
               isSubmitting={isSubmitting}
               isResolvingSession={isResolvingSession}
