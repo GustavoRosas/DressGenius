@@ -1,42 +1,245 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+.dg-shell {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(1200px 600px at 20% 10%, rgba(99, 102, 241, 0.25), transparent 60%),
+    radial-gradient(900px 500px at 80% 20%, rgba(236, 72, 153, 0.20), transparent 60%),
+    radial-gradient(900px 600px at 40% 90%, rgba(34, 197, 94, 0.14), transparent 55%),
+    linear-gradient(180deg, #0b1220 0%, #070a12 100%);
+  color: rgba(255, 255, 255, 0.92);
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.dg-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  pointer-events: none;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.dg-topbar * {
+  pointer-events: auto;
 }
 
-.card {
-  padding: 2em;
+.dg-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.read-the-docs {
-  color: #888;
+.dg-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.dg-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 1) 0%, rgba(236, 72, 153, 1) 55%, rgba(34, 197, 94, 1) 100%);
+  box-shadow:
+    0 10px 40px rgba(99, 102, 241, 0.25),
+    0 10px 40px rgba(236, 72, 153, 0.18);
+}
+
+.dg-brandText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.dg-title {
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.dg-subtitle {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.dg-meta {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.70);
+}
+
+.dg-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  margin-left: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.dg-pillOk {
+  background: rgba(34, 197, 94, 0.16);
+  border-color: rgba(34, 197, 94, 0.25);
+}
+
+.dg-main {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  min-height: 100vh;
+}
+
+.dg-card {
+  width: min(520px, 100%);
+  border-radius: 20px;
+  background: rgba(17, 24, 39, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow:
+    0 30px 90px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  padding: 18px;
+  backdrop-filter: blur(12px);
+}
+
+.dg-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+}
+
+.dg-tab {
+  appearance: none;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.dg-tab:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dg-tabActive {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.dg-cardHeader {
+  padding: 18px 8px 6px 8px;
+}
+
+.dg-cardTitle {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: -0.03em;
+}
+
+.dg-cardHint {
+  margin: 8px 0 0 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.70);
+}
+
+.dg-alert {
+  margin: 10px 8px 0 8px;
+  padding: 12px 12px;
+  border-radius: 12px;
+  background: rgba(220, 38, 38, 0.14);
+  border: 1px solid rgba(220, 38, 38, 0.20);
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.dg-alertInfo {
+  background: rgba(99, 102, 241, 0.14);
+  border-color: rgba(99, 102, 241, 0.22);
+}
+
+.dg-form {
+  display: grid;
+  gap: 12px;
+  padding: 14px 8px 6px 8px;
+}
+
+.dg-field {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+}
+
+.dg-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.70);
+}
+
+.dg-input {
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  outline: none;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.dg-input::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.dg-input:focus {
+  border-color: rgba(99, 102, 241, 0.65);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.22);
+}
+
+.dg-btn {
+  appearance: none;
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.dg-btnPrimary {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 1) 0%, rgba(236, 72, 153, 1) 100%);
+  color: rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 12px 30px rgba(99, 102, 241, 0.20),
+    0 12px 30px rgba(236, 72, 153, 0.18);
+}
+
+.dg-btnPrimary:hover {
+  filter: brightness(1.05);
+}
+
+.dg-btnPrimary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dg-actions {
+  padding: 8px;
+}
+
+.dg-footnote {
+  margin: 8px 8px 6px 8px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.dg-footnote code {
+  color: rgba(255, 255, 255, 0.75);
 }
