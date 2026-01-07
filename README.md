@@ -150,9 +150,11 @@ docker-compose exec backend php artisan migrate
 - [x] Laravel base structure
 - [x] Authentication system
 - [x] Frontend integration (React)
+- [x] Unit Tests - backend
+- [x] Unit Tests - frontend
 - [ ] Initial recommendation engine
 - [ ] Performance optimizations
-- [x] Deployment pipeline
+- [x] Deployment pipeline (CI/CD)
 
 ---
 
