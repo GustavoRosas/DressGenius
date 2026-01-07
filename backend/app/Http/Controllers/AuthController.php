@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
@@ -26,7 +28,7 @@ class AuthController extends Controller
         $token = $user->createToken('api')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'user' => $this->serializeUser($user),
             'token' => $token,
         ], 201);
     }
@@ -49,7 +51,7 @@ class AuthController extends Controller
         $token = $user->createToken('api')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'user' => $this->serializeUser($user),
             'token' => $token,
         ]);
     }
@@ -57,8 +59,19 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         return response()->json([
-            'user' => $request->user(),
+            'user' => $this->serializeUser($request->user()),
         ]);
+    }
+
+    private function serializeUser($user): array
+    {
+        $data = $user->toArray();
+
+        /** @var FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+        $data['profile_photo_url'] = $user->profile_photo_path ? $disk->url($user->profile_photo_path) : null;
+
+        return $data;
     }
 
     public function logout(Request $request)

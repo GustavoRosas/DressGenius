@@ -120,9 +120,9 @@ docker-compose exec backend php artisan migrate
 
 ### 5) Open the app
 
-- Backend: http://localhost:8000
-- Health check: http://localhost:8000/api/health
-- Frontend: http://localhost:5173
+- Backend: http://127.0.0.1:8000
+- Health check: http://127.0.0.1:8000/api/health
+- Frontend: http://127.0.0.1:5173
 
 ---
 
@@ -138,8 +138,8 @@ docker-compose exec backend php artisan migrate
 
 ## Basic verification checklist
 
-- API health returns JSON: http://localhost:8000/api/health
-- Frontend loads: http://localhost:5173
+- API health returns JSON: http://127.0.0.1:8000/api/health
+- Frontend loads: http://127.0.0.1:5173
 - Postgres container is running and healthy: `dressgenius-db`
 
 ---
@@ -154,7 +154,7 @@ docker-compose exec backend php artisan migrate
 - [x] Unit Tests - frontend
 - [ ] Initial recommendation engine
 - [ ] Performance optimizations
-- [x] Deployment pipeline (CI/CD)
+- [x] Basic CI/CD (tests + auto-deploy)
 
 ---
 
@@ -174,7 +174,7 @@ docker-compose exec backend php artisan key:generate
 
 ### Database connection errors
 
-- Confirm your Laravel `.env` uses `DB_HOST=db` (not `localhost`).
+- Confirm your Laravel `.env` uses `DB_HOST=db` (not `127.0.0.1`).
 - Confirm the database container is up before running migrations.
 
 ### API health route returns 404

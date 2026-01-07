@@ -70,6 +70,61 @@
   color: rgba(255, 255, 255, 0.70);
 }
 
+.dg-profile {
+  display: inline-block;
+  position: relative;
+  margin-left: 10px;
+}
+
+.dg-profileBtn {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  justify-content: center;
+  font-weight: 800;
+}
+
+.dg-avatarImg {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.dg-profileMenu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 160px;
+  background: rgba(17, 24, 39, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.dg-profileItem {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.dg-profileItem:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.dg-profileItem:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .dg-pill {
   display: inline-flex;
   align-items: center;
@@ -187,6 +242,7 @@
 
 .dg-input {
   width: 100%;
+  box-sizing: border-box;
   padding: 12px 12px;
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.25);
@@ -232,6 +288,56 @@
 
 .dg-actions {
   padding: 8px;
+}
+
+.dg-fileInput {
+  padding: 10px 12px;
+}
+
+.dg-image {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  object-fit: cover;
+}
+
+.dg-imagePreview {
+  max-height: 260px;
+}
+
+.dg-image {
+  max-height: 360px;
+}
+
+.dg-scanResult {
+  display: grid;
+  gap: 12px;
+}
+
+.dg-scanText {
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.dg-scanBlock {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+}
+
+.dg-scanTitle {
+  font-weight: 750;
+}
+
+.dg-scanList {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.86);
 }
 
 .dg-footnote {

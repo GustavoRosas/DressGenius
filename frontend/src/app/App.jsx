@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import '../styles/app.css'
 import AuthPage from '../pages/AuthPage'
 import HomePage from '../pages/HomePage'
+import ProfilePage from '../pages/ProfilePage'
 import logo from '../assets/dressgenius.svg'
 
 function App() {
@@ -12,6 +13,8 @@ function App() {
   const [mode, setMode] = useState('login')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isResolvingSession, setIsResolvingSession] = useState(false)
+  const [activeView, setActiveView] = useState('home')
+  const [isProfileOpen, setIsProfileOpen] = useState(false)
 
   const apiBase = useMemo(() => import.meta.env.VITE_API_URL, [])
 
@@ -30,21 +33,35 @@ function App() {
   }
 
   useEffect(() => {
-    fetch(`${apiBase}/health`)
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 8000)
+
+    fetch(`${apiBase}/health`, { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => setApiStatus(data.status ?? 'unknown'))
       .catch(() => setApiStatus('error'))
+      .finally(() => clearTimeout(timeout))
+
+    return () => {
+      clearTimeout(timeout)
+      controller.abort()
+    }
   }, [apiBase])
 
   useEffect(() => {
     if (!token) {
       setUser(null)
+      setActiveView('home')
       return
     }
 
     setIsResolvingSession(true)
 
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 10000)
+
     fetch(`${apiBase}/me`, {
+      signal: controller.signal,
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -55,11 +72,17 @@ function App() {
       })
       .then((data) => setUser(data.user ?? null))
       .catch(() => {
-        localStorage.removeItem('auth_token')
-        setToken('')
         setUser(null)
       })
-      .finally(() => setIsResolvingSession(false))
+      .finally(() => {
+        clearTimeout(timeout)
+        setIsResolvingSession(false)
+      })
+
+    return () => {
+      clearTimeout(timeout)
+      controller.abort()
+    }
   }, [apiBase, token])
 
   async function register(e) {
@@ -140,6 +163,8 @@ function App() {
       localStorage.removeItem('auth_token')
       setToken('')
       setUser(null)
+      setActiveView('home')
+      setIsProfileOpen(false)
       setIsSubmitting(false)
     }
   }
@@ -156,13 +181,64 @@ function App() {
         </div>
         <div className="dg-meta">
           API: <span className={apiStatus === 'ok' ? 'dg-pill dg-pillOk' : 'dg-pill'}>{apiStatus}</span>
+          {user ? (
+            <div className="dg-profile">
+              <button
+                className="dg-pill dg-profileBtn"
+                type="button"
+                aria-label="Profile menu"
+                onClick={() => setIsProfileOpen((v) => !v)}
+              >
+                {user?.profile_photo_url ? (
+                  <img className="dg-avatarImg" src={user.profile_photo_url} alt="Profile" />
+                ) : (
+                  user?.email?.slice(0, 1)?.toUpperCase() || 'U'
+                )}
+              </button>
+
+              {isProfileOpen ? (
+                <div className="dg-profileMenu" role="menu">
+                  <button
+                    className="dg-profileItem"
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setActiveView('profile')
+                      setIsProfileOpen(false)
+                    }}
+                  >
+                    My Profile
+                  </button>
+                  <button
+                    className="dg-profileItem"
+                    type="button"
+                    role="menuitem"
+                    onClick={() => logout()}
+                    disabled={isSubmitting}
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </header>
 
       <main className="dg-main">
         <div className="dg-card">
           {user ? (
-            <HomePage user={user} isSubmitting={isSubmitting} onLogout={logout} />
+            activeView === 'profile' ? (
+              <ProfilePage
+                apiBase={apiBase}
+                token={token}
+                user={user}
+                onUserUpdated={(nextUser) => setUser(nextUser)}
+                onBack={() => setActiveView('home')}
+              />
+            ) : (
+              <HomePage user={user} isSubmitting={isSubmitting} onLogout={logout} />
+            )
           ) : (
             <AuthPage
               error={error}

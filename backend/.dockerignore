@@ -5,6 +5,7 @@ node_modules
 storage/logs
 storage/*.key
 bootstrap/cache
+public/storage
 .idea
 .vscode
 .DS_Store

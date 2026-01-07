@@ -5,6 +5,8 @@ tries=0
 max_tries=20
 
 while [ "$tries" -lt "$max_tries" ]; do
+  php artisan storage:link || true
+
   if php artisan migrate --force; then
     break
   fi
