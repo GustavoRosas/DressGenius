@@ -13,6 +13,15 @@ This repository contains a working full-stack baseline (Laravel API + React SPA 
 
 ---
 
+## Live demo
+
+- Frontend: https://dress-genius.vercel.app
+- Backend API: https://dressgenius.onrender.com/api/
+
+Note: the backend is hosted on Render free tier and may sleep. If the app feels slow on the first request, open https://dressgenius.onrender.com/api/health once to wake it up.
+
+---
+
 ## Pitch
 
 > Dress smarter. Powered by AI.
@@ -143,7 +152,7 @@ docker-compose exec backend php artisan migrate
 - [x] Frontend integration (React)
 - [ ] Initial recommendation engine
 - [ ] Performance optimizations
-- [ ] Deployment pipeline
+- [x] Deployment pipeline
 
 ---
 
