@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
@@ -62,7 +63,21 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()?->delete();
+        $bearerToken = $request->bearerToken();
+
+        if ($bearerToken) {
+            $accessToken = PersonalAccessToken::findToken($bearerToken);
+            if ($accessToken) {
+                $accessToken->delete();
+            } else {
+                $parts = explode('|', $bearerToken, 2);
+                if (count($parts) === 2 && is_numeric($parts[0])) {
+                    PersonalAccessToken::query()->whereKey((int) $parts[0])->delete();
+                }
+            }
+        } else {
+            $request->user()?->tokens()->delete();
+        }
 
         return response()->json([
             'message' => 'Logged out.',
