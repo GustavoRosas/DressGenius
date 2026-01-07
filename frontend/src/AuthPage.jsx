@@ -94,7 +94,7 @@ function AuthPage({
             <span className="dg-label">Name</span>
             <input
               className="dg-input"
-              placeholder="Gustavo"
+              placeholder="Your name"
               autoComplete="name"
               required
               disabled={isSubmitting}
