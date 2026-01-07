@@ -1,0 +1,10 @@
+vendor
+node_modules
+.env
+.env.*
+storage/logs
+storage/*.key
+bootstrap/cache
+.idea
+.vscode
+.DS_Store
