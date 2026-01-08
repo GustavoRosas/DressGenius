@@ -192,55 +192,57 @@ function App() {
 
       <div className="dg-topbarSlot">
         <header className="dg-topbar">
-          <div className="dg-brand">
-            <img className="dg-logo" src={logo} alt="DressGenius" />
-            <div className="dg-brandText">
-              <div className="dg-title">DressGenius</div>
-              <div className="dg-subtitle">AI-powered outfit recommendations</div>
-            </div>
-          </div>
-          <div className="dg-meta">
-            {user ? (
-              <div className="dg-profile">
-                <button
-                  className="dg-profileBtn"
-                  type="button"
-                  aria-label="Profile menu"
-                  onClick={() => setIsProfileOpen((v) => !v)}
-                >
-                  {user?.profile_photo_url ? (
-                    <img className="dg-avatarImg" src={user.profile_photo_url} alt="Profile" />
-                  ) : (
-                    user?.email?.slice(0, 1)?.toUpperCase() || 'U'
-                  )}
-                </button>
-
-                {isProfileOpen ? (
-                  <div className="dg-profileMenu" role="menu">
-                    <button
-                      className="dg-profileItem"
-                      type="button"
-                      role="menuitem"
-                      onClick={() => {
-                        setActiveView('profile')
-                        setIsProfileOpen(false)
-                      }}
-                    >
-                      My Profile
-                    </button>
-                    <button
-                      className="dg-profileItem"
-                      type="button"
-                      role="menuitem"
-                      onClick={() => logout()}
-                      disabled={isSubmitting}
-                    >
-                      Logout
-                    </button>
-                  </div>
-                ) : null}
+          <div className="dg-topbarInner">
+            <div className="dg-brand">
+              <img className="dg-logo" src={logo} alt="DressGenius" />
+              <div className="dg-brandText">
+                <div className="dg-title">DressGenius</div>
+                <div className="dg-subtitle">AI-powered outfit recommendations</div>
               </div>
-            ) : null}
+            </div>
+            <div className="dg-meta">
+              {user ? (
+                <div className="dg-profile">
+                  <button
+                    className="dg-profileBtn"
+                    type="button"
+                    aria-label="Profile menu"
+                    onClick={() => setIsProfileOpen((v) => !v)}
+                  >
+                    {user?.profile_photo_url ? (
+                      <img className="dg-avatarImg" src={user.profile_photo_url} alt="Profile" />
+                    ) : (
+                      user?.email?.slice(0, 1)?.toUpperCase() || 'U'
+                    )}
+                  </button>
+
+                  {isProfileOpen ? (
+                    <div className="dg-profileMenu" role="menu">
+                      <button
+                        className="dg-profileItem"
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setActiveView('profile')
+                          setIsProfileOpen(false)
+                        }}
+                      >
+                        My Profile
+                      </button>
+                      <button
+                        className="dg-profileItem"
+                        type="button"
+                        role="menuitem"
+                        onClick={() => logout()}
+                        disabled={isSubmitting}
+                      >
+                        Logout
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           </div>
         </header>
       </div>

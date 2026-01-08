@@ -80,8 +80,18 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px;
+  padding: 0;
   height: 76px;
+}
+
+.dg-topbarInner {
+  width: min(520px, calc(100vw - 48px));
+  margin: 0 auto;
+  height: 76px;
+  padding: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .dg-brand {
