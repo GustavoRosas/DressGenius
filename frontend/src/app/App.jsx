@@ -15,11 +15,19 @@ function App() {
   const [isResolvingSession, setIsResolvingSession] = useState(false)
   const [activeView, setActiveView] = useState('home')
   const [isProfileOpen, setIsProfileOpen] = useState(false)
+  const [toast, setToast] = useState(null)
 
   const apiBase = useMemo(() => import.meta.env.VITE_API_URL, [])
 
   const [registerForm, setRegisterForm] = useState({ name: '', email: '', password: '' })
   const [loginForm, setLoginForm] = useState({ email: '', password: '' })
+
+  function notify(type, message) {
+    if (!message) return
+    setToast({ type, message })
+    window.clearTimeout(notify._t)
+    notify._t = window.setTimeout(() => setToast(null), 4500)
+  }
 
   function getErrorMessage(data, fallback) {
     if (!data || typeof data !== 'object') return fallback
@@ -171,59 +179,71 @@ function App() {
 
   return (
     <div className="dg-shell">
-      <header className="dg-topbar">
-        <div className="dg-brand">
-          <img className="dg-logo" src={logo} alt="DressGenius" />
-          <div className="dg-brandText">
-            <div className="dg-title">DressGenius</div>
-            <div className="dg-subtitle">AI-powered outfit recommendations</div>
+      {toast ? (
+        <div className="dg-toastWrap" aria-live="polite" aria-atomic="true">
+          <div className={toast.type === 'error' ? 'dg-toast dg-toastError' : 'dg-toast dg-toastInfo'}>
+            <div className="dg-toastText">{toast.message}</div>
+            <button className="dg-toastClose" type="button" aria-label="Dismiss" onClick={() => setToast(null)}>
+              ×
+            </button>
           </div>
         </div>
-        <div className="dg-meta">
-          API: <span className={apiStatus === 'ok' ? 'dg-pill dg-pillOk' : 'dg-pill'}>{apiStatus}</span>
-          {user ? (
-            <div className="dg-profile">
-              <button
-                className="dg-pill dg-profileBtn"
-                type="button"
-                aria-label="Profile menu"
-                onClick={() => setIsProfileOpen((v) => !v)}
-              >
-                {user?.profile_photo_url ? (
-                  <img className="dg-avatarImg" src={user.profile_photo_url} alt="Profile" />
-                ) : (
-                  user?.email?.slice(0, 1)?.toUpperCase() || 'U'
-                )}
-              </button>
+      ) : null}
 
-              {isProfileOpen ? (
-                <div className="dg-profileMenu" role="menu">
-                  <button
-                    className="dg-profileItem"
-                    type="button"
-                    role="menuitem"
-                    onClick={() => {
-                      setActiveView('profile')
-                      setIsProfileOpen(false)
-                    }}
-                  >
-                    My Profile
-                  </button>
-                  <button
-                    className="dg-profileItem"
-                    type="button"
-                    role="menuitem"
-                    onClick={() => logout()}
-                    disabled={isSubmitting}
-                  >
-                    Logout
-                  </button>
-                </div>
-              ) : null}
+      <div className="dg-topbarSlot">
+        <header className="dg-topbar">
+          <div className="dg-brand">
+            <img className="dg-logo" src={logo} alt="DressGenius" />
+            <div className="dg-brandText">
+              <div className="dg-title">DressGenius</div>
+              <div className="dg-subtitle">AI-powered outfit recommendations</div>
             </div>
-          ) : null}
-        </div>
-      </header>
+          </div>
+          <div className="dg-meta">
+            {user ? (
+              <div className="dg-profile">
+                <button
+                  className="dg-profileBtn"
+                  type="button"
+                  aria-label="Profile menu"
+                  onClick={() => setIsProfileOpen((v) => !v)}
+                >
+                  {user?.profile_photo_url ? (
+                    <img className="dg-avatarImg" src={user.profile_photo_url} alt="Profile" />
+                  ) : (
+                    user?.email?.slice(0, 1)?.toUpperCase() || 'U'
+                  )}
+                </button>
+
+                {isProfileOpen ? (
+                  <div className="dg-profileMenu" role="menu">
+                    <button
+                      className="dg-profileItem"
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setActiveView('profile')
+                        setIsProfileOpen(false)
+                      }}
+                    >
+                      My Profile
+                    </button>
+                    <button
+                      className="dg-profileItem"
+                      type="button"
+                      role="menuitem"
+                      onClick={() => logout()}
+                      disabled={isSubmitting}
+                    >
+                      Logout
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        </header>
+      </div>
 
       <main className="dg-main">
         <div className="dg-card">
@@ -234,6 +254,7 @@ function App() {
                 token={token}
                 user={user}
                 onUserUpdated={(nextUser) => setUser(nextUser)}
+                onNotify={notify}
                 onBack={() => setActiveView('home')}
               />
             ) : (

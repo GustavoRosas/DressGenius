@@ -56,7 +56,7 @@ class ProfileController extends Controller
         $user = $request->user();
 
         $validated = $request->validate([
-            'photo' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'photo' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         if ($user->profile_photo_path) {

@@ -1,8 +1,8 @@
 .dg-shell {
   min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr;
   width: 100%;
-  display: flex;
-  flex-direction: column;
   background:
     radial-gradient(1200px 600px at 20% 10%, rgba(99, 102, 241, 0.25), transparent 60%),
     radial-gradient(900px 500px at 80% 20%, rgba(236, 72, 153, 0.20), transparent 60%),
@@ -11,20 +11,77 @@
   color: rgba(255, 255, 255, 0.92);
 }
 
-.dg-topbar {
-  position: fixed;
+.dg-topbarSlot {
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
+  z-index: 40;
+  height: 76px;
+  pointer-events: none;
+  background: rgba(11, 18, 32, 0.82);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dg-topbarSlot * {
+  pointer-events: auto;
+}
+
+.dg-toastWrap {
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(520px, calc(100vw - 24px));
+  z-index: 60;
+}
+
+.dg-toast {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(17, 24, 39, 0.95);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+}
+
+.dg-toastError {
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.dg-toastInfo {
+  border-color: rgba(99, 102, 241, 0.35);
+}
+
+.dg-toastText {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.dg-toastClose {
+  background: transparent;
+  border: 0;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 18px;
+  padding: 2px 6px;
+}
+
+.dg-toastClose:hover {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.dg-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  pointer-events: none;
-}
-
-.dg-topbar * {
-  pointer-events: auto;
+  height: 76px;
 }
 
 .dg-brand {
@@ -80,16 +137,33 @@
   width: 34px;
   height: 34px;
   padding: 0;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
   font-weight: 800;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .dg-avatarImg {
-  width: 28px;
-  height: 28px;
+  width: 100%;
+  height: 100%;
+  display: block;
   border-radius: 999px;
   object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  border: 0;
+}
+
+.dg-avatarPreview {
+  width: 50px;
+  height: 50px;
+  border-radius: 999px;
+  object-fit: cover;
+  background: rgba(17, 24, 39, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .dg-profileMenu {
@@ -146,7 +220,7 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  min-height: 100vh;
+  min-height: calc(100vh - 76px);
 }
 
 .dg-card {
