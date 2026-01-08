@@ -1,8 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faPen } from '@fortawesome/free-solid-svg-icons'
 
 function ProfilePage({ apiBase, token, user, onUserUpdated, onNotify, onBack }) {
   const [form, setForm] = useState({ name: user?.name ?? '', email: user?.email ?? '' })
   const [pw, setPw] = useState({ current_password: '', password: '', password_confirmation: '' })
+
+  const [isPasswordOpen, setIsPasswordOpen] = useState(false)
+
+  const photoInputRef = useRef(null)
 
   const [photoFile, setPhotoFile] = useState(null)
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState('')
@@ -151,7 +157,7 @@ function ProfilePage({ apiBase, token, user, onUserUpdated, onNotify, onBack }) 
         if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl)
         setPhotoPreviewUrl('')
         showError('Profile picture must be 5MB or smaller.')
-        return
+        return false
       }
 
       if (file.type && !ALLOWED_PHOTO_TYPES.has(file.type)) {
@@ -159,7 +165,7 @@ function ProfilePage({ apiBase, token, user, onUserUpdated, onNotify, onBack }) 
         if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl)
         setPhotoPreviewUrl('')
         showError('Profile picture must be a JPG, PNG, or WEBP image.')
-        return
+        return false
       }
     }
 
@@ -168,29 +174,30 @@ function ProfilePage({ apiBase, token, user, onUserUpdated, onNotify, onBack }) 
     if (!file) {
       if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl)
       setPhotoPreviewUrl('')
-      return
+      return false
     }
 
     if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl)
     setPhotoPreviewUrl(URL.createObjectURL(file))
+
+    return true
   }
 
-  async function uploadPhoto(e) {
-    e.preventDefault()
+  async function uploadPhoto(file) {
     setError('')
     setSuccess('')
 
-    if (!photoFile) {
+    if (!file) {
       showError('Pick a photo first.')
       return
     }
 
-    if (photoFile.size > MAX_PHOTO_BYTES) {
+    if (file.size > MAX_PHOTO_BYTES) {
       showError('Profile picture must be 5MB or smaller.')
       return
     }
 
-    if (photoFile.type && !ALLOWED_PHOTO_TYPES.has(photoFile.type)) {
+    if (file.type && !ALLOWED_PHOTO_TYPES.has(file.type)) {
       showError('Profile picture must be a JPG, PNG, or WEBP image.')
       return
     }
@@ -203,7 +210,7 @@ function ProfilePage({ apiBase, token, user, onUserUpdated, onNotify, onBack }) 
 
     try {
       const body = new FormData()
-      body.append('photo', photoFile)
+      body.append('photo', file)
 
       const res = await fetch(`${apiBase}/profile/photo`, {
         method: 'POST',
@@ -234,6 +241,13 @@ function ProfilePage({ apiBase, token, user, onUserUpdated, onNotify, onBack }) 
     }
   }
 
+  async function handlePickPhoto(ev) {
+    const file = ev.target.files?.[0] ?? null
+    const ok = onPickPhoto(file)
+    if (ok && file) await uploadPhoto(file)
+    if (photoInputRef.current) photoInputRef.current.value = ''
+  }
+
   const avatarUrl = photoPreviewUrl || user?.profile_photo_url
 
   return (
@@ -244,29 +258,31 @@ function ProfilePage({ apiBase, token, user, onUserUpdated, onNotify, onBack }) 
       </div>
 
       <div className="dg-form">
-        <div className="dg-scanBlock">
-          <div className="dg-scanTitle">Profile picture</div>
-          {avatarUrl ? <img className="dg-avatarPreview" src={avatarUrl} alt="Profile" /> : <div className="dg-pill">No photo</div>}
-
-          <label className="dg-field">
-            <span className="dg-label">Upload new picture</span>
-            <input
-              aria-label="Upload profile picture"
-              className="dg-input dg-fileInput"
-              type="file"
-              accept="image/*"
-              disabled={isUploadingPhoto}
-              onChange={(ev) => onPickPhoto(ev.target.files?.[0] ?? null)}
-            />
-          </label>
-
-          <button className="dg-btn dg-btnPrimary" type="button" onClick={uploadPhoto} disabled={isUploadingPhoto || !photoFile}>
-            {isUploadingPhoto ? 'Uploading…' : 'Save picture'}
-          </button>
-        </div>
-
         <form onSubmit={saveProfile} className="dg-scanBlock">
-          <div className="dg-scanTitle">Profile</div>
+          <div className="dg-photoCenter">
+            <div className="dg-photoWrap">
+              {avatarUrl ? <img className="dg-avatarPreview" src={avatarUrl} alt="Profile" /> : <div className="dg-pill">No photo</div>}
+              <button
+                className="dg-photoEditBtn"
+                type="button"
+                aria-label="Change profile photo"
+                onClick={() => photoInputRef.current?.click()}
+                disabled={isUploadingPhoto}
+              >
+                <FontAwesomeIcon icon={faPen} />
+              </button>
+            </div>
+          </div>
+
+          <input
+            ref={photoInputRef}
+            aria-label="Upload profile picture"
+            className="dg-photoInput"
+            type="file"
+            accept="image/*"
+            disabled={isUploadingPhoto}
+            onChange={handlePickPhoto}
+          />
 
           <label className="dg-field">
             <span className="dg-label">Name</span>
@@ -295,46 +311,53 @@ function ProfilePage({ apiBase, token, user, onUserUpdated, onNotify, onBack }) 
           </button>
         </form>
 
-        <form onSubmit={savePassword} className="dg-scanBlock">
+        <div className="dg-scanBlock">
           <div className="dg-scanTitle">Password</div>
-
-          <label className="dg-field">
-            <span className="dg-label">Current password</span>
-            <input
-              className="dg-input"
-              type="password"
-              value={pw.current_password}
-              onChange={(e) => setPw((s) => ({ ...s, current_password: e.target.value }))}
-              disabled={isSavingPassword}
-            />
-          </label>
-
-          <label className="dg-field">
-            <span className="dg-label">New password</span>
-            <input
-              className="dg-input"
-              type="password"
-              value={pw.password}
-              onChange={(e) => setPw((s) => ({ ...s, password: e.target.value }))}
-              disabled={isSavingPassword}
-            />
-          </label>
-
-          <label className="dg-field">
-            <span className="dg-label">Confirm new password</span>
-            <input
-              className="dg-input"
-              type="password"
-              value={pw.password_confirmation}
-              onChange={(e) => setPw((s) => ({ ...s, password_confirmation: e.target.value }))}
-              disabled={isSavingPassword}
-            />
-          </label>
-
-          <button className="dg-btn dg-btnPrimary" type="submit" disabled={isSavingPassword}>
-            {isSavingPassword ? 'Saving…' : 'Update password'}
+          <button className="dg-btn dg-btnGhost" type="button" onClick={() => setIsPasswordOpen((v) => !v)}>
+            {isPasswordOpen ? 'Hide password change' : 'Change password'}
           </button>
-        </form>
+
+          {isPasswordOpen ? (
+            <form onSubmit={savePassword} className="dg-passwordForm">
+              <label className="dg-field">
+                <span className="dg-label">Current password</span>
+                <input
+                  className="dg-input"
+                  type="password"
+                  value={pw.current_password}
+                  onChange={(e) => setPw((s) => ({ ...s, current_password: e.target.value }))}
+                  disabled={isSavingPassword}
+                />
+              </label>
+
+              <label className="dg-field">
+                <span className="dg-label">New password</span>
+                <input
+                  className="dg-input"
+                  type="password"
+                  value={pw.password}
+                  onChange={(e) => setPw((s) => ({ ...s, password: e.target.value }))}
+                  disabled={isSavingPassword}
+                />
+              </label>
+
+              <label className="dg-field">
+                <span className="dg-label">Confirm new password</span>
+                <input
+                  className="dg-input"
+                  type="password"
+                  value={pw.password_confirmation}
+                  onChange={(e) => setPw((s) => ({ ...s, password_confirmation: e.target.value }))}
+                  disabled={isSavingPassword}
+                />
+              </label>
+
+              <button className="dg-btn dg-btnPrimary" type="submit" disabled={isSavingPassword}>
+                {isSavingPassword ? 'Saving…' : 'Update password'}
+              </button>
+            </form>
+          ) : null}
+        </div>
 
         {error ? null : null}
         {success ? null : null}

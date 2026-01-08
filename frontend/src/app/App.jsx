@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import '../styles/app.css'
 import AuthPage from '../pages/AuthPage'
 import HomePage from '../pages/HomePage'
@@ -16,6 +16,8 @@ function App() {
   const [activeView, setActiveView] = useState('home')
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [toast, setToast] = useState(null)
+
+  const profileMenuRef = useRef(null)
 
   const apiBase = useMemo(() => import.meta.env.VITE_API_URL, [])
 
@@ -92,6 +94,31 @@ function App() {
       controller.abort()
     }
   }, [apiBase, token])
+
+  useEffect(() => {
+    if (!isProfileOpen) return
+
+    function onPointerDown(ev) {
+      const el = profileMenuRef.current
+      if (!el) return
+      if (el.contains(ev.target)) return
+      setIsProfileOpen(false)
+    }
+
+    function onKeyDown(ev) {
+      if (ev.key === 'Escape') setIsProfileOpen(false)
+    }
+
+    document.addEventListener('mousedown', onPointerDown)
+    document.addEventListener('touchstart', onPointerDown, { passive: true })
+    document.addEventListener('keydown', onKeyDown)
+
+    return () => {
+      document.removeEventListener('mousedown', onPointerDown)
+      document.removeEventListener('touchstart', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [isProfileOpen])
 
   async function register(e) {
     e.preventDefault()
@@ -202,7 +229,7 @@ function App() {
             </div>
             <div className="dg-meta">
               {user ? (
-                <div className="dg-profile">
+                <div className="dg-profile" ref={profileMenuRef}>
                   <button
                     className="dg-profileBtn"
                     type="button"
