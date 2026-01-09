@@ -48,6 +48,8 @@ function AIPreferencesPage({ onBack }) {
     width: 1,
     prevUserSelect: '',
     lastTouchTs: 0,
+    pointerId: null,
+    pointerEl: null,
   })
 
   useEffect(() => {
@@ -81,6 +83,15 @@ function AIPreferencesPage({ onBack }) {
 
   function endDrag() {
     if (!dragStateRef.current.key) return
+    if (dragStateRef.current.pointerEl && dragStateRef.current.pointerId != null) {
+      try {
+        dragStateRef.current.pointerEl.releasePointerCapture(dragStateRef.current.pointerId)
+      } catch {
+        // ignore
+      }
+    }
+    dragStateRef.current.pointerEl = null
+    dragStateRef.current.pointerId = null
     document.body.style.userSelect = dragStateRef.current.prevUserSelect
     dragStateRef.current.key = null
   }
@@ -107,6 +118,9 @@ function AIPreferencesPage({ onBack }) {
       endDrag()
     }
 
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    window.addEventListener('pointercancel', onUp)
     window.addEventListener('mousemove', onMove)
     window.addEventListener('mouseup', onUp)
     document.addEventListener('touchmove', onMove, { passive: false, capture: true })
@@ -114,6 +128,9 @@ function AIPreferencesPage({ onBack }) {
     document.addEventListener('touchcancel', onUp, { capture: true })
 
     return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
       window.removeEventListener('mousemove', onMove)
       window.removeEventListener('mouseup', onUp)
       document.removeEventListener('touchmove', onMove, { capture: true })
@@ -174,31 +191,25 @@ function AIPreferencesPage({ onBack }) {
 
     const trackRef = useRef(null)
 
-    function onMouseDown(e) {
-      if (e.button !== 0) return
-      if (Date.now() - dragStateRef.current.lastTouchTs < 800) return
+    function onPointerDown(e) {
+      if (e.pointerType !== 'touch' && e.button !== 0) return
+      if (e.pointerType !== 'touch' && Date.now() - dragStateRef.current.lastTouchTs < 800) return
       e.preventDefault()
       e.stopPropagation()
-      beginDrag(k, trackRef.current, e.clientX, 'mouse')
-    }
 
-    useEffect(() => {
       const el = trackRef.current
-      if (!el) return
-
-      function onNativeTouchStart(ev) {
-        const x = ev.touches?.[0]?.clientX
-        if (typeof x !== 'number') return
-        ev.preventDefault()
-        ev.stopPropagation()
-        beginDrag(k, el, x, 'touch')
+      if (el) {
+        dragStateRef.current.pointerEl = el
+        dragStateRef.current.pointerId = e.pointerId
+        try {
+          el.setPointerCapture(e.pointerId)
+        } catch {
+          // ignore
+        }
       }
 
-      el.addEventListener('touchstart', onNativeTouchStart, { passive: false })
-      return () => {
-        el.removeEventListener('touchstart', onNativeTouchStart)
-      }
-    }, [k])
+      beginDrag(k, el, e.clientX, e.pointerType === 'touch' ? 'touch' : 'mouse')
+    }
 
     useEffect(() => {
       if (!isOpen) return
@@ -239,7 +250,7 @@ function AIPreferencesPage({ onBack }) {
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={Number(value)}
-            onMouseDown={onMouseDown}
+            onPointerDown={onPointerDown}
             onKeyDown={(e) => {
               if (e.key === 'ArrowLeft') {
                 e.preventDefault()
