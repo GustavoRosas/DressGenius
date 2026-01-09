@@ -2,6 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import '../styles/app.css'
 import AuthPage from '../pages/AuthPage'
 import HomePage from '../pages/HomePage'
+import OutfitScanPage from '../pages/OutfitScanPage'
+import AIPreferencesPage from '../pages/AIPreferencesPage'
+import PlaceholderPage from '../pages/PlaceholderPage'
 import ProfilePage from '../pages/ProfilePage'
 import logo from '../assets/dressgenius.svg'
 
@@ -286,8 +289,16 @@ function App() {
                 onNotify={notify}
                 onBack={() => setActiveView('home')}
               />
+            ) : activeView === 'scan' ? (
+              <OutfitScanPage user={user} isSubmitting={isSubmitting} onBack={() => setActiveView('home')} />
+            ) : activeView === 'ai_prefs' ? (
+              <AIPreferencesPage onBack={() => setActiveView('home')} />
+            ) : activeView === 'closet' ? (
+              <PlaceholderPage title="My Closet" subtitle="Your saved wardrobe items." onBack={() => setActiveView('home')} />
+            ) : activeView === 'history' ? (
+              <PlaceholderPage title="History" subtitle="Your previous outfit scans." onBack={() => setActiveView('home')} />
             ) : (
-              <HomePage user={user} isSubmitting={isSubmitting} onLogout={logout} />
+              <HomePage user={user} isSubmitting={isSubmitting} onSelect={(nextView) => setActiveView(nextView)} />
             )
           ) : (
             <AuthPage
