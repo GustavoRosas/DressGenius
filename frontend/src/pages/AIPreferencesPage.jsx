@@ -130,6 +130,7 @@ function AIPreferencesPage({ apiBase, token, onNotify, onBack }) {
       }
       setIsDirty(false)
       onNotify?.('info', 'AI preferences saved.')
+      onBack?.()
     } catch {
       onNotify?.('error', 'Failed to save AI preferences.')
     } finally {
@@ -415,11 +416,7 @@ function AIPreferencesPage({ apiBase, token, onNotify, onBack }) {
         </button>
 
         <button className="dg-btn dg-btnPrimary" type="button" onClick={savePrefs} disabled={isSaving || isLoading || !isDirty}>
-          {isSaving ? 'Saving…' : isLoading ? 'Loading…' : 'Save preferences'}
-        </button>
-
-        <button className="dg-btn dg-btnPrimary" type="button" onClick={onBack}>
-          Back
+          {isSaving ? 'Saving…' : isLoading ? 'Loading…' : 'Save & return'}
         </button>
       </div>
     </>

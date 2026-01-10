@@ -368,10 +368,6 @@ function ProfilePage({ apiBase, token, user, onUserUpdated, onNotify, onBack }) 
 
         {error ? null : null}
         {success ? null : null}
-
-        <button className="dg-btn dg-btnPrimary" type="button" onClick={onBack}>
-          Back
-        </button>
       </div>
     </>
   )

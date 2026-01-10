@@ -17,7 +17,7 @@ class GeminiVisionService
         }
 
         $configuredModel = (string) config('services.gemini.model', 'gemini-1.5-flash-latest');
-        $modelsToTry = array_slice($this->buildModelFallbackList($configuredModel), 0, 2);
+        $modelsToTry = array_slice($this->buildModelFallbackList($configuredModel), 0, 5);
 
         $mimeType = $image->getMimeType() ?: 'image/jpeg';
         $imageBase64 = base64_encode(file_get_contents($image->getRealPath()));
@@ -180,12 +180,10 @@ PROMPT;
 
         $candidates = array_filter(array_map('trim', explode(',', $configuredModel)));
         $fallbacks = [
-            'gemini-2.5-flash-lts',
-            'gemini-2.5-flash',
-            'gemini-2.5-flash-lite',
-            'gemini-2.5-flash-native-audio-dialog',
             'gemini-1.5-flash-latest',
+            'gemini-1.5-flash',
             'gemini-1.5-pro-latest',
+            'gemini-1.5-pro',
         ];
 
         $all = array_merge($candidates, $fallbacks);

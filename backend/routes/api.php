@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AIPreferencesController;
+use App\Http\Controllers\OutfitChatController;
 use App\Http\Controllers\OutfitScanController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update']);
     Route::patch('/profile/password', [ProfileController::class, 'updatePassword']);
     Route::post('/profile/photo', [ProfileController::class, 'uploadPhoto']);
+
+    Route::get('/outfit-chats', [OutfitChatController::class, 'index']);
+    Route::get('/outfit-chats/{session}', [OutfitChatController::class, 'show']);
+    Route::post('/outfit-chats/analyze', [OutfitChatController::class, 'analyze']);
+    Route::post('/outfit-chats/{session}/messages', [OutfitChatController::class, 'storeMessage']);
 
     Route::post('/outfit-scans', [OutfitScanController::class, 'store']);
 });

@@ -13,7 +13,7 @@ function HomePage({ user, isSubmitting, onSelect }) {
       <div className="dg-cardHeader">
         <h1 className="dg-cardTitle">Home</h1>
         <p className="dg-cardHint">
-          Signed in as <strong>{user?.email}</strong>
+          Welcome back{user?.name ? `, ${user.name}` : ''}. Ready to build a great outfit?
         </p>
       </div>
 

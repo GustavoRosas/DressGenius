@@ -5,6 +5,7 @@ import HomePage from '../pages/HomePage'
 import OutfitScanPage from '../pages/OutfitScanPage'
 import AIPreferencesPage from '../pages/AIPreferencesPage'
 import PlaceholderPage from '../pages/PlaceholderPage'
+import OutfitChatHistoryPage from '../pages/OutfitChatHistoryPage'
 import ProfilePage from '../pages/ProfilePage'
 import logo from '../assets/dressgenius.svg'
 
@@ -17,8 +18,15 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isResolvingSession, setIsResolvingSession] = useState(false)
   const [activeView, setActiveView] = useState('home')
+  const [activeChatSessionId, setActiveChatSessionId] = useState(null)
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const [toast, setToast] = useState(null)
+
+  const [renderedScreenKey, setRenderedScreenKey] = useState(null)
+  const [transitionStage, setTransitionStage] = useState('')
+
+  const renderedScreenKeyRef = useRef(null)
+  const transitionTimersRef = useRef({ exit: null, enter: null })
 
   const profileMenuRef = useRef(null)
 
@@ -32,6 +40,124 @@ function App() {
     setToast({ type, message })
     window.clearTimeout(notify._t)
     notify._t = window.setTimeout(() => setToast(null), 4500)
+  }
+
+  const screenKey = user ? activeView : 'auth'
+
+  useEffect(() => {
+    if (transitionTimersRef.current.exit) window.clearTimeout(transitionTimersRef.current.exit)
+    if (transitionTimersRef.current.enter) window.clearTimeout(transitionTimersRef.current.enter)
+
+    const current = renderedScreenKeyRef.current
+
+    if (current === null) {
+      renderedScreenKeyRef.current = screenKey
+      setRenderedScreenKey(screenKey)
+      setTransitionStage('')
+      return
+    }
+
+    if (screenKey === current) return
+
+    setTransitionStage('exit')
+
+    transitionTimersRef.current.exit = window.setTimeout(() => {
+      renderedScreenKeyRef.current = screenKey
+      setRenderedScreenKey(screenKey)
+      setTransitionStage('enter')
+
+      transitionTimersRef.current.enter = window.setTimeout(() => {
+        setTransitionStage('')
+      }, 200)
+    }, 180)
+
+    return () => {
+      if (transitionTimersRef.current.exit) window.clearTimeout(transitionTimersRef.current.exit)
+      if (transitionTimersRef.current.enter) window.clearTimeout(transitionTimersRef.current.enter)
+    }
+  }, [screenKey])
+
+  function renderScreen(key) {
+    if (!user || key === 'auth') {
+      return (
+        <AuthPage
+          error={error}
+          isSubmitting={isSubmitting}
+          isResolvingSession={isResolvingSession}
+          loginForm={loginForm}
+          mode={mode}
+          registerForm={registerForm}
+          setError={setError}
+          setLoginForm={setLoginForm}
+          setMode={setMode}
+          setRegisterForm={setRegisterForm}
+          onLogin={login}
+          onRegister={register}
+        />
+      )
+    }
+
+    if (key === 'profile') {
+      return (
+        <ProfilePage
+          apiBase={apiBase}
+          token={token}
+          user={user}
+          onUserUpdated={(nextUser) => setUser(nextUser)}
+          onNotify={notify}
+          onBack={() => setActiveView('home')}
+        />
+      )
+    }
+
+    if (key === 'scan') {
+      return (
+        <OutfitScanPage
+          apiBase={apiBase}
+          token={token}
+          user={user}
+          onNotify={notify}
+          sessionId={activeChatSessionId}
+          onBack={() => {
+            setActiveChatSessionId(null)
+            setActiveView('home')
+          }}
+        />
+      )
+    }
+
+    if (key === 'ai_prefs') {
+      return <AIPreferencesPage apiBase={apiBase} token={token} onNotify={notify} onBack={() => setActiveView('home')} />
+    }
+
+    if (key === 'closet') {
+      return <PlaceholderPage title="My Closet" subtitle="Your saved wardrobe items." onBack={() => setActiveView('home')} />
+    }
+
+    if (key === 'history') {
+      return (
+        <OutfitChatHistoryPage
+          apiBase={apiBase}
+          token={token}
+          onOpenSession={(id) => {
+            setActiveChatSessionId(id)
+            setActiveView('scan')
+          }}
+          onBack={() => setActiveView('home')}
+        />
+      )
+    }
+
+    return (
+      <HomePage
+        user={user}
+        isSubmitting={isSubmitting}
+        onSelect={(nextView) => {
+          if (nextView === 'scan') setActiveChatSessionId(null)
+          setActiveView(nextView)
+        }}
+      />
+    )
   }
 
   function getErrorMessage(data, fallback) {
@@ -202,6 +328,7 @@ function App() {
       setToken('')
       setUser(null)
       setActiveView('home')
+      setActiveChatSessionId(null)
       setIsProfileOpen(false)
       setIsSubmitting(false)
     }
@@ -279,43 +406,17 @@ function App() {
 
       <main className="dg-main">
         <div className="dg-card">
-          {user ? (
-            activeView === 'profile' ? (
-              <ProfilePage
-                apiBase={apiBase}
-                token={token}
-                user={user}
-                onUserUpdated={(nextUser) => setUser(nextUser)}
-                onNotify={notify}
-                onBack={() => setActiveView('home')}
-              />
-            ) : activeView === 'scan' ? (
-              <OutfitScanPage user={user} isSubmitting={isSubmitting} onBack={() => setActiveView('home')} />
-            ) : activeView === 'ai_prefs' ? (
-              <AIPreferencesPage apiBase={apiBase} token={token} onNotify={notify} onBack={() => setActiveView('home')} />
-            ) : activeView === 'closet' ? (
-              <PlaceholderPage title="My Closet" subtitle="Your saved wardrobe items." onBack={() => setActiveView('home')} />
-            ) : activeView === 'history' ? (
-              <PlaceholderPage title="History" subtitle="Your previous outfit scans." onBack={() => setActiveView('home')} />
-            ) : (
-              <HomePage user={user} isSubmitting={isSubmitting} onSelect={(nextView) => setActiveView(nextView)} />
-            )
-          ) : (
-            <AuthPage
-              error={error}
-              isSubmitting={isSubmitting}
-              isResolvingSession={isResolvingSession}
-              loginForm={loginForm}
-              mode={mode}
-              registerForm={registerForm}
-              setError={setError}
-              setLoginForm={setLoginForm}
-              setMode={setMode}
-              setRegisterForm={setRegisterForm}
-              onLogin={login}
-              onRegister={register}
-            />
-          )}
+          <div
+            className={
+              transitionStage === 'exit'
+                ? 'dg-screen dg-screenExit'
+                : transitionStage === 'enter'
+                  ? 'dg-screen dg-screenEnter'
+                  : 'dg-screen'
+            }
+          >
+            {renderedScreenKey ? renderScreen(renderedScreenKey) : null}
+          </div>
         </div>
       </main>
     </div>
