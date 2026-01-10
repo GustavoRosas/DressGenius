@@ -23,7 +23,7 @@ function loadPrefs(defaults) {
   }
 }
 
-function AIPreferencesPage({ onBack }) {
+function AIPreferencesPage({ apiBase, token, onNotify, onBack }) {
   const defaults = useMemo(
     () => ({
       tone: 60,
@@ -34,13 +34,14 @@ function AIPreferencesPage({ onBack }) {
       comfort: 55,
       weather: 70,
       budget: 40,
-      formality: 35,
-      color: 45,
     }),
     []
   )
 
   const [prefs, setPrefs] = useState(() => loadPrefs(defaults))
+  const [isLoading, setIsLoading] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [isDirty, setIsDirty] = useState(false)
 
   const dragStateRef = useRef({
     key: null,
@@ -60,8 +61,80 @@ function AIPreferencesPage({ onBack }) {
     }
   }, [prefs])
 
+  useEffect(() => {
+    if (!apiBase || !token) return
+    let isMounted = true
+
+    async function loadFromApi() {
+      setIsLoading(true)
+      try {
+        const res = await fetch(`${apiBase}/ai-preferences`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/json',
+          },
+        })
+
+        if (!res.ok) return
+        const data = await res.json().catch(() => ({}))
+        const fromApi = data?.preferences
+        if (fromApi && typeof fromApi === 'object') {
+          const next = { ...defaults, ...fromApi }
+          if (isMounted) {
+            setPrefs(next)
+            setIsDirty(false)
+          }
+        }
+      } catch {
+        // ignore
+      } finally {
+        if (isMounted) setIsLoading(false)
+      }
+    }
+
+    loadFromApi()
+    return () => {
+      isMounted = false
+    }
+  }, [apiBase, token, defaults])
+
   function setPref(key, value) {
+    setIsDirty(true)
     setPrefs((s) => ({ ...s, [key]: clamp01(Number(value)) }))
+  }
+
+  async function savePrefs() {
+    if (!apiBase || !token) return
+    if (isSaving) return
+    setIsSaving(true)
+    try {
+      const res = await fetch(`${apiBase}/ai-preferences`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ preferences: prefs }),
+      })
+
+      if (!res.ok) {
+        onNotify?.('error', 'Failed to save AI preferences.')
+        return
+      }
+
+      const data = await res.json().catch(() => ({}))
+      if (data?.preferences && typeof data.preferences === 'object') {
+        setPrefs({ ...defaults, ...data.preferences })
+      }
+      setIsDirty(false)
+      onNotify?.('info', 'AI preferences saved.')
+    } catch {
+      onNotify?.('error', 'Failed to save AI preferences.')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   function beginDrag(key, trackEl, clientX, inputType) {
@@ -337,14 +410,12 @@ function AIPreferencesPage({ onBack }) {
           <Slider k="budget" title="Budget" hint="Suggestion cost preference." />
         </div>
 
-        <div className="dg-scanBlock">
-          <div className="dg-scanTitle">Personal Style</div>
-          <Slider k="formality" title="Formality" hint="Casual vs formal outfits." />
-          <Slider k="color" title="Color adventurousness" hint="Neutral vs colorful looks." />
-        </div>
-
         <button className="dg-btn dg-btnGhost" type="button" onClick={() => setPrefs(defaults)}>
           Reset to defaults
+        </button>
+
+        <button className="dg-btn dg-btnPrimary" type="button" onClick={savePrefs} disabled={isSaving || isLoading || !isDirty}>
+          {isSaving ? 'Saving…' : isLoading ? 'Loading…' : 'Save preferences'}
         </button>
 
         <button className="dg-btn dg-btnPrimary" type="button" onClick={onBack}>

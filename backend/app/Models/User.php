@@ -23,6 +23,7 @@ class User extends Authenticatable
         'email',
         'password',
         'profile_photo_path',
+        'ai_preferences',
     ];
 
     /**
@@ -45,6 +46,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'ai_preferences' => 'array',
         ];
     }
 }

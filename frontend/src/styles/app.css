@@ -1,5 +1,16 @@
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
 .dg-shell {
-  min-height: 100vh;
+  height: 100vh;
   display: grid;
   grid-template-rows: auto 1fr;
   width: 100%;
@@ -516,7 +527,10 @@
   display: grid;
   place-items: center;
   padding: 24px;
-  min-height: calc(100vh - 76px);
+  height: calc(100vh - 76px);
+  min-height: 0;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
 .dg-card {

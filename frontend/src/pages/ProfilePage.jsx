@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faPen } from '@fortawesome/free-solid-svg-icons'
+import { faArrowLeft, faPen } from '@fortawesome/free-solid-svg-icons'
 
 function ProfilePage({ apiBase, token, user, onUserUpdated, onNotify, onBack }) {
   const [form, setForm] = useState({ name: user?.name ?? '', email: user?.email ?? '' })
@@ -253,8 +253,15 @@ function ProfilePage({ apiBase, token, user, onUserUpdated, onNotify, onBack }) 
   return (
     <>
       <div className="dg-cardHeader">
-        <h1 className="dg-cardTitle">My Profile</h1>
-        <p className="dg-cardHint">Edit your account info.</p>
+        <div className="dg-pageHeaderRow">
+          <button className="dg-iconBtn" type="button" aria-label="Back" onClick={onBack}>
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </button>
+          <div className="dg-pageHeaderText">
+            <h1 className="dg-cardTitle">My Profile</h1>
+            <p className="dg-cardHint">Edit your account info.</p>
+          </div>
+        </div>
       </div>
 
       <div className="dg-form">

@@ -1,11 +1,20 @@
 import React from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons'
 
 function PlaceholderPage({ title, subtitle, onBack }) {
   return (
     <>
       <div className="dg-cardHeader">
-        <h1 className="dg-cardTitle">{title}</h1>
-        {subtitle ? <p className="dg-cardHint">{subtitle}</p> : null}
+        <div className="dg-pageHeaderRow">
+          <button className="dg-iconBtn" type="button" aria-label="Back" onClick={onBack}>
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </button>
+          <div className="dg-pageHeaderText">
+            <h1 className="dg-cardTitle">{title}</h1>
+            {subtitle ? <p className="dg-cardHint">{subtitle}</p> : null}
+          </div>
+        </div>
       </div>
 
       <div className="dg-form">

@@ -292,7 +292,7 @@ function App() {
             ) : activeView === 'scan' ? (
               <OutfitScanPage user={user} isSubmitting={isSubmitting} onBack={() => setActiveView('home')} />
             ) : activeView === 'ai_prefs' ? (
-              <AIPreferencesPage onBack={() => setActiveView('home')} />
+              <AIPreferencesPage apiBase={apiBase} token={token} onNotify={notify} onBack={() => setActiveView('home')} />
             ) : activeView === 'closet' ? (
               <PlaceholderPage title="My Closet" subtitle="Your saved wardrobe items." onBack={() => setActiveView('home')} />
             ) : activeView === 'history' ? (

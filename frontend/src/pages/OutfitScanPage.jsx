@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faArrowLeft } from '@fortawesome/free-solid-svg-icons'
 
 function OutfitScanPage({ user, isSubmitting, onBack }) {
   const apiBase = useMemo(() => import.meta.env.VITE_API_URL, [])
@@ -88,10 +90,17 @@ function OutfitScanPage({ user, isSubmitting, onBack }) {
   return (
     <>
       <div className="dg-cardHeader">
-        <h1 className="dg-cardTitle">Analyze Outfit</h1>
-        <p className="dg-cardHint">
-          Signed in as <strong>{user?.email}</strong>
-        </p>
+        <div className="dg-pageHeaderRow">
+          <button className="dg-iconBtn" type="button" aria-label="Back" onClick={onBack}>
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </button>
+          <div className="dg-pageHeaderText">
+            <h1 className="dg-cardTitle">Analyze Outfit</h1>
+            <p className="dg-cardHint">
+              Signed in as <strong>{user?.email}</strong>
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="dg-actions">
