@@ -2,7 +2,7 @@ import React from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { within } from '@testing-library/react'
-import AuthPage from './AuthPage'
+import AuthPage from '../../pages/AuthPage'
 
 describe('AuthPage', () => {
   it('switches between login and register modes', () => {
