@@ -20,7 +20,7 @@ function jsonResponse(body, { status = 200, headers = {} } = {}) {
 }
 
 describe('ProfilePage', () => {
-  const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+  const apiBase = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api'
   const token = 't'
   const baseUser = {
     id: 1,
