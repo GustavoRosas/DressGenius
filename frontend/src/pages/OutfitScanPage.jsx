@@ -402,7 +402,6 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
 
       <div className="dg-actions">
         <div className="dg-form">
-          {error ? <div className="dg-alert">{error}</div> : null}
 
           <div className="dg-scanBlock">
             <div className="dg-scanTitle">Context (optional)</div>
@@ -615,7 +614,10 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
               disabled={isLoading || !selectedFile}
             >
               {isLoading ? 'Analyzing…' : 'Analyze outfit'}
+
             </button>
+
+            {error ? <div className="dg-alert">{error}</div> : null}
             </>
           ) : null}
 

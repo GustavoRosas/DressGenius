@@ -63,54 +63,65 @@ PROMPT;
             'generationConfig' => [
                 'temperature' => 0.2,
                 'maxOutputTokens' => 1024,
-                'response_mime_type' => 'application/json',
             ],
         ];
 
         $lastError = null;
         $lastStatus = null;
+        $lastApiVersion = null;
         $resJson = null;
 
-        foreach ($modelsToTry as $model) {
-            Log::info('GeminiVisionService request start', [
-                'model' => $model,
-                'mime' => $mimeType,
-                'size_bytes' => $image->getSize(),
-            ]);
+        $apiVersionsToTry = ['v1beta', 'v1'];
 
-            $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+        foreach ($apiVersionsToTry as $apiVersion) {
+            foreach ($modelsToTry as $model) {
+                Log::info('GeminiVisionService request start', [
+                    'api_version' => $apiVersion,
+                    'model' => $model,
+                    'mime' => $mimeType,
+                    'size_bytes' => $image->getSize(),
+                ]);
 
-            /** @var \Illuminate\Http\Client\Response $res */
-            $res = Http::connectTimeout(8)->timeout(30)->post($url, $payload);
+                $url = "https://generativelanguage.googleapis.com/{$apiVersion}/models/{$model}:generateContent?key={$apiKey}";
 
-            Log::info('GeminiVisionService request done', [
-                'model' => $model,
-                'status' => $res->status(),
-            ]);
+                $payloadForApi = $payload;
 
-            if ($res->ok()) {
-                $resJson = $res->json();
-                break;
+                /** @var \Illuminate\Http\Client\Response $res */
+                $res = Http::connectTimeout(8)->timeout(30)->post($url, $payloadForApi);
+
+                Log::info('GeminiVisionService request done', [
+                    'api_version' => $apiVersion,
+                    'model' => $model,
+                    'status' => $res->status(),
+                    'error' => $res->ok() ? null : mb_substr((string) $res->body(), 0, 1200),
+                ]);
+
+                if ($res->ok()) {
+                    $resJson = $res->json();
+                    break 2;
+                }
+
+                $lastApiVersion = $apiVersion;
+                $lastStatus = $res->status();
+                $lastError = $res->body();
+
+                if ($lastStatus === 429) {
+                    throw new \RuntimeException(
+                        'Gemini quota exceeded (429). Enable billing / adjust quotas in Google AI Studio, or choose a model with available limits. Details: '.$lastError
+                    );
+                }
+
+                if ($lastStatus === 404) {
+                    continue;
+                }
+
+                throw new \RuntimeException('Gemini request failed: '.$lastStatus.' '.$lastError);
             }
-
-            $lastStatus = $res->status();
-            $lastError = $res->body();
-
-            if ($lastStatus === 429) {
-                throw new \RuntimeException(
-                    'Gemini quota exceeded (429). Enable billing / adjust quotas in Google AI Studio, or choose a model with available limits. Details: '.$lastError
-                );
-            }
-
-            if ($lastStatus === 404) {
-                continue;
-            }
-
-            throw new \RuntimeException('Gemini request failed: '.$lastStatus.' '.$lastError);
         }
 
         if (!is_array($resJson)) {
-            throw new \RuntimeException('Gemini request failed: '.($lastStatus ?? 0).' '.($lastError ?? 'Unknown error'));
+            $details = trim((string) ($lastError ?? 'Unknown error'));
+            throw new \RuntimeException('Gemini request failed: '.($lastStatus ?? 0).' (api='.($lastApiVersion ?? 'unknown').') '.$details);
         }
 
         $text = data_get($resJson, 'candidates.0.content.parts.0.text');
@@ -180,6 +191,9 @@ PROMPT;
 
         $candidates = array_filter(array_map('trim', explode(',', $configuredModel)));
         $fallbacks = [
+            'gemini-2.5-flash',
+            'gemini-1.0-pro-vision-latest',
+            'gemini-pro-vision',
             'gemini-1.5-flash-latest',
             'gemini-1.5-flash',
             'gemini-1.5-pro-latest',

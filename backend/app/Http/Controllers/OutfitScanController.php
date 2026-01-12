@@ -22,6 +22,10 @@ class OutfitScanController extends Controller
             $visionResult = $vision->analyzeOutfitImage($image);
             $analysisResult = $analysis->analyze($visionResult);
         } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('OutfitScanController analyze failed', [
+                'message' => $e->getMessage(),
+                'class' => get_class($e),
+            ]);
             return response()->json([
                 'message' => 'Vision analysis failed. Please try again.',
             ], 502);
