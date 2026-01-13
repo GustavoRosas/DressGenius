@@ -9,9 +9,10 @@ use Illuminate\Support\Str;
 
 class GeminiVisionService
 {
-    public function analyzeOutfitImage(UploadedFile $image): array
+    public function analyzeOutfitImage(UploadedFile $image, array $intake = []): array
     {
         $apiKey = config('services.gemini.api_key');
+        $debug = (bool) config('services.gemini.debug', false);
         if (!$apiKey) {
             throw new \RuntimeException('Missing GEMINI_API_KEY.');
         }
@@ -22,8 +23,23 @@ class GeminiVisionService
         $mimeType = $image->getMimeType() ?: 'image/jpeg';
         $imageBase64 = base64_encode(file_get_contents($image->getRealPath()));
 
-        $prompt = <<<'PROMPT'
+        $context = [
+            'occasion' => (string) data_get($intake, 'occasion', ''),
+            'weather' => (string) data_get($intake, 'weather', ''),
+            'dress_code' => (string) data_get($intake, 'dress_code', ''),
+            'budget' => (string) data_get($intake, 'budget', ''),
+            'desired_vibe' => (string) data_get($intake, 'desired_vibe', ''),
+        ];
+        $context = array_map(fn ($v) => trim($v) === '' ? null : $v, $context);
+        $contextJson = json_encode($context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        if (!is_string($contextJson)) {
+            $contextJson = '{}';
+        }
+
+        $prompt = <<<PROMPT
 You are analyzing a fashion outfit photo.
+
+User context (may be partial): {$contextJson}
 
 Return ONLY valid JSON (no markdown) matching this schema:
 {
@@ -75,12 +91,14 @@ PROMPT;
 
         foreach ($apiVersionsToTry as $apiVersion) {
             foreach ($modelsToTry as $model) {
-                Log::info('GeminiVisionService request start', [
-                    'api_version' => $apiVersion,
-                    'model' => $model,
-                    'mime' => $mimeType,
-                    'size_bytes' => $image->getSize(),
-                ]);
+                if ($debug) {
+                    Log::info('GeminiVisionService request start', [
+                        'api_version' => $apiVersion,
+                        'model' => $model,
+                        'mime' => $mimeType,
+                        'size_bytes' => $image->getSize(),
+                    ]);
+                }
 
                 $url = "https://generativelanguage.googleapis.com/{$apiVersion}/models/{$model}:generateContent?key={$apiKey}";
 
@@ -89,12 +107,14 @@ PROMPT;
                 /** @var \Illuminate\Http\Client\Response $res */
                 $res = Http::connectTimeout(8)->timeout(30)->post($url, $payloadForApi);
 
-                Log::info('GeminiVisionService request done', [
-                    'api_version' => $apiVersion,
-                    'model' => $model,
-                    'status' => $res->status(),
-                    'error' => $res->ok() ? null : mb_substr((string) $res->body(), 0, 1200),
-                ]);
+                if ($debug) {
+                    Log::info('GeminiVisionService request done', [
+                        'api_version' => $apiVersion,
+                        'model' => $model,
+                        'status' => $res->status(),
+                        'error' => $res->ok() ? null : mb_substr((string) $res->body(), 0, 1200),
+                    ]);
+                }
 
                 if ($res->ok()) {
                     $resJson = $res->json();

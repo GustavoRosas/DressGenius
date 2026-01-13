@@ -70,13 +70,27 @@ class OutfitChatController extends Controller
         $path = $image->store('outfit-chats/'.$user->id, 'public');
 
         try {
-            $visionResult = $vision->analyzeOutfitImage($image);
-            $analysisResult = $analysis->analyze($visionResult);
+            $visionResult = $vision->analyzeOutfitImage($image, (array) $intake);
+            $analysisResult = $analysis->analyze($visionResult, (array) $intake);
+
+            try {
+                $aiContextFeedback = $chat->contextFeedback([
+                    'intake' => $intake,
+                    'vision' => $visionResult,
+                    'analysis' => $analysisResult,
+                ]);
+                if (is_array($aiContextFeedback)) {
+                    $analysisResult['context_feedback'] = $aiContextFeedback;
+                }
+            } catch (\Throwable $ignored) {
+            }
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('OutfitChatController analyze failed', [
-                'message' => $e->getMessage(),
-                'class' => get_class($e),
-            ]);
+            if ((bool) config('services.gemini.debug', false)) {
+                \Illuminate\Support\Facades\Log::error('OutfitChatController analyze failed', [
+                    'message' => $e->getMessage(),
+                    'class' => get_class($e),
+                ]);
+            }
             return response()->json([
                 'message' => 'Vision analysis failed. Please try again.',
             ], 502);
@@ -121,7 +135,17 @@ class OutfitChatController extends Controller
                 ],
             ]);
         } catch (\Throwable $e) {
+            $contextLines = [];
+            foreach ((array) data_get($analysisResult, 'context_feedback', []) as $key => $row) {
+                $status = (string) data_get($row, 'status', 'neutral');
+                $message = (string) data_get($row, 'message', '');
+                if ($message !== '') {
+                    $contextLines[] = ucfirst((string) $key)." (".$status."): ".$message;
+                }
+            }
+
             $assistantText = "Score: ".data_get($analysisResult, 'score')."\n\n".
+                (count($contextLines) ? ("Context:\n".implode("\n", $contextLines)."\n\n") : '').
                 "Pros: ".implode(' ', (array) data_get($analysisResult, 'pros', []))."\n\n".
                 "Issues: ".implode(' ', (array) data_get($analysisResult, 'issues', []))."\n\n".
                 "Suggestions: ".implode(' ', (array) data_get($analysisResult, 'suggestions', []));

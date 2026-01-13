@@ -15,6 +15,12 @@ class StoreOutfitScanRequest extends FormRequest
     {
         return [
             'image' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'intake' => ['nullable', 'array'],
+            'intake.occasion' => ['nullable', 'string', 'max:120'],
+            'intake.weather' => ['nullable', 'string', 'max:120'],
+            'intake.dress_code' => ['nullable', 'string', 'max:120'],
+            'intake.budget' => ['nullable', 'string', 'max:120'],
+            'intake.desired_vibe' => ['nullable', 'string', 'max:120'],
         ];
     }
 }
