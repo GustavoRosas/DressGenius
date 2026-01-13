@@ -47,6 +47,7 @@ function OutfitChatHistoryPage({ apiBase, token, onOpenSession, onBack }) {
   }, [apiBase, token])
 
   const hasSessions = sessions.length > 0
+  const showPlaceholder = isLoading && !error && sessions.length === 0
 
   return (
     <>
@@ -65,7 +66,24 @@ function OutfitChatHistoryPage({ apiBase, token, onOpenSession, onBack }) {
       <div className="dg-form">
         {error ? <div className="dg-alert">{error}</div> : null}
 
-        {!error && !hasSessions ? (
+        {showPlaceholder ? (
+          <div className="dg-scanBlock" aria-busy="true" aria-label="Loading chat history">
+            <div className="dg-scanTitle">Loading...</div>
+            <div className="dg-historyList">
+              {Array.from({ length: 3 }).map((_, idx) => (
+                <div key={idx} className="dg-historyItem" style={{ opacity: 0.7 }}>
+                  <div className="dg-historyThumb" />
+                  <div className="dg-historyMeta">
+                    <div className="dg-historyTitle">&nbsp;</div>
+                    <div className="dg-historySub">&nbsp;</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {!error && !isLoading && !hasSessions ? (
           <div className="dg-scanBlock">
             <div className="dg-scanTitle">No chats yet</div>
             <div className="dg-scanText">Start an Analyze Outfit chat to see it here.</div>
@@ -74,7 +92,6 @@ function OutfitChatHistoryPage({ apiBase, token, onOpenSession, onBack }) {
 
         {hasSessions ? (
           <div className="dg-scanBlock">
-            <div className="dg-scanTitle">Chats</div>
             <div className="dg-historyList">
               {sessions.map((s) => (
                 <button

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AnalyzeOutfitChatRequest;
 use App\Http\Requests\StoreOutfitChatMessageRequest;
+use App\Models\OutfitAnalysisProcess;
 use App\Models\OutfitChatAttachment;
 use App\Models\OutfitChatMessage;
 use App\Models\OutfitChatSession;
@@ -63,19 +64,35 @@ class OutfitChatController extends Controller
     public function analyze(AnalyzeOutfitChatRequest $request, GeminiVisionService $vision, OutfitAnalysisService $analysis, GeminiChatService $chat)
     {
         $user = $request->user();
+        $aiPreferences = (array) ($user->ai_preferences ?? []);
 
         $image = $request->file('image');
         $intake = $request->input('intake') ?? [];
 
         $path = $image->store('outfit-chats/'.$user->id, 'public');
 
+        $process = OutfitAnalysisProcess::create([
+            'user_id' => $user->id,
+            'kind' => 'chat_analyze',
+            'status' => 'processing',
+            'image_path' => $path,
+            'intake' => (array) $intake,
+            'ai_preferences' => (array) $aiPreferences,
+            'started_at' => now(),
+        ]);
+
         try {
             $visionResult = $vision->analyzeOutfitImage($image, (array) $intake);
             $analysisResult = $analysis->analyze($visionResult, (array) $intake);
 
+            $process->vision = $visionResult;
+            $process->analysis = $analysisResult;
+            $process->save();
+
             try {
                 $aiContextFeedback = $chat->contextFeedback([
                     'intake' => $intake,
+                    'ai_preferences' => $aiPreferences,
                     'vision' => $visionResult,
                     'analysis' => $analysisResult,
                 ]);
@@ -84,7 +101,17 @@ class OutfitChatController extends Controller
                 }
             } catch (\Throwable $ignored) {
             }
+
+            $process->context_feedback = (array) data_get($analysisResult, 'context_feedback');
+            $process->analysis = $analysisResult;
+            $process->save();
         } catch (\Throwable $e) {
+            $process->status = 'failed';
+            $process->error_status = 502;
+            $process->error_message = $e->getMessage();
+            $process->completed_at = now();
+            $process->save();
+
             if ((bool) config('services.gemini.debug', false)) {
                 \Illuminate\Support\Facades\Log::error('OutfitChatController analyze failed', [
                     'message' => $e->getMessage(),
@@ -93,6 +120,7 @@ class OutfitChatController extends Controller
             }
             return response()->json([
                 'message' => 'Vision analysis failed. Please try again.',
+                'process_id' => $process->id,
             ], 502);
         }
 
@@ -109,6 +137,11 @@ class OutfitChatController extends Controller
             'turns_used' => 1,
             'status' => 'active',
         ]);
+
+        $process->chat_session_id = $session->id;
+        $process->status = 'completed';
+        $process->completed_at = now();
+        $process->save();
 
         $userMsg = OutfitChatMessage::create([
             'session_id' => $session->id,
@@ -128,6 +161,7 @@ class OutfitChatController extends Controller
         try {
             $assistantText = $chat->reply([
                 'intake' => $intake,
+                'ai_preferences' => $aiPreferences,
                 'vision' => $visionResult,
                 'analysis' => $analysisResult,
                 'recent_messages' => [
@@ -151,6 +185,9 @@ class OutfitChatController extends Controller
                 "Suggestions: ".implode(' ', (array) data_get($analysisResult, 'suggestions', []));
         }
 
+        $process->assistant_text = $assistantText;
+        $process->save();
+
         OutfitChatMessage::create([
             'session_id' => $session->id,
             'role' => 'assistant',
@@ -167,12 +204,14 @@ class OutfitChatController extends Controller
 
         return response()->json([
             'session' => $this->serializeSession($session, $disk),
+            'process_id' => $process->id,
         ], 201);
     }
 
     public function storeMessage(OutfitChatSession $session, StoreOutfitChatMessageRequest $request, GeminiChatService $chat)
     {
         $userId = $request->user()->id;
+        $aiPreferences = (array) ($request->user()->ai_preferences ?? []);
         if ($session->user_id !== $userId) {
             return response()->json(['message' => 'Not found.'], 404);
         }
@@ -185,13 +224,32 @@ class OutfitChatController extends Controller
             ], 429);
         }
 
+        $retryMessageId = $request->input('retry_message_id');
         $content = (string) $request->input('content');
 
-        $userMsg = OutfitChatMessage::create([
-            'session_id' => $session->id,
-            'role' => 'user',
-            'content' => $content,
-        ]);
+        /** @var \App\Models\OutfitChatMessage|null $userMsg */
+        $userMsg = null;
+        if ($retryMessageId) {
+            $userMsg = OutfitChatMessage::query()
+                ->where('session_id', $session->id)
+                ->where('role', 'user')
+                ->where('id', (int) $retryMessageId)
+                ->first();
+
+            if (!$userMsg) {
+                return response()->json(['message' => 'Message not found.'], 404);
+            }
+
+            if (!is_array($userMsg->meta) || ((string) data_get($userMsg->meta, 'status')) !== 'failed') {
+                return response()->json(['message' => 'This message cannot be retried.'], 422);
+            }
+
+            $content = (string) $userMsg->content;
+        } else {
+            if (trim($content) === '') {
+                return response()->json(['message' => 'Content is required.'], 422);
+            }
+        }
 
         $recent = OutfitChatMessage::query()
             ->where('session_id', $session->id)
@@ -200,15 +258,83 @@ class OutfitChatController extends Controller
             ->get()
             ->reverse()
             ->values()
+            ->filter(fn ($m) => !is_array($m->meta) || ((string) data_get($m->meta, 'status')) !== 'failed')
+            ->values()
             ->map(fn ($m) => ['role' => $m->role, 'content' => $m->content])
             ->all();
 
-        $assistantText = $chat->reply([
-            'intake' => $session->intake,
-            'vision' => $session->vision,
-            'analysis' => $session->analysis,
-            'recent_messages' => $recent,
+        $recentForAi = array_merge($recent, [
+            ['role' => 'user', 'content' => $content],
         ]);
+
+        try {
+            $assistantText = $chat->reply([
+                'intake' => $session->intake,
+                'ai_preferences' => $aiPreferences,
+                'vision' => $session->vision,
+                'analysis' => $session->analysis,
+                'recent_messages' => $recentForAi,
+            ]);
+        } catch (\RuntimeException $e) {
+            $msg = $e->getMessage();
+            $retryAfter = null;
+
+            if (preg_match('/retry in ([0-9.]+)s/i', $msg, $m)) {
+                $retryAfter = (int) ceil((float) $m[1]);
+            } elseif (preg_match('/"retryDelay"\s*:\s*"([0-9]+)s"/i', $msg, $m)) {
+                $retryAfter = (int) $m[1];
+            }
+
+            $statusCode = 502;
+            $publicMessage = 'AI reply failed. Please try again.';
+            if (str_contains($msg, 'quota exceeded (429)') || str_contains($msg, 'RESOURCE_EXHAUSTED') || str_contains($msg, 'generate_content_free_tier_requests')) {
+                $statusCode = 429;
+                $publicMessage = 'AI quota exceeded. Please wait a bit and try again.';
+            }
+
+            if (!$userMsg) {
+                $userMsg = OutfitChatMessage::create([
+                    'session_id' => $session->id,
+                    'role' => 'user',
+                    'content' => $content,
+                    'meta' => [
+                        'status' => 'failed',
+                        'error_status' => $statusCode,
+                        'error_message' => $publicMessage,
+                        'retry_after' => $retryAfter,
+                    ],
+                ]);
+            } else {
+                $meta = (array) ($userMsg->meta ?? []);
+                $meta['status'] = 'failed';
+                $meta['error_status'] = $statusCode;
+                $meta['error_message'] = $publicMessage;
+                $meta['retry_after'] = $retryAfter;
+                $userMsg->meta = $meta;
+                $userMsg->save();
+            }
+
+            return response()->json([
+                'message' => $publicMessage,
+                'retry_after' => $retryAfter,
+                'messages' => [$this->serializeMessage($userMsg)],
+                'turns_used' => $session->turns_used,
+                'turns_max' => self::MAX_TURNS,
+            ], $statusCode);
+        }
+
+        if (!$userMsg) {
+            $userMsg = OutfitChatMessage::create([
+                'session_id' => $session->id,
+                'role' => 'user',
+                'content' => $content,
+            ]);
+        } else {
+            $meta = (array) ($userMsg->meta ?? []);
+            unset($meta['status'], $meta['error_status'], $meta['error_message'], $meta['retry_after']);
+            $userMsg->meta = count($meta) ? $meta : null;
+            $userMsg->save();
+        }
 
         $assistantMsg = OutfitChatMessage::create([
             'session_id' => $session->id,

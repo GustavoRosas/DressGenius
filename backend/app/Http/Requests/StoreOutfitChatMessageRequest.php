@@ -14,7 +14,8 @@ class StoreOutfitChatMessageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'content' => ['required', 'string', 'max:2000'],
+            'content' => ['nullable', 'string', 'max:2000'],
+            'retry_message_id' => ['nullable', 'integer'],
         ];
     }
 }

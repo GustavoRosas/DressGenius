@@ -11,6 +11,7 @@ body {
 
 .dg-shell {
   height: 100vh;
+  height: 100dvh;
   display: grid;
   grid-template-rows: auto 1fr;
   width: 100%;
@@ -546,7 +547,9 @@ body {
   display: grid;
   place-items: center;
   padding: 24px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
   height: calc(100vh - 76px);
+  height: calc(100dvh - 76px);
   min-height: 0;
   box-sizing: border-box;
   overflow-y: auto;
