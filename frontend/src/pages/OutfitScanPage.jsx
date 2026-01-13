@@ -71,7 +71,7 @@ function ContextSelectField({
               top: menuPos.top,
               left: menuPos.left,
               width: menuPos.width,
-              maxHeight: `calc(100vh - ${menuPos.top}px - 16px)`,
+              maxHeight: `calc(100dvh - ${menuPos.top}px - 16px - env(safe-area-inset-bottom))`,
             }}
           >
             {options.map((opt) => (
