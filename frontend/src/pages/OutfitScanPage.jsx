@@ -32,7 +32,7 @@ function ContextSelectField({
 
   function choose(v) {
     onChoose(fieldKey, v)
-    window.requestAnimationFrame(() => inputRef.current?.focus())
+    window.requestAnimationFrame(() => inputRef.current?.blur())
   }
 
   return (
