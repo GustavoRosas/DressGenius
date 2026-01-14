@@ -35,7 +35,7 @@ body {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.dg-topbarSlot * {
+.dg-topbar {
   pointer-events: auto;
 }
 
@@ -649,6 +649,28 @@ body {
   border-color: rgba(255, 255, 255, 0.16);
 }
 
+.dg-iconBtnSuccess {
+  background: rgba(34, 197, 94, 0.14);
+  border-color: rgba(34, 197, 94, 0.28);
+  color: rgba(34, 197, 94, 0.95);
+}
+
+.dg-iconBtnSuccess:hover {
+  background: rgba(34, 197, 94, 0.18);
+  border-color: rgba(34, 197, 94, 0.34);
+}
+
+.dg-iconBtnDanger {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.22);
+  color: rgba(239, 68, 68, 0.95);
+}
+
+.dg-iconBtnDanger:hover {
+  background: rgba(239, 68, 68, 0.16);
+  border-color: rgba(239, 68, 68, 0.30);
+}
+
 .dg-iconBtn:focus {
   outline: none;
   border-color: rgba(99, 102, 241, 0.65);
@@ -899,6 +921,27 @@ body {
 .dg-historyList {
   display: grid;
   gap: 10px;
+}
+
+.dg-historyRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+}
+
+.dg-historyList > .dg-historyRow {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dg-historyList > .dg-historyRow:last-child {
+  border-bottom: 0;
+}
+
+.dg-historyText {
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .dg-historyItem {

@@ -8,6 +8,7 @@ use App\Models\OutfitAnalysisProcess;
 use App\Models\OutfitChatAttachment;
 use App\Models\OutfitChatMessage;
 use App\Models\OutfitChatSession;
+use App\Models\OutfitDetectedItem;
 use App\Services\GeminiChatService;
 use App\Services\GeminiVisionService;
 use App\Services\OutfitAnalysisService;
@@ -106,8 +107,17 @@ class OutfitChatController extends Controller
             $process->analysis = $analysisResult;
             $process->save();
         } catch (\Throwable $e) {
+            $status = 502;
+            $retryAfter = null;
+
+            $msg = (string) $e->getMessage();
+            if (str_contains($msg, 'Gemini quota exceeded (429)')) {
+                $status = 429;
+                $retryAfter = $this->parseRetryAfterSeconds($msg);
+            }
+
             $process->status = 'failed';
-            $process->error_status = 502;
+            $process->error_status = $status;
             $process->error_message = $e->getMessage();
             $process->completed_at = now();
             $process->save();
@@ -119,9 +129,10 @@ class OutfitChatController extends Controller
                 ]);
             }
             return response()->json([
-                'message' => 'Vision analysis failed. Please try again.',
+                'message' => $status === 429 ? 'AI quota exceeded. Please retry shortly.' : 'Vision analysis failed. Please try again.',
                 'process_id' => $process->id,
-            ], 502);
+                'retry_after' => $retryAfter,
+            ], $status);
         }
 
         $initialUserText = (string) ($request->input('message') ?: 'Analyze my outfit with the provided context.');
@@ -137,6 +148,15 @@ class OutfitChatController extends Controller
             'turns_used' => 1,
             'status' => 'active',
         ]);
+
+        $detectedItems = $this->persistDetectedItems(
+            userId: $user->id,
+            sourceType: 'chat_session',
+            sourceId: $session->id,
+            processId: $process->id,
+            vision: $visionResult,
+            coverImagePath: $path,
+        );
 
         $process->chat_session_id = $session->id;
         $process->status = 'completed';
@@ -204,6 +224,7 @@ class OutfitChatController extends Controller
 
         return response()->json([
             'session' => $this->serializeSession($session, $disk),
+            'detected_items' => $detectedItems,
             'process_id' => $process->id,
         ], 201);
     }
@@ -360,6 +381,19 @@ class OutfitChatController extends Controller
 
     private function serializeSession(OutfitChatSession $session, $disk): array
     {
+        $detectedItems = OutfitDetectedItem::query()
+            ->where('source_type', 'chat_session')
+            ->where('source_id', $session->id)
+            ->orderBy('id')
+            ->get()
+            ->map(fn ($row) => [
+                'id' => $row->id,
+                'label' => $row->label,
+                'category' => $row->category,
+                'colors' => $row->colors,
+            ])
+            ->all();
+
         return [
             'id' => $session->id,
             'title' => $session->title,
@@ -372,10 +406,64 @@ class OutfitChatController extends Controller
             'status' => $session->status,
             'image_url' => $disk->url($session->image_path),
             'created_at' => $session->created_at,
+            'detected_items' => $detectedItems,
             'messages' => $session->relationLoaded('messages')
                 ? $session->messages->map(fn ($m) => $this->serializeMessage($m))->all()
                 : [],
         ];
+    }
+
+    private function persistDetectedItems(int $userId, string $sourceType, int $sourceId, int $processId, array $vision, string $coverImagePath): array
+    {
+        $items = [];
+        $byCategory = (array) data_get($vision, 'items', []);
+
+        foreach ($byCategory as $category => $labels) {
+            foreach ((array) $labels as $label) {
+                $label = trim((string) $label);
+                if ($label === '') {
+                    continue;
+                }
+
+                $items[] = OutfitDetectedItem::create([
+                    'user_id' => $userId,
+                    'source_type' => $sourceType,
+                    'source_id' => $sourceId,
+                    'process_id' => $processId,
+                    'label' => $label,
+                    'category' => is_string($category) && $category !== '' ? $category : null,
+                    'colors' => data_get($vision, 'colors'),
+                    'meta' => [
+                        'cover_image_path' => $coverImagePath,
+                    ],
+                ]);
+            }
+        }
+
+        return array_map(fn ($row) => [
+            'id' => $row->id,
+            'label' => $row->label,
+            'category' => $row->category,
+            'colors' => $row->colors,
+        ], $items);
+    }
+
+    private function parseRetryAfterSeconds(string $message): ?int
+    {
+        if (preg_match('/Please retry in\s+([0-9.]+)\s*(ms|s)\./i', $message, $m) === 1) {
+            $n = (float) $m[1];
+            $unit = strtolower((string) $m[2]);
+            if ($unit === 'ms') {
+                return (int) max(1, (int) ceil($n / 1000));
+            }
+            return (int) max(1, (int) ceil($n));
+        }
+
+        if (preg_match('/"retryDelay"\s*:\s*"(\d+)s"/i', $message, $m) === 1) {
+            return (int) max(1, (int) $m[1]);
+        }
+
+        return null;
     }
 
     private function serializeMessage(OutfitChatMessage $m): array

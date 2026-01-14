@@ -1,7 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faArrowLeft, faChevronDown, faPlus, faImages, faCamera, faXmark, faPen } from '@fortawesome/free-solid-svg-icons'
+import {
+  faArrowLeft,
+  faChevronDown,
+  faChevronUp,
+  faPlus,
+  faCheck,
+  faCircleNotch,
+  faImages,
+  faCamera,
+  faXmark,
+  faPen,
+} from '@fortawesome/free-solid-svg-icons'
 
 function ContextSelectField({
   fieldKey,
@@ -100,6 +111,13 @@ function ContextSelectField({
 function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
   const turnsMax = 10
 
+  function sentenceCase(value) {
+    const s = String(value ?? '').trim()
+    if (!s) return ''
+    const lower = s.toLowerCase()
+    return lower.charAt(0).toUpperCase() + lower.slice(1)
+  }
+
   const contextOptions = {
     occasion: ['Work', 'Date night', 'Wedding', 'Party', 'Casual day', 'Interview', 'Gym'],
     weather: ['Hot', 'Warm', 'Mild', 'Cool', 'Cold', 'Rainy', 'Snowy'],
@@ -121,6 +139,14 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
 
   const [session, setSession] = useState(null)
   const [messages, setMessages] = useState([])
+  const [detectedItems, setDetectedItems] = useState([])
+  const [savedDetectedIds, setSavedDetectedIds] = useState(() => new Set())
+  const [savingDetectedIds, setSavingDetectedIds] = useState(() => new Set())
+  const [removingDetectedIds, setRemovingDetectedIds] = useState(() => new Set())
+  const [wardrobeCanonicalKeys, setWardrobeCanonicalKeys] = useState(() => new Set())
+  const [wardrobeKeyToId, setWardrobeKeyToId] = useState(() => new Map())
+  const [hoveredDetectedId, setHoveredDetectedId] = useState(null)
+  const [isDetectedOpen, setIsDetectedOpen] = useState(() => !sessionId)
 
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -194,6 +220,7 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
     async function loadSession() {
       setIsLoading(true)
       setError('')
+      setIsDetectedOpen(false)
       try {
         const res = await fetch(`${apiBase}/outfit-chats/${sessionId}`, {
           method: 'GET',
@@ -213,6 +240,7 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
         const s = data?.session ?? null
         setSession(s)
         setMessages(Array.isArray(s?.messages) ? s.messages : [])
+        setDetectedItems(Array.isArray(s?.detected_items) ? s.detected_items : [])
         setIntake({
           occasion: s?.intake?.occasion ?? '',
           weather: s?.intake?.weather ?? '',
@@ -233,10 +261,59 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
     }
   }, [apiBase, token, sessionId])
 
+  function canonicalKeyFor(label, category) {
+    const l = String(label ?? '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+    const c = String(category ?? '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+    return `${l}|${c}`
+  }
+
+  async function loadWardrobeKeys() {
+    if (!apiBase || !token) return
+    try {
+      const res = await fetch(`${apiBase}/wardrobe-items`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) return
+
+      const items = Array.isArray(data?.items) ? data.items : []
+      const keys = new Set()
+      const nextMap = new Map()
+      for (const it of items) {
+        const key = canonicalKeyFor(it?.label, it?.category)
+        keys.add(key)
+        if (it?.id) nextMap.set(key, it.id)
+      }
+      setWardrobeCanonicalKeys(keys)
+      setWardrobeKeyToId(nextMap)
+    } catch {
+      // ignore
+    }
+  }
+
+  useEffect(() => {
+    loadWardrobeKeys()
+  }, [apiBase, token])
+
   function resetChat() {
     setError('')
     setSession(null)
     setMessages([])
+    setDetectedItems([])
+    setSavedDetectedIds(new Set())
+    setSavingDetectedIds(new Set())
+    setRemovingDetectedIds(new Set())
+    setIsDetectedOpen(true)
     setComposer('')
     setSelectedFile(null)
     if (previewUrl) URL.revokeObjectURL(previewUrl)
@@ -248,6 +325,11 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
     setError('')
     setSession(null)
     setMessages([])
+    setDetectedItems([])
+    setSavedDetectedIds(new Set())
+    setSavingDetectedIds(new Set())
+    setRemovingDetectedIds(new Set())
+    setIsDetectedOpen(true)
     setSelectedFile(file)
 
     if (!file) {
@@ -301,6 +383,12 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
       const data = await res.json().catch(() => ({}))
       clearTimeout(timeout)
 
+      if (res.status === 429) {
+        const retryAfter = typeof data?.retry_after === 'number' ? data.retry_after : null
+        setError(retryAfter ? `${data?.message || 'AI quota exceeded.'} Retry in ${retryAfter}s.` : data?.message || 'AI quota exceeded. Please retry shortly.')
+        return
+      }
+
       if (!res.ok) {
         setError(data?.message || 'Analyze failed')
         return
@@ -309,12 +397,139 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
       const s = data?.session ?? null
       setSession(s)
       setMessages(Array.isArray(s?.messages) ? s.messages : [])
+      setDetectedItems(Array.isArray(data?.detected_items) ? data.detected_items : Array.isArray(s?.detected_items) ? s.detected_items : [])
+      setIsDetectedOpen(true)
       setComposer('')
       onNotify?.('info', `Chat started. Turns: ${s?.turns_used ?? 1}/${turnsMax}`)
     } catch {
       setError('Analyze failed')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  async function saveToWardrobe(detectedId) {
+    if (!apiBase || !token) return
+    if (!detectedId) return
+    if (savedDetectedIds.has(detectedId)) return
+    if (savingDetectedIds.has(detectedId)) return
+
+    setError('')
+    setSavingDetectedIds((prev) => {
+      const next = new Set(prev)
+      next.add(detectedId)
+      return next
+    })
+    try {
+      const res = await fetch(`${apiBase}/wardrobe-items`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ detected_item_id: detectedId }),
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data?.message || 'Failed to save wardrobe item')
+        return
+      }
+
+      setSavedDetectedIds((prev) => {
+        const next = new Set(prev)
+        next.add(detectedId)
+        return next
+      })
+
+      if (data?.item?.id) {
+        const key = canonicalKeyFor(data?.item?.label, data?.item?.category)
+        setWardrobeCanonicalKeys((prev) => {
+          const next = new Set(prev)
+          next.add(key)
+          return next
+        })
+        setWardrobeKeyToId((prev) => {
+          const next = new Map(prev)
+          next.set(key, data.item.id)
+          return next
+        })
+      }
+
+      await loadWardrobeKeys()
+
+      onNotify?.('info', data?.created ? 'Saved to wardrobe.' : 'Already in wardrobe.')
+    } catch {
+      setError('Failed to save wardrobe item')
+    } finally {
+      setSavingDetectedIds((prev) => {
+        const next = new Set(prev)
+        next.delete(detectedId)
+        return next
+      })
+    }
+  }
+
+  async function removeFromWardrobeByKey(canonicalKey, detectedId) {
+    if (!apiBase || !token) return
+    if (!canonicalKey) return
+    if (!detectedId) return
+
+    const wardrobeId = wardrobeKeyToId.get(canonicalKey)
+    if (!wardrobeId) return
+
+    if (removingDetectedIds.has(detectedId)) return
+
+    setRemovingDetectedIds((prev) => {
+      const next = new Set(prev)
+      next.add(detectedId)
+      return next
+    })
+
+    setError('')
+    try {
+      const res = await fetch(`${apiBase}/wardrobe-items/${wardrobeId}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      })
+
+      if (!res.ok && res.status !== 204) {
+        const data = await res.json().catch(() => ({}))
+        setError(data?.message || 'Failed to remove wardrobe item')
+        return
+      }
+
+      setWardrobeCanonicalKeys((prev) => {
+        const next = new Set(prev)
+        next.delete(canonicalKey)
+        return next
+      })
+      setWardrobeKeyToId((prev) => {
+        const next = new Map(prev)
+        next.delete(canonicalKey)
+        return next
+      })
+      setSavedDetectedIds((prev) => {
+        const next = new Set(prev)
+        next.delete(detectedId)
+        return next
+      })
+
+      setHoveredDetectedId((v) => (v === detectedId ? null : v))
+
+      onNotify?.('info', 'Removed from wardrobe.')
+    } catch {
+      setError('Failed to remove wardrobe item')
+    } finally {
+      setRemovingDetectedIds((prev) => {
+        const next = new Set(prev)
+        next.delete(detectedId)
+        return next
+      })
     }
   }
 
@@ -623,6 +838,80 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
 
           {canChat ? (
             <>
+              {Array.isArray(detectedItems) && detectedItems.length ? (
+                <div className="dg-scanBlock">
+                  <div className="dg-turnHeader">
+                    <div className="dg-turnTitle">Detected pieces</div>
+                    <button
+                      className="dg-iconBtn"
+                      type="button"
+                      aria-label={isDetectedOpen ? 'Collapse detected pieces' : 'Expand detected pieces'}
+                      onClick={() => setIsDetectedOpen((v) => !v)}
+                    >
+                      <FontAwesomeIcon icon={isDetectedOpen ? faChevronUp : faChevronDown} />
+                    </button>
+                  </div>
+                  <div className="dg-scanText">Save pieces you own to build your wardrobe.</div>
+
+                  <div className={isDetectedOpen ? 'dg-collapse dg-collapseOpen' : 'dg-collapse'} aria-hidden={!isDetectedOpen}>
+                    <div className="dg-collapseInner">
+                      <div className="dg-historyList dg-detectedList">
+                        {detectedItems.map((it) => {
+                          const key = canonicalKeyFor(it?.label, it?.category)
+                          const alreadySaved = wardrobeCanonicalKeys.has(key) || savedDetectedIds.has(it.id)
+                          const isSaving = savingDetectedIds.has(it.id)
+                          const isRemoving = removingDetectedIds.has(it.id)
+                          const isHoveringSaved = alreadySaved && hoveredDetectedId === it.id
+
+                          return (
+                            <div key={it.id} className="dg-historyRow">
+                              <div className="dg-historyText">
+                                <div className="dg-historyTitle">{sentenceCase(it.label)}</div>
+                                {it.category ? <div className="dg-historyMeta">{sentenceCase(it.category)}</div> : null}
+                              </div>
+
+                              <button
+                                className={alreadySaved ? isHoveringSaved ? 'dg-iconBtn dg-iconBtnDanger' : 'dg-iconBtn dg-iconBtnSuccess' : 'dg-iconBtn'}
+                                type="button"
+                                title={alreadySaved ? isHoveringSaved ? 'Remove from wardrobe' : 'Saved to wardrobe' : 'Save to wardrobe'}
+                                aria-label={alreadySaved ? isHoveringSaved ? 'Remove from wardrobe' : 'Saved to wardrobe' : isSaving ? 'Saving to wardrobe' : 'Save to wardrobe'}
+                                disabled={isLoading || isSending || isSaving || isRemoving}
+                                onMouseEnter={() => {
+                                  if (alreadySaved) setHoveredDetectedId(it.id)
+                                }}
+                                onMouseLeave={() => {
+                                  setHoveredDetectedId((v) => (v === it.id ? null : v))
+                                }}
+                                onClick={() => {
+                                  if (alreadySaved) removeFromWardrobeByKey(key, it.id)
+                                  else saveToWardrobe(it.id)
+                                }}
+                              >
+                                <FontAwesomeIcon
+                                  icon={isSaving || isRemoving ? faCircleNotch : alreadySaved ? isHoveringSaved ? faXmark : faCheck : faPlus}
+                                  spin={isSaving || isRemoving}
+                                />
+                              </button>
+                            </div>
+                          )
+                        })}
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        <button
+                          className="dg-iconBtn"
+                          type="button"
+                          aria-label="Collapse detected pieces"
+                          onClick={() => setIsDetectedOpen(false)}
+                        >
+                          <FontAwesomeIcon icon={faChevronUp} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
+
               <div className="dg-scanBlock">
                 <div className="dg-turnHeader">
                   <div className="dg-turnTitle">Chat session</div>

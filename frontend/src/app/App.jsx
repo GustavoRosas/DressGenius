@@ -7,6 +7,7 @@ import AIPreferencesPage from '../pages/AIPreferencesPage'
 import PlaceholderPage from '../pages/PlaceholderPage'
 import OutfitChatHistoryPage from '../pages/OutfitChatHistoryPage'
 import ProfilePage from '../pages/ProfilePage'
+import WardrobePage from '../pages/WardrobePage'
 import logo from '../assets/dressgenius.svg'
 
 function App() {
@@ -131,7 +132,7 @@ function App() {
     }
 
     if (key === 'closet') {
-      return <PlaceholderPage title="My Closet" subtitle="Your saved wardrobe items." onBack={() => setActiveView('home')} />
+      return <WardrobePage apiBase={apiBase} token={token} onNotify={notify} onBack={() => setActiveView('home')} />
     }
 
     if (key === 'history') {

@@ -5,6 +5,7 @@ use App\Http\Controllers\AIPreferencesController;
 use App\Http\Controllers\OutfitChatController;
 use App\Http\Controllers\OutfitScanController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\WardrobeItemController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', fn () => response()->json(['status' => 'ok']));
@@ -29,4 +30,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/outfit-chats/{session}/messages', [OutfitChatController::class, 'storeMessage']);
 
     Route::post('/outfit-scans', [OutfitScanController::class, 'store']);
+
+    Route::get('/wardrobe-items', [WardrobeItemController::class, 'index']);
+    Route::post('/wardrobe-items', [WardrobeItemController::class, 'store']);
+    Route::delete('/wardrobe-items/{wardrobeItem}', [WardrobeItemController::class, 'destroy']);
 });
