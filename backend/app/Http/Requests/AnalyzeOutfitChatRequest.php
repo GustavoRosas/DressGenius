@@ -21,6 +21,7 @@ class AnalyzeOutfitChatRequest extends FormRequest
             'intake.dress_code' => ['nullable', 'string', 'max:120'],
             'intake.budget' => ['nullable', 'string', 'max:120'],
             'intake.desired_vibe' => ['nullable', 'string', 'max:120'],
+            'intake.custom_note' => ['nullable', 'string', 'max:64'],
             'message' => ['nullable', 'string', 'max:2000'],
         ];
     }

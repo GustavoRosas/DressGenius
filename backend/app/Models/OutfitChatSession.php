@@ -16,6 +16,7 @@ class OutfitChatSession extends Model
         'intake',
         'vision',
         'analysis',
+        'feedback',
         'score',
         'turns_used',
         'status',
@@ -25,6 +26,7 @@ class OutfitChatSession extends Model
         'intake' => 'array',
         'vision' => 'array',
         'analysis' => 'array',
+        'feedback' => 'array',
         'score' => 'integer',
         'turns_used' => 'integer',
     ];

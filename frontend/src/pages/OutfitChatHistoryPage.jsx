@@ -104,6 +104,10 @@ function OutfitChatHistoryPage({ apiBase, token, onOpenSession, onBack }) {
                   {s.image_url ? <img className="dg-historyThumb" src={s.image_url} alt="Outfit" /> : <div className="dg-historyThumb" />}
                   <div className="dg-historyMeta">
                     <div className="dg-historyTitle">{s.title || `Outfit Chat #${s.id}`}</div>
+                    <div className="dg-historyBadges">
+                      {s.status === 'closed' ? <span className="dg-badgeSmall">Finished</span> : null}
+                      {s.has_feedback ? <span className="dg-badgeSmall dg-badgeSmallAccent">Rated</span> : null}
+                    </div>
                     <div className="dg-historySub">
                       {typeof s.score === 'number' ? `Score: ${s.score}` : 'Score: —'}
                       {' · '}

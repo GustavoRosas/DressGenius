@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\AnalyzeOutfitChatRequest;
+use App\Http\Requests\StoreOutfitChatFeedbackRequest;
 use App\Http\Requests\StoreOutfitChatMessageRequest;
 use App\Models\OutfitAnalysisProcess;
 use App\Models\OutfitChatAttachment;
@@ -39,6 +40,7 @@ class OutfitChatController extends Controller
                 'score' => $s->score,
                 'turns_used' => $s->turns_used,
                 'status' => $s->status,
+                'has_feedback' => is_array($s->feedback) && count($s->feedback) > 0,
                 'image_url' => $disk->url($s->image_path),
                 'created_at' => $s->created_at,
             ]),
@@ -229,12 +231,62 @@ class OutfitChatController extends Controller
         ], 201);
     }
 
+    public function finish(Request $request, OutfitChatSession $session)
+    {
+        $userId = $request->user()->id;
+        if ($session->user_id !== $userId) {
+            return response()->json(['message' => 'Not found.'], 404);
+        }
+
+        if ($session->status !== 'closed') {
+            $session->status = 'closed';
+            $session->save();
+        }
+
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+
+        return response()->json([
+            'session' => $this->serializeSession($session->fresh(['messages' => fn ($q) => $q->orderBy('id'), 'attachments']), $disk),
+        ]);
+    }
+
+    public function storeFeedback(StoreOutfitChatFeedbackRequest $request, OutfitChatSession $session)
+    {
+        $userId = $request->user()->id;
+        if ($session->user_id !== $userId) {
+            return response()->json(['message' => 'Not found.'], 404);
+        }
+
+        $session->feedback = [
+            'ratings' => (array) $request->input('ratings', []),
+            'comment' => $request->input('comment'),
+            'submitted_at' => now()->toISOString(),
+        ];
+        $session->save();
+
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+
+        return response()->json([
+            'session' => $this->serializeSession($session->fresh(['messages' => fn ($q) => $q->orderBy('id'), 'attachments']), $disk),
+        ]);
+    }
+
     public function storeMessage(OutfitChatSession $session, StoreOutfitChatMessageRequest $request, GeminiChatService $chat)
     {
         $userId = $request->user()->id;
         $aiPreferences = (array) ($request->user()->ai_preferences ?? []);
         if ($session->user_id !== $userId) {
             return response()->json(['message' => 'Not found.'], 404);
+        }
+
+        if ($session->status === 'closed') {
+            return response()->json([
+                'message' => 'This chat session is closed.',
+                'turns_used' => $session->turns_used,
+                'turns_max' => self::MAX_TURNS,
+            ], 429);
         }
 
         if ($session->turns_used >= self::MAX_TURNS) {
@@ -400,6 +452,7 @@ class OutfitChatController extends Controller
             'intake' => $session->intake,
             'vision' => $session->vision,
             'analysis' => $session->analysis,
+            'feedback' => $session->feedback,
             'score' => $session->score,
             'turns_used' => $session->turns_used,
             'turns_max' => self::MAX_TURNS,

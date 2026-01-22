@@ -31,6 +31,7 @@ You will receive JSON context including:
 Write a helpful response in plain text.
 Rules:
 - Be concise but actionable.
+- Never cut off mid-sentence. If you are running out of space, finish the current sentence and provide a brief closing.
 - Respect the user's intake constraints.
 - Use ai_preferences as behavior controls:
   - tone: 0 = blunt/straight, 100 = warm/encouraging
@@ -56,7 +57,7 @@ PROMPT;
             ],
             'generationConfig' => [
                 'temperature' => 0.6,
-                'maxOutputTokens' => 1000,
+                'maxOutputTokens' => 2048,
             ],
         ];
 

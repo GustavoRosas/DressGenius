@@ -28,6 +28,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/outfit-chats/{session}', [OutfitChatController::class, 'show']);
     Route::post('/outfit-chats/analyze', [OutfitChatController::class, 'analyze']);
     Route::post('/outfit-chats/{session}/messages', [OutfitChatController::class, 'storeMessage']);
+    Route::post('/outfit-chats/{session}/finish', [OutfitChatController::class, 'finish']);
+    Route::post('/outfit-chats/{session}/feedback', [OutfitChatController::class, 'storeFeedback']);
 
     Route::post('/outfit-scans', [OutfitScanController::class, 'store']);
 

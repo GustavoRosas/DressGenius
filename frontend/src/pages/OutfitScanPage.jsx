@@ -118,6 +118,37 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
     return lower.charAt(0).toUpperCase() + lower.slice(1)
   }
 
+  function renderChatContent(content) {
+    const text = String(content ?? '')
+    const lines = text.split('\n')
+
+    return lines.map((line, lineIdx) => {
+      const parts = []
+      const re = /\*\*(.+?)\*\*/g
+      let lastIndex = 0
+      let m
+      while ((m = re.exec(line)) !== null) {
+        if (m.index > lastIndex) {
+          parts.push(line.slice(lastIndex, m.index))
+        }
+        parts.push(
+          <strong key={`b-${lineIdx}-${m.index}`}>{m[1]}</strong>
+        )
+        lastIndex = m.index + m[0].length
+      }
+      if (lastIndex < line.length) {
+        parts.push(line.slice(lastIndex))
+      }
+
+      return (
+        <span key={`l-${lineIdx}`}>
+          {parts.length ? parts : line}
+          {lineIdx < lines.length - 1 ? <br /> : null}
+        </span>
+      )
+    })
+  }
+
   const contextOptions = {
     occasion: ['Work', 'Date night', 'Wedding', 'Party', 'Casual day', 'Interview', 'Gym'],
     weather: ['Hot', 'Warm', 'Mild', 'Cool', 'Cold', 'Rainy', 'Snowy'],
@@ -135,6 +166,7 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
     dress_code: '',
     budget: '',
     desired_vibe: '',
+    custom_note: '',
   })
 
   const [session, setSession] = useState(null)
@@ -151,6 +183,18 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isSending, setIsSending] = useState(false)
+  const [isFinishing, setIsFinishing] = useState(false)
+  const [activePanel, setActivePanel] = useState('chat')
+  const [feedback, setFeedback] = useState(() => ({
+    ratings: {
+      helpfulness: 5,
+      clarity: 5,
+      relevance: 5,
+      tone: 5,
+    },
+    comment: '',
+  }))
+  const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false)
   const [composer, setComposer] = useState('')
 
   const [isPhotoPickerOpen, setIsPhotoPickerOpen] = useState(false)
@@ -241,12 +285,25 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
         setSession(s)
         setMessages(Array.isArray(s?.messages) ? s.messages : [])
         setDetectedItems(Array.isArray(s?.detected_items) ? s.detected_items : [])
+        if (s?.feedback && typeof s.feedback === 'object') {
+          setFeedback({
+            ratings: {
+              helpfulness: Number(s.feedback?.ratings?.helpfulness ?? 5),
+              clarity: Number(s.feedback?.ratings?.clarity ?? 5),
+              relevance: Number(s.feedback?.ratings?.relevance ?? 5),
+              tone: Number(s.feedback?.ratings?.tone ?? 5),
+            },
+            comment: String(s.feedback?.comment ?? ''),
+          })
+        }
+        setActivePanel(s?.status === 'closed' && !s?.feedback ? 'rate' : 'chat')
         setIntake({
           occasion: s?.intake?.occasion ?? '',
           weather: s?.intake?.weather ?? '',
           dress_code: s?.intake?.dress_code ?? '',
           budget: s?.intake?.budget ?? '',
           desired_vibe: s?.intake?.desired_vibe ?? '',
+          custom_note: s?.intake?.custom_note ?? '',
         })
       } catch {
         setError('Failed to load chat')
@@ -301,6 +358,85 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
     }
   }
 
+  async function finishAnalysis() {
+    if (!session?.id) return
+    if (!apiBase || !token) return
+    if (isFinishing) return
+    if (session?.status === 'closed') return
+
+    setIsFinishing(true)
+    setError('')
+    try {
+      const res = await fetch(`${apiBase}/outfit-chats/${session.id}/finish`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data?.message || 'Failed to finish analysis')
+        return
+      }
+
+      const nextSession = data?.session ?? null
+      if (nextSession) {
+        setSession(nextSession)
+        setMessages(Array.isArray(nextSession?.messages) ? nextSession.messages : [])
+      } else {
+        setSession((s) => (s ? { ...s, status: 'closed' } : s))
+      }
+
+      setActivePanel('rate')
+      onNotify?.('info', 'Analysis finished. Please rate the conversation.')
+    } catch {
+      setError('Failed to finish analysis')
+    } finally {
+      setIsFinishing(false)
+    }
+  }
+
+  async function submitFeedback() {
+    if (!session?.id) return
+    if (!apiBase || !token) return
+    if (isSubmittingFeedback) return
+
+    setIsSubmittingFeedback(true)
+    setError('')
+    try {
+      const res = await fetch(`${apiBase}/outfit-chats/${session.id}/feedback`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ratings: feedback.ratings,
+          comment: feedback.comment,
+        }),
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data?.message || 'Failed to submit feedback')
+        return
+      }
+
+      const nextSession = data?.session ?? null
+      if (nextSession) setSession(nextSession)
+
+      onNotify?.('info', 'Thanks for your feedback!')
+      setActivePanel('chat')
+    } catch {
+      setError('Failed to submit feedback')
+    } finally {
+      setIsSubmittingFeedback(false)
+    }
+  }
+
   useEffect(() => {
     loadWardrobeKeys()
   }, [apiBase, token])
@@ -318,7 +454,7 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
     setSelectedFile(null)
     if (previewUrl) URL.revokeObjectURL(previewUrl)
     setPreviewUrl('')
-    setIntake({ occasion: '', weather: '', dress_code: '', budget: '', desired_vibe: '' })
+    setIntake({ occasion: '', weather: '', dress_code: '', budget: '', desired_vibe: '', custom_note: '' })
   }
 
   function onPickFile(file) {
@@ -366,6 +502,7 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
       form.append('intake[dress_code]', intake.dress_code || '')
       form.append('intake[budget]', intake.budget || '')
       form.append('intake[desired_vibe]', intake.desired_vibe || '')
+      form.append('intake[custom_note]', intake.custom_note || '')
 
       const controller = new AbortController()
       const timeout = setTimeout(() => controller.abort(), 60000)
@@ -583,7 +720,11 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
 
   const canChat = Boolean(session?.id)
   const turnsUsed = session?.turns_used ?? 0
-  const isLimitReached = turnsUsed >= turnsMax || session?.status === 'closed'
+  const isTurnLimitReached = turnsUsed >= turnsMax
+  const isSessionClosed = session?.status === 'closed'
+  const isLimitReached = isTurnLimitReached || isSessionClosed
+  const hasFeedback = Boolean(session?.feedback)
+  const isFinishedAndRated = isSessionClosed && hasFeedback
 
   function setContextField(key, value) {
     setIntake((s) => ({ ...s, [key]: value }))
@@ -623,7 +764,7 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
             <div className="dg-scanText">You can provide context to help the AI understand the outfit better and consider.</div>
 
             <button className="dg-btn dg-btnGhost" type="button" onClick={() => setIsContextOpen((v) => !v)}>
-              {isContextOpen ? 'Hide context' : 'Edit context'}
+              {isContextOpen ? 'Hide context' : sessionId ? 'Show context' : 'Edit context'}
             </button>
 
             <div className={isContextOpen ? 'dg-collapse dg-collapseOpen' : 'dg-collapse'} aria-hidden={!isContextOpen}>
@@ -713,6 +854,24 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
                     setOpenContextField(null)
                   }}
                 />
+
+                <div style={{ marginTop: 12 }}>
+                  <div className="dg-scanText" style={{ marginBottom: 8 }}>
+                    Custom note (optional): add any extra detail you want DressGenius to consider (max 64 characters).
+                  </div>
+                  <input
+                    className="dg-input"
+                    type="text"
+                    value={intake.custom_note}
+                    maxLength={64}
+                    placeholder="E.g. 'No heels', 'I hate tight waistbands', 'Prefer vegan leather'"
+                    disabled={canChat || isLoading || isSending}
+                    onChange={(e) => {
+                      const v = e.target.value
+                      setContextField('custom_note', v)
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -916,7 +1075,7 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
                 <div className="dg-turnHeader">
                   <div className="dg-turnTitle">Chat session</div>
                   <div className={isLimitReached ? 'dg-turnBadge dg-turnBadgeClosed' : 'dg-turnBadge'}>
-                    {isLimitReached ? 'Limit reached' : 'Active'}
+                    {isTurnLimitReached ? 'Limit reached' : isSessionClosed ? 'Finished' : 'Active'}
                   </div>
                 </div>
                 <div className="dg-turnMeta">Turns used: {turnsUsed}/{turnsMax}</div>
@@ -925,33 +1084,132 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
                 </div>
               </div>
 
-              <div className="dg-chatThread">
-                {messages.map((m) => (
-                  <div key={m.id ?? `${m.role}-${m.created_at}`} className={m.role === 'user' ? 'dg-chatMsg dg-chatMsgUser' : 'dg-chatMsg dg-chatMsgAssistant'}>
-                    <div className="dg-chatRole">{m.role === 'user' ? 'You' : 'AI'}</div>
-                    <div className="dg-chatText">{m.content}</div>
+              {activePanel === 'rate' ? (
+                <div className="dg-scanBlock">
+                  <div className="dg-scanTitle">Rate this conversation</div>
+                  <div className="dg-scanText">Help improve DressGenius: rate the chat and optionally leave a note.</div>
+
+                  {(
+                    [
+                      ['helpfulness', 'Helpfulness'],
+                      ['clarity', 'Clarity'],
+                      ['relevance', 'Relevance'],
+                      ['tone', 'Tone'],
+                    ]
+                  ).map(([key, label]) => (
+                    <div key={key} className="dg-ratingRow">
+                      <div className="dg-ratingLabel">{label}</div>
+                      <div className="dg-ratingPills">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <button
+                            key={n}
+                            type="button"
+                            className={feedback.ratings[key] === n ? 'dg-ratingPill dg-ratingPillActive' : 'dg-ratingPill'}
+                            disabled={isSubmittingFeedback}
+                            onClick={() =>
+                              setFeedback((s) => ({
+                                ...s,
+                                ratings: { ...s.ratings, [key]: n },
+                              }))
+                            }
+                          >
+                            {n}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  <textarea
+                    className="dg-input dg-chatInput"
+                    rows={3}
+                    placeholder="Optional note (what was good/bad?)"
+                    value={feedback.comment}
+                    disabled={isSubmittingFeedback}
+                    onChange={(e) => setFeedback((s) => ({ ...s, comment: e.target.value }))}
+                  />
+
+                  <button className="dg-btn dg-btnPrimary" type="button" onClick={submitFeedback} disabled={isSubmittingFeedback}>
+                    {isSubmittingFeedback ? 'Submitting…' : hasFeedback ? 'Update rating' : 'Submit rating'}
+                  </button>
+
+                  <button className="dg-btn dg-btnGhost" type="button" onClick={() => setActivePanel('chat')} disabled={isSubmittingFeedback}>
+                    Back to chat
+                  </button>
+                </div>
+              ) : isFinishedAndRated ? (
+                <div className="dg-scanBlock">
+                  <div className="dg-scanTitle">Your feedback</div>
+                  <div className="dg-scanText">Thanks for rating this conversation.</div>
+
+                  <div className="dg-ratingRow">
+                    <div className="dg-ratingLabel">Helpfulness</div>
+                    <div className="dg-scanText">{session?.feedback?.ratings?.helpfulness ?? '—'}/5</div>
                   </div>
-                ))}
-                <div ref={chatEndRef} />
-              </div>
+                  <div className="dg-ratingRow">
+                    <div className="dg-ratingLabel">Clarity</div>
+                    <div className="dg-scanText">{session?.feedback?.ratings?.clarity ?? '—'}/5</div>
+                  </div>
+                  <div className="dg-ratingRow">
+                    <div className="dg-ratingLabel">Relevance</div>
+                    <div className="dg-scanText">{session?.feedback?.ratings?.relevance ?? '—'}/5</div>
+                  </div>
+                  <div className="dg-ratingRow">
+                    <div className="dg-ratingLabel">Tone</div>
+                    <div className="dg-scanText">{session?.feedback?.ratings?.tone ?? '—'}/5</div>
+                  </div>
 
-              <div className="dg-chatComposer">
-                <textarea
-                  className="dg-input dg-chatInput"
-                  rows={3}
-                  placeholder={isLimitReached ? 'Turn limit reached.' : 'Ask a follow-up question…'}
-                  value={composer}
-                  disabled={isLoading || isSending || isLimitReached}
-                  onChange={(e) => setComposer(e.target.value)}
-                />
-                <button className="dg-btn dg-btnPrimary" type="button" onClick={sendMessage} disabled={isLoading || isSending || isLimitReached || !composer.trim()}>
-                  {isSending ? 'Sending…' : 'Send'}
-                </button>
-              </div>
+                  {session?.feedback?.comment ? (
+                    <div style={{ marginTop: 12 }}>
+                      <div className="dg-ratingLabel" style={{ marginBottom: 6 }}>Comment</div>
+                      <div className="dg-scanText">{session.feedback.comment}</div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <>
+                  <div className="dg-chatThread">
+                    {messages.map((m) => (
+                      <div key={m.id ?? `${m.role}-${m.created_at}`} className={m.role === 'user' ? 'dg-chatMsg dg-chatMsgUser' : 'dg-chatMsg dg-chatMsgAssistant'}>
+                        <div className="dg-chatRole">{m.role === 'user' ? 'You' : 'DressGenius'}</div>
+                        <div className="dg-chatText">{renderChatContent(m.content)}</div>
+                      </div>
+                    ))}
+                    <div ref={chatEndRef} />
+                  </div>
 
-              <button className="dg-btn dg-btnGhost" type="button" onClick={resetChat} disabled={isLoading || isSending}>
-                New chat
-              </button>
+                  {!isSessionClosed ? (
+                    <div className="dg-chatComposer">
+                      <textarea
+                        className="dg-input dg-chatInput"
+                        rows={3}
+                        placeholder={isLimitReached ? 'Turn limit reached.' : 'Ask a follow-up question…'}
+                        value={composer}
+                        disabled={isLoading || isSending || isFinishing || isLimitReached}
+                        onChange={(e) => setComposer(e.target.value)}
+                      />
+                      <button className="dg-btn dg-btnPrimary" type="button" onClick={sendMessage} disabled={isLoading || isSending || isFinishing || isLimitReached || !composer.trim()}>
+                        {isSending ? 'Sending…' : 'Send'}
+                      </button>
+                      <button className="dg-btn dg-btnFinish" type="button" onClick={finishAnalysis} disabled={isLoading || isSending || isFinishing || isLimitReached}>
+                        {isFinishing ? 'Finishing…' : 'Finish analysis'}
+                      </button>
+                      <button className="dg-btn dg-btnGhost" type="button" onClick={resetChat} disabled={isLoading || isSending}>
+                        New chat
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="dg-chatComposer">
+                      <button className="dg-btn dg-btnGhost" type="button" onClick={() => setActivePanel('rate')} disabled={isLoading || isSending || isFinishing || hasFeedback}>
+                        {hasFeedback ? 'Already rated' : 'Rate this conversation'}
+                      </button>
+                      <button className="dg-btn dg-btnGhost" type="button" onClick={resetChat} disabled={isLoading || isSending}>
+                        New chat
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
             </>
           ) : null}
         </div>
