@@ -6,6 +6,12 @@ function OutfitChatHistoryPage({ apiBase, token, onOpenSession, onBack }) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [sessions, setSessions] = useState([])
+  const [page, setPage] = useState(1)
+
+  const pageSize = 5
+  const totalPages = Math.max(1, Math.ceil(sessions.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const pageSessions = sessions.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
   useEffect(() => {
     if (!apiBase || !token) return
@@ -32,6 +38,7 @@ function OutfitChatHistoryPage({ apiBase, token, onOpenSession, onBack }) {
 
         if (!mounted) return
         setSessions(Array.isArray(data?.sessions) ? data.sessions : [])
+        setPage(1)
       } catch {
         setError('Failed to load history')
       } finally {
@@ -93,7 +100,7 @@ function OutfitChatHistoryPage({ apiBase, token, onOpenSession, onBack }) {
         {hasSessions ? (
           <div className="dg-scanBlock">
             <div className="dg-historyList">
-              {sessions.map((s) => (
+              {pageSessions.map((s) => (
                 <button
                   key={s.id}
                   className="dg-historyItem"
@@ -117,6 +124,32 @@ function OutfitChatHistoryPage({ apiBase, token, onOpenSession, onBack }) {
                 </button>
               ))}
             </div>
+
+            {totalPages > 1 ? (
+              <div style={{ display: 'grid', gap: 10, marginTop: 12 }}>
+                <div className="dg-scanText" style={{ textAlign: 'center' }}>
+                  Page {currentPage} of {totalPages}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <button
+                    className="dg-btn dg-btnGhost"
+                    type="button"
+                    disabled={isLoading || currentPage <= 1}
+                    onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    className="dg-btn dg-btnGhost"
+                    type="button"
+                    disabled={isLoading || currentPage >= totalPages}
+                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  >
+                    Next
+                  </button>
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
