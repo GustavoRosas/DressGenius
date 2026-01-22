@@ -120,6 +120,53 @@ class WardrobeItemController extends Controller
         ], $item->wasRecentlyCreated ? 201 : 200);
     }
 
+    public function update(Request $request, WardrobeItem $wardrobeItem)
+    {
+        $userId = $request->user()->id;
+        if ($wardrobeItem->user_id !== $userId) {
+            return response()->json(['message' => 'Wardrobe item not found.'], 404);
+        }
+
+        $label = (string) $request->input('label', '');
+        $label = trim($label);
+        if ($label === '') {
+            return response()->json(['message' => 'label is required.'], 422);
+        }
+        if (mb_strlen($label) > 64) {
+            return response()->json(['message' => 'label must be at most 64 characters.'], 422);
+        }
+
+        $category = $wardrobeItem->category ? (string) $wardrobeItem->category : null;
+        $canonicalKey = $this->canonicalKey($label, $category);
+
+        $duplicate = WardrobeItem::query()
+            ->where('user_id', $userId)
+            ->where('canonical_key', $canonicalKey)
+            ->where('id', '!=', $wardrobeItem->id)
+            ->exists();
+        if ($duplicate) {
+            return response()->json(['message' => 'An item with this name already exists in your closet.'], 409);
+        }
+
+        $wardrobeItem->label = $label;
+        $wardrobeItem->canonical_key = $canonicalKey;
+        $wardrobeItem->save();
+
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+
+        return response()->json([
+            'item' => [
+                'id' => $wardrobeItem->id,
+                'label' => $wardrobeItem->label,
+                'category' => $wardrobeItem->category,
+                'colors' => $wardrobeItem->colors,
+                'cover_image_url' => $wardrobeItem->cover_image_path ? $disk->url($wardrobeItem->cover_image_path) : null,
+                'created_at' => $wardrobeItem->created_at,
+            ],
+        ]);
+    }
+
     public function destroy(Request $request, WardrobeItem $wardrobeItem)
     {
         $userId = $request->user()->id;

@@ -14,6 +14,10 @@ import {
   faBagShopping,
   faGlasses,
   faGem,
+  faXmark,
+  faCircleNotch,
+  faPen,
+  faCheck,
 } from '@fortawesome/free-solid-svg-icons'
 
 function WardrobePage({ apiBase, token, onBack, onNotify }) {
@@ -21,6 +25,10 @@ function WardrobePage({ apiBase, token, onBack, onNotify }) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [activeCategory, setActiveCategory] = useState(null)
+  const [deletingId, setDeletingId] = useState(null)
+  const [editingId, setEditingId] = useState(null)
+  const [editValue, setEditValue] = useState('')
+  const [savingId, setSavingId] = useState(null)
 
   function sentenceCase(value) {
     const s = String(value ?? '').trim()
@@ -127,6 +135,171 @@ function WardrobePage({ apiBase, token, onBack, onNotify }) {
     return found ? found[1] : []
   }, [activeCategory, grouped])
 
+  async function removeNow(item) {
+    if (!item?.id) return
+    if (!apiBase || !token) return
+    if (deletingId) return
+
+    setError('')
+    setDeletingId(item.id)
+    try {
+      const res = await fetch(`${apiBase}/wardrobe-items/${item.id}`, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+        },
+      })
+
+      if (!res.ok && res.status !== 204) {
+        const data = await res.json().catch(() => ({}))
+        setError(data?.message || 'Failed to remove item')
+        return
+      }
+
+      setItems((prev) => prev.filter((x) => x?.id !== item.id))
+      onNotify?.('info', 'Removed from closet.')
+    } catch {
+      setError('Failed to remove item')
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
+  function startEdit(item) {
+    setError('')
+    setEditingId(item.id)
+    setEditValue(String(item.label ?? ''))
+  }
+
+  function cancelEdit() {
+    setEditingId(null)
+    setEditValue('')
+  }
+
+  async function saveEdit(item) {
+    if (!item?.id) return
+    if (!apiBase || !token) return
+    if (savingId) return
+
+    const nextLabel = editValue.trim()
+    if (!nextLabel) {
+      setError('Name is required.')
+      return
+    }
+    if (nextLabel.length > 64) {
+      setError('Name must be at most 64 characters.')
+      return
+    }
+
+    setSavingId(item.id)
+    setError('')
+    try {
+      const res = await fetch(`${apiBase}/wardrobe-items/${item.id}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ label: nextLabel }),
+      })
+
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        setError(data?.message || 'Failed to rename item')
+        return
+      }
+
+      const updated = data?.item
+      if (updated?.id) {
+        setItems((prev) => prev.map((x) => (x?.id === updated.id ? { ...x, label: updated.label } : x)))
+      }
+      cancelEdit()
+      onNotify?.('info', 'Updated item name.')
+    } catch {
+      setError('Failed to rename item')
+    } finally {
+      setSavingId(null)
+    }
+  }
+
+  function renderItemRow(it) {
+    const isBusy = deletingId === it.id
+    const isEditing = editingId === it.id
+    const isSaving = savingId === it.id
+    return (
+      <div key={it.id} className="dg-historyRow">
+        <div className="dg-closetIcon" aria-hidden="true">
+          <FontAwesomeIcon icon={pickIcon(it)} />
+        </div>
+        <div className="dg-historyText">
+          {isEditing ? (
+            <input
+              className="dg-input"
+              type="text"
+              value={editValue}
+              maxLength={64}
+              disabled={isSaving}
+              onChange={(e) => setEditValue(e.target.value)}
+            />
+          ) : (
+            <div className="dg-historyTitle">{sentenceCase(it.label)}</div>
+          )}
+          {renderColors(it.colors) ? <div className="dg-historyMeta">{renderColors(it.colors)}</div> : null}
+        </div>
+
+        {isEditing ? (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              className="dg-iconBtn dg-iconBtnSuccess"
+              type="button"
+              title="Save name"
+              aria-label="Save name"
+              disabled={isSaving}
+              onClick={() => saveEdit(it)}
+            >
+              <FontAwesomeIcon icon={isSaving ? faCircleNotch : faCheck} spin={isSaving} />
+            </button>
+            <button
+              className="dg-iconBtn"
+              type="button"
+              title="Cancel"
+              aria-label="Cancel"
+              disabled={isSaving}
+              onClick={cancelEdit}
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              className="dg-iconBtn"
+              type="button"
+              title="Edit name"
+              aria-label="Edit name"
+              disabled={isBusy}
+              onClick={() => startEdit(it)}
+            >
+              <FontAwesomeIcon icon={faPen} />
+            </button>
+            <button
+              className="dg-iconBtn dg-iconBtnDanger"
+              type="button"
+              title="Remove this piece from your closet"
+              aria-label="Remove this piece from your closet"
+              disabled={isBusy}
+              onClick={() => removeNow(it)}
+            >
+              <FontAwesomeIcon icon={isBusy ? faCircleNotch : faXmark} spin={isBusy} />
+            </button>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   useEffect(() => {
     if (!apiBase || !token) return
     let mounted = true
@@ -190,17 +363,7 @@ function WardrobePage({ apiBase, token, onBack, onNotify }) {
             <div className="dg-scanBlock">
               <div className="dg-scanTitle">{sentenceCase(activeCategory)}</div>
               <div className="dg-historyList">
-                {activeCategoryItems.map((it) => (
-                  <div key={it.id} className="dg-historyRow">
-                    <div className="dg-closetIcon" aria-hidden="true">
-                      <FontAwesomeIcon icon={pickIcon(it)} />
-                    </div>
-                    <div className="dg-historyText">
-                      <div className="dg-historyTitle">{sentenceCase(it.label)}</div>
-                      {renderColors(it.colors) ? <div className="dg-historyMeta">{renderColors(it.colors)}</div> : null}
-                    </div>
-                  </div>
-                ))}
+                {activeCategoryItems.map((it) => renderItemRow(it))}
               </div>
 
               <button className="dg-btn dg-btnGhost" type="button" onClick={() => setActiveCategory(null)}>
@@ -212,17 +375,7 @@ function WardrobePage({ apiBase, token, onBack, onNotify }) {
               <div key={cat} className="dg-scanBlock">
                 <div className="dg-scanTitle">{sentenceCase(cat)}</div>
                 <div className="dg-historyList">
-                  {list.slice(0, 3).map((it) => (
-                    <div key={it.id} className="dg-historyRow">
-                      <div className="dg-closetIcon" aria-hidden="true">
-                        <FontAwesomeIcon icon={pickIcon(it)} />
-                      </div>
-                      <div className="dg-historyText">
-                        <div className="dg-historyTitle">{sentenceCase(it.label)}</div>
-                        {renderColors(it.colors) ? <div className="dg-historyMeta">{renderColors(it.colors)}</div> : null}
-                      </div>
-                    </div>
-                  ))}
+                  {list.slice(0, 3).map((it) => renderItemRow(it))}
                 </div>
 
                 {list.length > 3 ? (

@@ -667,8 +667,8 @@ body {
 }
 
 .dg-iconBtnDanger:hover {
-  background: rgba(239, 68, 68, 0.16);
-  border-color: rgba(239, 68, 68, 0.30);
+  background: rgba(239, 68, 68, 0.26);
+  border-color: rgba(239, 68, 68, 0.45);
 }
 
 .dg-iconBtn:focus {
@@ -1017,6 +1017,10 @@ body {
 .dg-historyText {
   min-width: 0;
   flex: 1 1 auto;
+}
+
+.dg-historyRow .dg-input {
+  padding: 10px 12px;
 }
 
 .dg-historyItem {

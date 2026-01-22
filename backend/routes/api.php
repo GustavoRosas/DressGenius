@@ -35,5 +35,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/wardrobe-items', [WardrobeItemController::class, 'index']);
     Route::post('/wardrobe-items', [WardrobeItemController::class, 'store']);
+    Route::patch('/wardrobe-items/{wardrobeItem}', [WardrobeItemController::class, 'update']);
     Route::delete('/wardrobe-items/{wardrobeItem}', [WardrobeItemController::class, 'destroy']);
 });
