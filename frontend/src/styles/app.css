@@ -993,6 +993,19 @@ body {
   padding: 10px 12px;
 }
 
+.dg-closetIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.88);
+}
+
 .dg-historyList > .dg-historyRow {
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -1035,6 +1048,34 @@ body {
 
 .dg-historyMeta {
   min-width: 0;
+}
+
+.dg-colorRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.dg-colorChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.18);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.dg-colorDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.20);
 }
 
 .dg-historyBadges {
