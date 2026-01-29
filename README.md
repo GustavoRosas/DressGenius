@@ -152,9 +152,16 @@ docker-compose exec backend php artisan migrate
 - [x] Frontend integration (React)
 - [x] Unit Tests - backend
 - [x] Unit Tests - frontend
-- [ ] Initial recommendation engine
-- [ ] Performance optimizations
-- [x] Basic CI/CD (tests + auto-deploy)
+- [x] CI/CD
+- [x] Profile
+- [x] Outfit Chat
+- [x] Outfit Scan
+- [x] My Closet
+- [x] AI Preferences
+- [x] AI Recommendations
+- [ ] Notifications
+- [ ] Friend System
+- [ ] Chat
 
 ---
 
