@@ -185,6 +185,7 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
   const [isSending, setIsSending] = useState(false)
   const [isFinishing, setIsFinishing] = useState(false)
   const [activePanel, setActivePanel] = useState('chat')
+  const [isChatOpen, setIsChatOpen] = useState(true)
   const [feedback, setFeedback] = useState(() => ({
     ratings: {
       helpfulness: 5,
@@ -297,6 +298,7 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
           })
         }
         setActivePanel(s?.status === 'closed' && !s?.feedback ? 'rate' : 'chat')
+        setIsChatOpen(true)
         setIntake({
           occasion: s?.intake?.occasion ?? '',
           weather: s?.intake?.weather ?? '',
@@ -536,6 +538,7 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
       setMessages(Array.isArray(s?.messages) ? s.messages : [])
       setDetectedItems(Array.isArray(data?.detected_items) ? data.detected_items : Array.isArray(s?.detected_items) ? s.detected_items : [])
       setIsDetectedOpen(true)
+      setIsChatOpen(true)
       setComposer('')
       onNotify?.('info', `Chat started. Turns: ${s?.turns_used ?? 1}/${turnsMax}`)
     } catch {
@@ -1082,7 +1085,29 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
                 <div className="dg-turnBar" aria-label="Turn usage">
                   <div className="dg-turnBarFill" style={{ width: `${Math.min(100, Math.round((turnsUsed / turnsMax) * 100))}%` }} />
                 </div>
+
+                {isSessionClosed ? (
+                  <button className="dg-btn dg-btnGhost" type="button" onClick={() => setIsChatOpen((v) => !v)}>
+                    {isChatOpen ? 'Hide chat' : 'Show chat'}
+                  </button>
+                ) : null}
               </div>
+
+              {isSessionClosed ? (
+                <div className={isChatOpen ? 'dg-collapse dg-collapseOpen' : 'dg-collapse'} aria-hidden={!isChatOpen}>
+                  <div className="dg-collapseInner">
+                    <div className="dg-chatThread">
+                      {messages.map((m) => (
+                        <div key={m.id ?? `${m.role}-${m.created_at}`} className={m.role === 'user' ? 'dg-chatMsg dg-chatMsgUser' : 'dg-chatMsg dg-chatMsgAssistant'}>
+                          <div className="dg-chatRole">{m.role === 'user' ? 'You' : 'DressGenius'}</div>
+                          <div className="dg-chatText">{renderChatContent(m.content)}</div>
+                        </div>
+                      ))}
+                      <div ref={chatEndRef} />
+                    </div>
+                  </div>
+                </div>
+              ) : null}
 
               {activePanel === 'rate' ? (
                 <div className="dg-scanBlock">
@@ -1166,49 +1191,53 @@ function OutfitScanPage({ apiBase, token, user, onNotify, sessionId, onBack }) {
                     </div>
                   ) : null}
                 </div>
-              ) : (
-                <>
-                  <div className="dg-chatThread">
-                    {messages.map((m) => (
-                      <div key={m.id ?? `${m.role}-${m.created_at}`} className={m.role === 'user' ? 'dg-chatMsg dg-chatMsgUser' : 'dg-chatMsg dg-chatMsgAssistant'}>
-                        <div className="dg-chatRole">{m.role === 'user' ? 'You' : 'DressGenius'}</div>
-                        <div className="dg-chatText">{renderChatContent(m.content)}</div>
-                      </div>
-                    ))}
-                    <div ref={chatEndRef} />
-                  </div>
+              ) : null}
 
-                  {!isSessionClosed ? (
-                    <div className="dg-chatComposer">
-                      <textarea
-                        className="dg-input dg-chatInput"
-                        rows={3}
-                        placeholder={isLimitReached ? 'Turn limit reached.' : 'Ask a follow-up question…'}
-                        value={composer}
-                        disabled={isLoading || isSending || isFinishing || isLimitReached}
-                        onChange={(e) => setComposer(e.target.value)}
-                      />
-                      <button className="dg-btn dg-btnPrimary" type="button" onClick={sendMessage} disabled={isLoading || isSending || isFinishing || isLimitReached || !composer.trim()}>
-                        {isSending ? 'Sending…' : 'Send'}
-                      </button>
-                      <button className="dg-btn dg-btnFinish" type="button" onClick={finishAnalysis} disabled={isLoading || isSending || isFinishing || isLimitReached}>
-                        {isFinishing ? 'Finishing…' : 'Finish analysis'}
-                      </button>
-                      <button className="dg-btn dg-btnGhost" type="button" onClick={resetChat} disabled={isLoading || isSending}>
-                        New chat
-                      </button>
+              {!isSessionClosed ? (
+                <div className={'dg-collapse dg-collapseOpen'} aria-hidden={false}>
+                  <div className="dg-collapseInner">
+                    <div className="dg-chatThread">
+                      {messages.map((m) => (
+                        <div key={m.id ?? `${m.role}-${m.created_at}`} className={m.role === 'user' ? 'dg-chatMsg dg-chatMsgUser' : 'dg-chatMsg dg-chatMsgAssistant'}>
+                          <div className="dg-chatRole">{m.role === 'user' ? 'You' : 'DressGenius'}</div>
+                          <div className="dg-chatText">{renderChatContent(m.content)}</div>
+                        </div>
+                      ))}
+                      <div ref={chatEndRef} />
                     </div>
-                  ) : (
-                    <div className="dg-chatComposer">
-                      <button className="dg-btn dg-btnGhost" type="button" onClick={() => setActivePanel('rate')} disabled={isLoading || isSending || isFinishing || hasFeedback}>
-                        {hasFeedback ? 'Already rated' : 'Rate this conversation'}
-                      </button>
-                      <button className="dg-btn dg-btnGhost" type="button" onClick={resetChat} disabled={isLoading || isSending}>
-                        New chat
-                      </button>
-                    </div>
-                  )}
-                </>
+                  </div>
+                </div>
+              ) : null}
+
+              {!isSessionClosed ? (
+                <div className="dg-chatComposer">
+                  <textarea
+                    className="dg-input dg-chatInput"
+                    rows={3}
+                    placeholder={isLimitReached ? 'Turn limit reached.' : 'Ask a follow-up question…'}
+                    value={composer}
+                    disabled={isLoading || isSending || isFinishing || isLimitReached}
+                    onChange={(e) => setComposer(e.target.value)}
+                  />
+                  <button className="dg-btn dg-btnPrimary" type="button" onClick={sendMessage} disabled={isLoading || isSending || isFinishing || isLimitReached || !composer.trim()}>
+                    {isSending ? 'Sending…' : 'Send'}
+                  </button>
+                  <button className="dg-btn dg-btnFinish" type="button" onClick={finishAnalysis} disabled={isLoading || isSending || isFinishing || isLimitReached}>
+                    {isFinishing ? 'Finishing…' : 'Finish analysis'}
+                  </button>
+                  <button className="dg-btn dg-btnGhost" type="button" onClick={resetChat} disabled={isLoading || isSending}>
+                    New chat
+                  </button>
+                </div>
+              ) : (
+                <div className="dg-chatComposer">
+                  <button className="dg-btn dg-btnGhost" type="button" onClick={() => setActivePanel('rate')} disabled={isLoading || isSending || isFinishing || hasFeedback}>
+                    {hasFeedback ? 'Already rated' : 'Rate this conversation'}
+                  </button>
+                  <button className="dg-btn dg-btnGhost" type="button" onClick={resetChat} disabled={isLoading || isSending}>
+                    New chat
+                  </button>
+                </div>
               )}
             </>
           ) : null}
