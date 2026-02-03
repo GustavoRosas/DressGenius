@@ -281,17 +281,17 @@ class OutfitChatController extends Controller
             return response()->json(['message' => 'Not found.'], 404);
         }
 
-        if ($session->status === 'closed') {
+        if ($session->turns_used >= self::MAX_TURNS) {
             return response()->json([
-                'message' => 'This chat session is closed.',
+                'message' => 'This chat has reached the 10-turn limit.',
                 'turns_used' => $session->turns_used,
                 'turns_max' => self::MAX_TURNS,
             ], 429);
         }
 
-        if ($session->turns_used >= self::MAX_TURNS) {
+        if ($session->status === 'closed') {
             return response()->json([
-                'message' => 'This chat has reached the 10-turn limit.',
+                'message' => 'This chat session is closed.',
                 'turns_used' => $session->turns_used,
                 'turns_max' => self::MAX_TURNS,
             ], 429);
