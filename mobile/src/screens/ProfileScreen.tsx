@@ -55,6 +55,7 @@ export function ProfileScreen() {
   const [savingProfile, setSavingProfile] = useState(false);
 
   // Password
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -74,10 +75,10 @@ export function ProfileScreen() {
     try {
       setLoadingProfile(true);
       const { data } = await api.get('/me');
-      const u = data.data ?? data;
+      const u = data.user ?? data.data ?? data;
       setName(u.name ?? '');
       setEmail(u.email ?? '');
-      setPhotoUrl(u.photo_url ?? u.avatar_url ?? null);
+      setPhotoUrl(u.profile_photo_url ?? u.photo_url ?? u.avatar_url ?? null);
       // Sync auth context
       if (token) {
         await signIn(token, { id: u.id, email: u.email, name: u.name });
@@ -294,42 +295,52 @@ export function ProfileScreen() {
           />
         </View>
 
-        {/* ── Password Card ── */}
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>{t('screens.profile.changePassword')}</Text>
-          <Input
-            label={t('screens.profile.currentPassword')}
-            value={currentPassword}
-            onChangeText={setCurrentPassword}
-            secureTextEntry
-          />
-          <Input
-            label={t('screens.profile.newPassword')}
-            value={newPassword}
-            onChangeText={(v) => {
-              setNewPassword(v);
-              setPasswordErrors((e) => ({ ...e, newPassword: undefined }));
-            }}
-            secureTextEntry
-            error={passwordErrors.newPassword}
-          />
-          <Input
-            label={t('screens.profile.confirmPassword')}
-            value={confirmPassword}
-            onChangeText={(v) => {
-              setConfirmPassword(v);
-              setPasswordErrors((e) => ({ ...e, confirmPassword: undefined }));
-            }}
-            secureTextEntry
-            error={passwordErrors.confirmPassword}
-          />
-          <Button
-            title={t('screens.profile.changePassword')}
-            variant="outline"
-            onPress={handleChangePassword}
-            loading={savingPassword}
-          />
-        </View>
+        {/* ── Password Card (collapsible) ── */}
+        <Pressable
+          style={styles.card}
+          onPress={() => setShowPasswordSection((v) => !v)}
+        >
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={styles.sectionTitle}>{t('screens.profile.changePassword')}</Text>
+            <Text style={{ fontSize: 18, color: colors.textTertiary }}>{showPasswordSection ? '▲' : '▼'}</Text>
+          </View>
+        </Pressable>
+        {showPasswordSection && (
+          <View style={[styles.card, { marginTop: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0 }]}>
+            <Input
+              label={t('screens.profile.currentPassword')}
+              value={currentPassword}
+              onChangeText={setCurrentPassword}
+              secureTextEntry
+            />
+            <Input
+              label={t('screens.profile.newPassword')}
+              value={newPassword}
+              onChangeText={(v) => {
+                setNewPassword(v);
+                setPasswordErrors((e) => ({ ...e, newPassword: undefined }));
+              }}
+              secureTextEntry
+              error={passwordErrors.newPassword}
+            />
+            <Input
+              label={t('screens.profile.confirmPassword')}
+              value={confirmPassword}
+              onChangeText={(v) => {
+                setConfirmPassword(v);
+                setPasswordErrors((e) => ({ ...e, confirmPassword: undefined }));
+              }}
+              secureTextEntry
+              error={passwordErrors.confirmPassword}
+            />
+            <Button
+              title={t('screens.profile.changePassword')}
+              variant="outline"
+              onPress={handleChangePassword}
+              loading={savingPassword}
+            />
+          </View>
+        )}
 
         {/* ── Settings Card ── */}
         <View style={styles.card}>
@@ -357,7 +368,7 @@ export function ProfileScreen() {
             style={styles.settingRow}
             onPress={() => navigation.navigate('NotificationPrefs' as any)}
           >
-            <Text style={styles.settingLabel}>{t('screens.profile.notifications') || 'Notifications'}</Text>
+            <Text style={styles.settingLabel}>{t('screens.profile.notifications')}</Text>
             <Text style={styles.chevron}>›</Text>
           </Pressable>
 

@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
 import { AnalyzeScreen, HistoryScreen, ClosetScreen, ProfileScreen } from '../screens';
-import { lightColors as colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import type { TabParamList } from './types';
+import type { ColorScheme } from '../theme/colors';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -17,6 +18,8 @@ const TAB_ICONS: Record<keyof TabParamList, string> = {
 
 export function TabNavigator() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const dynamicStyles = useMemo(() => createDynamicStyles(colors), [colors]);
 
   return (
     <Tab.Navigator
@@ -30,7 +33,7 @@ export function TabNavigator() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textTertiary,
         tabBarLabelStyle: styles.label,
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: dynamicStyles.tabBar,
       })}
     >
       <Tab.Screen
@@ -57,16 +60,20 @@ export function TabNavigator() {
   );
 }
 
+const createDynamicStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    tabBar: {
+      backgroundColor: colors.surface,
+      borderTopWidth: 0,
+      elevation: 0,
+      shadowOpacity: 0,
+      height: 60,
+      paddingBottom: 6,
+      paddingTop: 4,
+    },
+  });
+
 const styles = StyleSheet.create({
-  tabBar: {
-    backgroundColor: colors.surface,
-    borderTopWidth: 0,
-    elevation: 0,
-    shadowOpacity: 0,
-    height: 60,
-    paddingBottom: 6,
-    paddingTop: 4,
-  },
   label: {
     fontSize: 11,
     fontWeight: '500',

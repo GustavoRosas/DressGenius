@@ -23,14 +23,29 @@ class GeminiVisionService
         $mimeType = $image->getMimeType() ?: 'image/jpeg';
         $imageBase64 = base64_encode(file_get_contents($image->getRealPath()));
 
+        // Build weather string from object or legacy string
+        $rawWeather = data_get($intake, 'weather');
+        if (is_array($rawWeather)) {
+            $weatherParts = array_filter([
+                data_get($rawWeather, 'condition'),
+                data_get($rawWeather, 'temperature_c') !== null ? data_get($rawWeather, 'temperature_c') . '°C' : null,
+                data_get($rawWeather, 'source') ? '(source: ' . data_get($rawWeather, 'source') . ')' : null,
+            ]);
+            $weatherStr = implode(', ', $weatherParts);
+        } else {
+            $weatherStr = (string) ($rawWeather ?? '');
+        }
+
         $context = [
             'occasion' => (string) data_get($intake, 'occasion', ''),
-            'weather' => (string) data_get($intake, 'weather', ''),
+            'weather' => $weatherStr,
             'dress_code' => (string) data_get($intake, 'dress_code', ''),
             'budget' => (string) data_get($intake, 'budget', ''),
             'desired_vibe' => (string) data_get($intake, 'desired_vibe', ''),
+            'comfort_level' => (string) data_get($intake, 'comfort_level', ''),
+            'extra_context' => (string) data_get($intake, 'extra_context', ''),
         ];
-        $context = array_map(fn ($v) => trim($v) === '' ? null : $v, $context);
+        $context = array_map(fn ($v) => is_string($v) && trim($v) === '' ? null : $v, $context);
         $contextJson = json_encode($context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         if (!is_string($contextJson)) {
             $contextJson = '{}';

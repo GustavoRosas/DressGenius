@@ -89,7 +89,7 @@ export const typography: TypographyScale = {
     fontSize: 16,
     fontWeight: '600',
     lineHeight: 24,
-    letterSpacing: 0.5,
+    letterSpacing: 0,
     textTransform: 'none',
   },
   overline: {

@@ -138,6 +138,7 @@
       "aiPreferences": "AI Preferences",
       "subscription": "Subscription",
       "language": "Language",
+      "notifications": "Notifications",
       "signOut": "Sign Out",
       "signOutConfirm": "Sign Out?",
       "signOutMessage": "Are you sure you want to sign out?",
@@ -263,6 +264,41 @@
     "skip": "Skip",
     "getStarted": "Get Started"
   },
+  "analyze": {
+    "occasion": {
+      "title": "What's the occasion?",
+      "casual": "Casual",
+      "work": "Work",
+      "date": "Date",
+      "wedding": "Wedding",
+      "party": "Party",
+      "gym": "Gym",
+      "travel": "Travel",
+      "other": "Other"
+    },
+    "comfort": {
+      "title": "How do you feel?",
+      "comfort": "Comfort first",
+      "balanced": "Balanced",
+      "style": "Style first"
+    },
+    "extraContext": {
+      "title": "Extra context (optional)",
+      "placeholder": "Beach wedding, job interview..."
+    },
+    "usageLeft": "{{count}} left",
+    "upgrade": "Upgrade",
+    "paywall": {
+      "title": "You've used all free analyses",
+      "benefits": {
+        "unlimitedAnalyses": "Unlimited outfit analyses",
+        "colorTheory": "Color theory & harmony analysis",
+        "weatherAware": "Weather-aware suggestions",
+        "styleAnalytics": "Style analytics & insights"
+      },
+      "maybeLater": "Maybe later"
+    }
+  },
   "paywall": {
     "title": "Unlock DressGenius Premium",
     "subtitle": "Get the most out of your personal AI stylist",
@@ -284,6 +320,10 @@
     "restore": "Restore Purchases",
     "continueFree": "Continue with Free",
     "comingSoon": "Subscriptions coming soon! Stay tuned."
+  },
+  "settings": {
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode"
   },
   "notifications": {
     "title": "Notifications",

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\OutfitScan;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -70,6 +71,15 @@ class AuthController extends Controller
         /** @var FilesystemAdapter $disk */
         $disk = Storage::disk('public');
         $data['profile_photo_url'] = $user->profile_photo_path ? $disk->url($user->profile_photo_path) : null;
+
+        // Usage counter (#49)
+        $isPremium = !empty($user->is_premium); // future-proof
+        $data['usage'] = [
+            'analyses_used' => OutfitScan::where('user_id', $user->id)
+                ->where('created_at', '>=', now()->startOfMonth())
+                ->count(),
+            'analyses_limit' => $isPremium ? null : 3,
+        ];
 
         return $data;
     }

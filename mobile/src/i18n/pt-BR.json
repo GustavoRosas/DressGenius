@@ -138,6 +138,7 @@
       "aiPreferences": "Preferências de IA",
       "subscription": "Assinatura",
       "language": "Idioma",
+      "notifications": "Notificações",
       "signOut": "Sair",
       "signOutConfirm": "Sair?",
       "signOutMessage": "Tem certeza que deseja sair?",
@@ -263,6 +264,41 @@
     "skip": "Pular",
     "getStarted": "Começar"
   },
+  "analyze": {
+    "occasion": {
+      "title": "Qual a ocasião?",
+      "casual": "Casual",
+      "work": "Trabalho",
+      "date": "Encontro",
+      "wedding": "Casamento",
+      "party": "Festa",
+      "gym": "Academia",
+      "travel": "Viagem",
+      "other": "Outro"
+    },
+    "comfort": {
+      "title": "Como você quer se sentir?",
+      "comfort": "Conforto primeiro",
+      "balanced": "Equilibrado",
+      "style": "Estilo primeiro"
+    },
+    "extraContext": {
+      "title": "Contexto extra (opcional)",
+      "placeholder": "Casamento na praia, entrevista de emprego..."
+    },
+    "usageLeft": "{{count}} restante(s)",
+    "upgrade": "Fazer Upgrade",
+    "paywall": {
+      "title": "Você usou todas as análises gratuitas",
+      "benefits": {
+        "unlimitedAnalyses": "Análises de outfit ilimitadas",
+        "colorTheory": "Análise de teoria das cores e harmonia",
+        "weatherAware": "Sugestões baseadas no clima",
+        "styleAnalytics": "Análise de estilo e insights"
+      },
+      "maybeLater": "Talvez depois"
+    }
+  },
   "paywall": {
     "title": "Desbloqueie o DressGenius Premium",
     "subtitle": "Aproveite ao máximo sua estilista pessoal de IA",
@@ -284,6 +320,10 @@
     "restore": "Restaurar Compras",
     "continueFree": "Continuar com o Gratuito",
     "comingSoon": "Assinaturas em breve! Fique ligado."
+  },
+  "settings": {
+    "darkMode": "Modo Escuro",
+    "lightMode": "Modo Claro"
   },
   "notifications": {
     "title": "Notificações",

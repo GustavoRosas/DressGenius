@@ -8,6 +8,12 @@ export const FREE_CHATS_PER_MONTH = 5;
 
 export const MONTHLY_PRICE = 4.99;
 export const YEARLY_PRICE = 39.99;
+
+// BRL prices
+export const MONTHLY_PRICE_BRL = 'R$ 24,90';
+export const YEARLY_PRICE_BRL = 'R$ 199,90';
+export const MONTHLY_PRICE_BRL_RAW = 24.9;
+export const YEARLY_PRICE_BRL_RAW = 199.9;
 export const YEARLY_MONTHLY_EQUIVALENT = +(YEARLY_PRICE / 12).toFixed(2); // ~3.33
 export const YEARLY_SAVINGS_PERCENT = Math.round(
   ((MONTHLY_PRICE * 12 - YEARLY_PRICE) / (MONTHLY_PRICE * 12)) * 100,

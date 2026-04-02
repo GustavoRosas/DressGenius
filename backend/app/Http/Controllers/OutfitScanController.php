@@ -129,6 +129,7 @@ class OutfitScanController extends Controller
                 'vision' => $scan->vision,
                 'analysis' => $scan->analysis,
                 'score' => $scan->score,
+                'intake' => $process->intake,
                 'created_at' => $scan->created_at,
             ],
             'detected_items' => $detectedItems,

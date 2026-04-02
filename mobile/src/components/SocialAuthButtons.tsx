@@ -51,11 +51,11 @@ export function SocialAuthButtons({
   const { colors } = useTheme();
   const { t } = useTranslation();
 
-  // Google Auth Request
+  // Google Auth Request — use dummy IDs to avoid crash, but gate on isGoogleAuthConfigured before prompting
   const [_request, response, promptAsync] = Google.useAuthRequest({
-    iosClientId: GOOGLE_IOS_CLIENT_ID || undefined,
-    androidClientId: GOOGLE_ANDROID_CLIENT_ID || undefined,
-    webClientId: GOOGLE_WEB_CLIENT_ID || undefined,
+    iosClientId: GOOGLE_IOS_CLIENT_ID || 'placeholder.apps.googleusercontent.com',
+    androidClientId: GOOGLE_ANDROID_CLIENT_ID || 'placeholder.apps.googleusercontent.com',
+    webClientId: GOOGLE_WEB_CLIENT_ID || 'placeholder.apps.googleusercontent.com',
   });
 
   // Handle Google response

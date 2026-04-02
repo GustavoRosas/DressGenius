@@ -19,10 +19,20 @@ class OutfitAnalysisService
         $description = strtolower((string) data_get($vision, 'description', ''));
 
         $intakeOccasion = trim((string) data_get($intake, 'occasion', ''));
-        $intakeWeather = trim((string) data_get($intake, 'weather', ''));
+        // Weather may be object {source, temperature_c, condition} or legacy string
+        $rawWeather = data_get($intake, 'weather');
+        if (is_array($rawWeather)) {
+            $intakeWeather = trim((string) data_get($rawWeather, 'condition', ''));
+            $intakeTemperature = data_get($rawWeather, 'temperature_c');
+        } else {
+            $intakeWeather = trim((string) ($rawWeather ?? ''));
+            $intakeTemperature = null;
+        }
         $intakeDressCode = trim((string) data_get($intake, 'dress_code', ''));
         $intakeBudget = trim((string) data_get($intake, 'budget', ''));
         $intakeVibe = trim((string) data_get($intake, 'desired_vibe', ''));
+        $intakeComfort = trim((string) data_get($intake, 'comfort_level', ''));
+        $intakeExtra = trim((string) data_get($intake, 'extra_context', ''));
 
         $contextFeedback = [];
         $addFeedback = function (string $key, string $status, string $message) use (&$contextFeedback): void {
@@ -58,10 +68,12 @@ class OutfitAnalysisService
             }
         }
 
-        if ($intakeWeather !== '') {
+        if ($intakeWeather !== '' || $intakeTemperature !== null) {
             $w = strtolower($intakeWeather);
-            $isCold = str_contains($w, 'cold') || str_contains($w, 'chilly') || str_contains($w, 'winter') || str_contains($w, 'rain');
-            $isHot = str_contains($w, 'hot') || str_contains($w, 'warm') || str_contains($w, 'summer');
+            $isCold = str_contains($w, 'cold') || str_contains($w, 'chilly') || str_contains($w, 'winter') || str_contains($w, 'rain')
+                || ($intakeTemperature !== null && (float) $intakeTemperature < 15);
+            $isHot = str_contains($w, 'hot') || str_contains($w, 'warm') || str_contains($w, 'summer')
+                || ($intakeTemperature !== null && (float) $intakeTemperature > 28);
 
             if ($isCold) {
                 if (count($outerwear) > 0) {
@@ -78,6 +90,20 @@ class OutfitAnalysisService
             } else {
                 $addFeedback('weather', 'neutral', 'Weather noted. I will factor in comfort and layering, but the photo alone can’t confirm temperature.');
             }
+        }
+
+        if ($intakeComfort !== '') {
+            if ($intakeComfort === 'comfort_first') {
+                $addFeedback('comfort_level', 'neutral', 'Comfort is your priority. Suggestions will favor ease of movement and relaxed fits.');
+            } elseif ($intakeComfort === 'style_first') {
+                $addFeedback('comfort_level', 'neutral', 'Style is your priority. Suggestions may lean into sharper silhouettes and bolder choices.');
+            } else {
+                $addFeedback('comfort_level', 'neutral', 'Balanced comfort/style noted. Suggestions will aim for the sweet spot.');
+            }
+        }
+
+        if ($intakeExtra !== '') {
+            $addFeedback('extra_context', 'neutral', 'Additional context noted and will be factored into suggestions.');
         }
 
         if ($intakeDressCode !== '') {

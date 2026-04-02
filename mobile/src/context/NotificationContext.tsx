@@ -88,15 +88,20 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   // Listeners
   useEffect(() => {
-    const cleanup = setupNotificationHandlers(
-      (notification) => {
-        setNotifications((prev) => [notification, ...prev]);
-      },
-      (_response) => {
-        // Pode ser expandido para deep-linking futuramente
-      },
-    );
-    return cleanup;
+    try {
+      const cleanup = setupNotificationHandlers(
+        (notification) => {
+          setNotifications((prev) => [notification, ...prev]);
+        },
+        (_response) => {
+          // Pode ser expandido para deep-linking futuramente
+        },
+      );
+      return cleanup;
+    } catch (e) {
+      console.warn('[Notifications] Handler setup failed (Expo Go?):', e);
+      return undefined;
+    }
   }, []);
 
   const value = useMemo<NotificationContextValue>(

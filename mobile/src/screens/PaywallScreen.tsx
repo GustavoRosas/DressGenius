@@ -20,23 +20,28 @@ import { useNavigation } from '@react-navigation/native';
 
 import { Button } from '../components/Button';
 import { usePremium } from '../context/PremiumContext';
-import { palette, lightColors as colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import { palette } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { spacing, borderRadius } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
 import {
   MONTHLY_PRICE,
   YEARLY_PRICE,
+  MONTHLY_PRICE_BRL,
+  YEARLY_PRICE_BRL,
   YEARLY_SAVINGS_PERCENT,
   PREMIUM_BENEFITS,
   type PlanInterval,
 } from '../config/plans';
 
 export function PaywallScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const { colors } = useTheme();
   const { purchaseMonthly, purchaseYearly, restorePurchases } = usePremium();
+  const isBR = i18n.language.startsWith('pt');
 
   const [selectedPlan, setSelectedPlan] = useState<PlanInterval>('yearly');
   const [loading, setLoading] = useState(false);
@@ -127,7 +132,7 @@ export function PaywallScreen() {
                   selectedPlan === 'yearly' && styles.planPriceSelected,
                 ]}
               >
-                ${YEARLY_PRICE}/{t('paywall.yearAbbr')}
+                {isBR ? `${YEARLY_PRICE_BRL}/${t('paywall.yearAbbr')}` : `$${YEARLY_PRICE}/${t('paywall.yearAbbr')}`}
               </Text>
               <Text style={styles.savingsText}>
                 {t('paywall.savings', { percent: YEARLY_SAVINGS_PERCENT })}
@@ -157,7 +162,7 @@ export function PaywallScreen() {
                   selectedPlan === 'monthly' && styles.planPriceSelected,
                 ]}
               >
-                ${MONTHLY_PRICE}/{t('paywall.monthAbbr')}
+                {isBR ? `${MONTHLY_PRICE_BRL}/${t('paywall.monthAbbr')}` : `$${MONTHLY_PRICE}/${t('paywall.monthAbbr')}`}
               </Text>
             </TouchableOpacity>
           </View>
@@ -206,7 +211,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.h1,
-    color: colors.textInverse,
+    color: '#FFFFFF',
     textAlign: 'center',
     marginBottom: spacing.sm,
   },
@@ -235,7 +240,7 @@ const styles = StyleSheet.create({
   },
   benefitText: {
     ...typography.body1,
-    color: colors.textInverse,
+    color: '#FFFFFF',
     flex: 1,
   },
   // Plan cards
@@ -277,14 +282,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   planLabelSelected: {
-    color: colors.textInverse,
+    color: '#FFFFFF',
   },
   planPrice: {
     ...typography.h3,
     color: palette.violet200,
   },
   planPriceSelected: {
-    color: colors.textInverse,
+    color: '#FFFFFF',
   },
   savingsText: {
     ...typography.caption,

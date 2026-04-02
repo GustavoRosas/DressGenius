@@ -1,8 +1,13 @@
 /**
  * DressGenius — Analyze Screen
  *
- * 3-state flow: Choose → Preview → Result
- * Camera/gallery → upload multipart → show AI analysis.
+ * 3-state flow: Choose → Preview (Bottom Sheet intake) → Result
+ * Camera/gallery → intake form → upload multipart → show AI analysis.
+ *
+ * Integrates:
+ *  #50 — Usage counter chip
+ *  #51 — Soft paywall modal
+ *  #52 — Bottom sheet intake form
  */
 
 import React, { useCallback, useMemo, useState } from 'react';
@@ -28,7 +33,13 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { api } from '../api/client';
 import type { RootStackParamList } from '../navigation/types';
 import { Button } from '../components/Button';
+import { UsageChip } from '../components/UsageChip';
+import { SoftPaywallModal } from '../components/SoftPaywallModal';
+import { AnalyzeIntakeSheet } from '../components/AnalyzeIntakeSheet';
+import type { IntakeData } from '../components/AnalyzeIntakeSheet';
 import { useTheme } from '../context/ThemeContext';
+import { usePremium } from '../context/PremiumContext';
+import { useUsage } from '../hooks/useUsage';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
@@ -45,13 +56,19 @@ interface AnalysisResult {
 export function AnalyzeScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const { isPremium } = usePremium();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { usage, refetch: refetchUsage } = useUsage();
 
   const [state, setState] = useState<ScreenState>('initial');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+
+  // Bottom sheet & paywall state
+  const [sheetVisible, setSheetVisible] = useState(false);
+  const [paywallVisible, setPaywallVisible] = useState(false);
 
   // — Animations —
   const fadeAnim = React.useRef(new Animated.Value(1)).current;
@@ -107,19 +124,18 @@ export function AnalyzeScreen() {
     return true;
   }, [t]);
 
-  // — Image picking —
+  // — Image picking → open bottom sheet —
   const handlePickResult = useCallback(
     (pickerResult: ImagePicker.ImagePickerResult) => {
       if (!pickerResult.canceled && pickerResult.assets?.[0]?.uri) {
         const uri = pickerResult.assets[0].uri;
-        animateTransition(() => {
-          setImageUri(uri);
-          setError(null);
-          setState('preview');
-        });
+        setImageUri(uri);
+        setError(null);
+        setState('preview');
+        setSheetVisible(true);
       }
     },
-    [animateTransition],
+    [],
   );
 
   const takePhoto = useCallback(async () => {
@@ -146,35 +162,59 @@ export function AnalyzeScreen() {
     handlePickResult(result);
   }, [requestGalleryPermission, handlePickResult]);
 
-  // — Upload & Analyze —
-  const analyzeOutfit = useCallback(async () => {
-    if (!imageUri) return;
+  // — Upload & Analyze (with paywall check) —
+  const analyzeOutfit = useCallback(
+    async (intake: IntakeData) => {
+      if (!imageUri) return;
 
-    setLoading(true);
-    setError(null);
+      // #51 — Soft paywall: check usage before analyzing
+      if (!isPremium && usage && usage.analyses_used >= usage.analyses_limit) {
+        setSheetVisible(false);
+        setPaywallVisible(true);
+        return;
+      }
 
-    try {
-      const formData = new FormData();
-      formData.append('image', {
-        uri: imageUri,
-        name: 'outfit.jpg',
-        type: 'image/jpeg',
-      } as any);
+      setLoading(true);
+      setError(null);
 
-      const response = await api.post<AnalysisResult>('/outfit-scans', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      try {
+        const formData = new FormData();
+        formData.append('image', {
+          uri: imageUri,
+          name: 'outfit.jpg',
+          type: 'image/jpeg',
+        } as any);
 
-      animateTransition(() => {
-        setResult(response.data);
-        setState('result');
-      });
-    } catch (_err) {
-      setError(t('screens.analyze.error'));
-    } finally {
-      setLoading(false);
-    }
-  }, [imageUri, animateTransition, t]);
+        // #52 — Append intake data
+        if (intake.occasion) {
+          formData.append('occasion', intake.occasion);
+        }
+        formData.append('comfort_level', intake.comfort_level);
+        if (intake.extra_context) {
+          formData.append('extra_context', intake.extra_context);
+        }
+
+        const response = await api.post<AnalysisResult>('/outfit-scans', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+
+        setSheetVisible(false);
+
+        // Refetch usage after successful analysis
+        refetchUsage();
+
+        animateTransition(() => {
+          setResult(response.data);
+          setState('result');
+        });
+      } catch (_err) {
+        setError(t('screens.analyze.error'));
+      } finally {
+        setLoading(false);
+      }
+    },
+    [imageUri, isPremium, usage, animateTransition, t, refetchUsage],
+  );
 
   // — Reset —
   const resetScreen = useCallback(() => {
@@ -183,10 +223,12 @@ export function AnalyzeScreen() {
       setImageUri(null);
       setResult(null);
       setError(null);
+      setSheetVisible(false);
     });
   }, [animateTransition]);
 
   const chooseAnother = useCallback(() => {
+    setSheetVisible(false);
     animateTransition(() => {
       setState('initial');
       setImageUri(null);
@@ -194,12 +236,28 @@ export function AnalyzeScreen() {
     });
   }, [animateTransition]);
 
+  const handleSheetClose = useCallback(() => {
+    setSheetVisible(false);
+    // Go back to initial if no result yet
+    if (state === 'preview') {
+      animateTransition(() => {
+        setState('initial');
+        setImageUri(null);
+        setError(null);
+      });
+    }
+  }, [state, animateTransition]);
+
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   // — Render helpers —
   const renderInitial = () => (
     <View style={styles.centerContent}>
-      <Text style={styles.title}>{t('screens.analyze.title')}</Text>
+      {/* #50 — Usage chip in header */}
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>{t('screens.analyze.title')}</Text>
+        <UsageChip usage={usage} />
+      </View>
       <Text style={styles.subtitle}>{t('screens.analyze.subtitle')}</Text>
 
       <View style={styles.cardsRow}>
@@ -220,6 +278,7 @@ export function AnalyzeScreen() {
 
   const renderPreview = () => (
     <View style={styles.centerContent}>
+      {/* Dimmed background preview while sheet is open */}
       {imageUri && (
         <View style={styles.previewContainer}>
           <Image source={{ uri: imageUri }} style={styles.previewImage} resizeMode="cover" />
@@ -232,29 +291,28 @@ export function AnalyzeScreen() {
           <Button
             title={t('screens.analyze.errorRetry')}
             variant="outline"
-            onPress={analyzeOutfit}
+            onPress={() => setSheetVisible(true)}
             style={styles.retryButton}
           />
         </View>
       )}
 
-      <View style={styles.buttonGroup}>
-        <Button
-          title={loading ? t('screens.analyze.analyzing') : t('screens.analyze.analyzeButton')}
-          variant="primary"
-          onPress={analyzeOutfit}
-          loading={loading}
-          disabled={loading}
-          style={styles.actionButton}
-        />
-        <Button
-          title={t('screens.analyze.chooseAnother')}
-          variant="outline"
-          onPress={chooseAnother}
-          disabled={loading}
-          style={styles.actionButton}
-        />
-      </View>
+      {!sheetVisible && (
+        <View style={styles.buttonGroup}>
+          <Button
+            title={`✨ ${t('screens.analyze.analyzeButton')}`}
+            variant="primary"
+            onPress={() => setSheetVisible(true)}
+            style={styles.actionButton}
+          />
+          <Button
+            title={t('screens.analyze.chooseAnother')}
+            variant="outline"
+            onPress={chooseAnother}
+            style={styles.actionButton}
+          />
+        </View>
+      )}
     </View>
   );
 
@@ -304,6 +362,21 @@ export function AnalyzeScreen() {
         {state === 'preview' && renderPreview()}
         {state === 'result' && renderResult()}
       </Animated.View>
+
+      {/* #52 — Bottom Sheet Intake Form */}
+      <AnalyzeIntakeSheet
+        visible={sheetVisible}
+        imageUri={imageUri}
+        loading={loading}
+        onAnalyze={analyzeOutfit}
+        onClose={handleSheetClose}
+      />
+
+      {/* #51 — Soft Paywall Modal */}
+      <SoftPaywallModal
+        visible={paywallVisible}
+        onClose={() => setPaywallVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -333,7 +406,12 @@ const createStyles = (colors: ColorScheme) =>
       alignItems: 'center',
     },
 
-    // — Header —
+    // — Header with usage chip —
+    headerRow: {
+      width: '100%',
+      alignItems: 'center',
+      marginBottom: spacing.sm,
+    },
     title: {
       ...typography.h1,
       color: colors.text,

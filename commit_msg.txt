@@ -1,10 +1,15 @@
-fix: UX audit critical fixes - dark mode, i18n, contrast
+feat: premium visibility + analyze intake form (sprint 1)
 
-- Button.tsx: useTheme() + optional colors prop (dark mode aware)
-- Input.tsx: createStyles factory with dynamic colors (dark mode aware)
-- SocialAuthButtons.tsx: useTheme() + useTranslation() (was hardcoded)
-- LoginScreen: STRINGS removed, all strings via t() i18n
-- RegisterScreen: same STRINGS to t() migration
-- LanguageSwitcher: createStyles factory (dark mode aware)
-- Forgot password contrast: primaryLight to primary (1.2:1 to 7.4:1)
-- i18n: added missing keys in en.json and pt-BR.json
+Mobile:
+- Usage counter chip on Analyze header (N left / Upgrade)
+- Soft paywall modal after free limit (3/month)
+- Analyze intake bottom sheet: occasion chips, comfort level, extra context
+- Reusable BottomSheet component (pure RN Animated)
+- Profile: name/email pre-fill fix, collapsible password section
+- Tab bar dark mode, button alignment fix, i18n labels, BRL/USD pricing
+
+Backend:
+- GET /me returns usage (analyses_used, analyses_limit)
+- POST /outfit-scans accepts occasion, comfort_level, weather, extra_context
+- Gemini prompt enriched with intake context
+- Backward compatible (all new fields optional)
