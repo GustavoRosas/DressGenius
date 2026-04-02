@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AIPreferencesController;
 use App\Http\Controllers\OccasionStylingController;
+use App\Http\Controllers\WeatherController;
 use App\Http\Controllers\OutfitChatController;
 use App\Http\Controllers\OutfitScanController;
 use App\Http\Controllers\ProfileController;
@@ -35,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/outfit-scans', [OutfitScanController::class, 'store']);
 
     Route::post('/occasion-styling', [OccasionStylingController::class, 'suggest']);
+    Route::post('/weather-styling', [WeatherController::class, 'suggest']);
 
     Route::get('/wardrobe-items', [WardrobeItemController::class, 'index']);
     Route::post('/wardrobe-items', [WardrobeItemController::class, 'store']);

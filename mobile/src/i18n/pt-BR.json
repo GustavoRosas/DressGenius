@@ -27,6 +27,11 @@
     "signIn": "Entrar"
   },
   "auth": {
+    "continueWithGoogle": "Continuar com Google",
+    "continueWithApple": "Continuar com Apple",
+    "orDivider": "ou",
+    "socialNotConfigured": "Login com Google ainda não configurado",
+    "socialComingSoon": "Login social em breve — use o e-mail por enquanto",
     "errors": {
       "invalidCredentials": "Não foi possível entrar. Verifique suas credenciais.",
       "fillAllFields": "Preencha todos os campos.",
@@ -270,6 +275,15 @@
     "restore": "Restaurar Compras",
     "continueFree": "Continuar com o Gratuito",
     "comingSoon": "Assinaturas em breve! Fique ligado."
+  },
+  "notifications": {
+    "title": "Notificações",
+    "dailySuggestion": "Sugestão diária de outfit",
+    "analysisComplete": "Análise concluída",
+    "newFeatures": "Novidades",
+    "permissionTitle": "Ativar Notificações",
+    "permissionMessage": "Permita que o DressGenius envie dicas de estilo, atualizações de análise e mais.",
+    "enable": "Ativar"
   },
   "common": {
     "loading": "Carregando…",

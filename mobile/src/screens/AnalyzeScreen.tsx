@@ -5,7 +5,7 @@
  * Camera/gallery → upload multipart → show AI analysis.
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -28,10 +28,11 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { api } from '../api/client';
 import type { RootStackParamList } from '../navigation/types';
 import { Button } from '../components/Button';
-import { lightColors as colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
+import type { ColorScheme } from '../theme/colors';
 
 type ScreenState = 'initial' | 'preview' | 'result';
 
@@ -43,6 +44,7 @@ interface AnalysisResult {
 
 export function AnalyzeScreen() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const [state, setState] = useState<ScreenState>('initial');
@@ -192,6 +194,8 @@ export function AnalyzeScreen() {
     });
   }, [animateTransition]);
 
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   // — Render helpers —
   const renderInitial = () => (
     <View style={styles.centerContent}>
@@ -304,140 +308,141 @@ export function AnalyzeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  animatedContainer: {
-    flex: 1,
-  },
-  centerContent: {
-    flex: 1,
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xxxl,
-    alignItems: 'center',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xxl,
-    paddingBottom: spacing.xxxl,
-    alignItems: 'center',
-  },
+const createStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    animatedContainer: {
+      flex: 1,
+    },
+    centerContent: {
+      flex: 1,
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.xxxl,
+      alignItems: 'center',
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.xxl,
+      paddingBottom: spacing.xxxl,
+      alignItems: 'center',
+    },
 
-  // — Header —
-  title: {
-    ...typography.h1,
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  subtitle: {
-    ...typography.body1,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing.xxxl,
-    paddingHorizontal: spacing.lg,
-  },
+    // — Header —
+    title: {
+      ...typography.h1,
+      color: colors.text,
+      textAlign: 'center',
+      marginBottom: spacing.sm,
+    },
+    subtitle: {
+      ...typography.body1,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginBottom: spacing.xxxl,
+      paddingHorizontal: spacing.lg,
+    },
 
-  // — Cards —
-  cardsRow: {
-    flexDirection: 'column',
-    gap: spacing.lg,
-    width: '100%',
-  },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
-    paddingVertical: spacing.xxl,
-    paddingHorizontal: spacing.xl,
-    alignItems: 'center',
-    ...shadows.md,
-  },
-  cardIcon: {
-    fontSize: 48,
-    marginBottom: spacing.md,
-  },
-  cardTitle: {
-    ...typography.subtitle1,
-    color: colors.text,
-    marginBottom: spacing.xs,
-  },
-  cardDesc: {
-    ...typography.body2,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
+    // — Cards —
+    cardsRow: {
+      flexDirection: 'column',
+      gap: spacing.lg,
+      width: '100%',
+    },
+    card: {
+      backgroundColor: colors.card,
+      borderRadius: borderRadius.lg,
+      paddingVertical: spacing.xxl,
+      paddingHorizontal: spacing.xl,
+      alignItems: 'center',
+      ...shadows.md,
+    },
+    cardIcon: {
+      fontSize: 48,
+      marginBottom: spacing.md,
+    },
+    cardTitle: {
+      ...typography.subtitle1,
+      color: colors.text,
+      marginBottom: spacing.xs,
+    },
+    cardDesc: {
+      ...typography.body2,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
 
-  // — Preview —
-  previewContainer: {
-    width: '100%',
-    aspectRatio: 3 / 4,
-    borderRadius: borderRadius.lg,
-    overflow: 'hidden',
-    marginBottom: spacing.xl,
-    ...shadows.lg,
-  },
-  previewImage: {
-    width: '100%',
-    height: '100%',
-  },
+    // — Preview —
+    previewContainer: {
+      width: '100%',
+      aspectRatio: 3 / 4,
+      borderRadius: borderRadius.lg,
+      overflow: 'hidden',
+      marginBottom: spacing.xl,
+      ...shadows.lg,
+    },
+    previewImage: {
+      width: '100%',
+      height: '100%',
+    },
 
-  // — Result —
-  thumbnailContainer: {
-    width: 120,
-    height: 160,
-    borderRadius: borderRadius.md,
-    overflow: 'hidden',
-    marginBottom: spacing.xl,
-    ...shadows.md,
-  },
-  thumbnail: {
-    width: '100%',
-    height: '100%',
-  },
-  resultCard: {
-    width: '100%',
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
-    padding: spacing.xl,
-    marginBottom: spacing.xl,
-    ...shadows.md,
-  },
-  resultText: {
-    ...typography.body1,
-    color: colors.text,
-  },
+    // — Result —
+    thumbnailContainer: {
+      width: 120,
+      height: 160,
+      borderRadius: borderRadius.md,
+      overflow: 'hidden',
+      marginBottom: spacing.xl,
+      ...shadows.md,
+    },
+    thumbnail: {
+      width: '100%',
+      height: '100%',
+    },
+    resultCard: {
+      width: '100%',
+      backgroundColor: colors.card,
+      borderRadius: borderRadius.lg,
+      padding: spacing.xl,
+      marginBottom: spacing.xl,
+      ...shadows.md,
+    },
+    resultText: {
+      ...typography.body1,
+      color: colors.text,
+    },
 
-  // — Buttons —
-  buttonGroup: {
-    width: '100%',
-    gap: spacing.md,
-    marginTop: spacing.lg,
-  },
-  actionButton: {
-    width: '100%',
-  },
+    // — Buttons —
+    buttonGroup: {
+      width: '100%',
+      gap: spacing.md,
+      marginTop: spacing.lg,
+    },
+    actionButton: {
+      width: '100%',
+    },
 
-  // — Error —
-  errorContainer: {
-    width: '100%',
-    backgroundColor: colors.errorBackground,
-    borderRadius: borderRadius.md,
-    padding: spacing.lg,
-    marginBottom: spacing.md,
-    alignItems: 'center',
-  },
-  errorText: {
-    ...typography.body2,
-    color: colors.error,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  retryButton: {
-    minWidth: 140,
-  },
-});
+    // — Error —
+    errorContainer: {
+      width: '100%',
+      backgroundColor: colors.errorBackground,
+      borderRadius: borderRadius.md,
+      padding: spacing.lg,
+      marginBottom: spacing.md,
+      alignItems: 'center',
+    },
+    errorText: {
+      ...typography.body2,
+      color: colors.error,
+      textAlign: 'center',
+      marginBottom: spacing.sm,
+    },
+    retryButton: {
+      minWidth: 140,
+    },
+  });

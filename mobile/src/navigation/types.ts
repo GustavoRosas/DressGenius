@@ -6,6 +6,7 @@ export type RootStackParamList = {
   Chat: { chatId: number };
   Paywall: undefined;
   AIPreferences: undefined;
+  NotificationPrefs: undefined;
 };
 
 export type TabParamList = {

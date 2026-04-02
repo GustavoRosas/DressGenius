@@ -6,7 +6,7 @@
  * Tap navigates to Chat screen with chatId.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -24,7 +24,8 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { api } from '../api/client';
 import { Button } from '../components/Button';
-import { lightColors as colors, palette } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import { palette, type ColorScheme } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
@@ -78,10 +79,12 @@ interface ChatCardProps {
   item: OutfitChat;
   onPress: (id: number) => void;
   t: (key: string, opts?: Record<string, unknown>) => string;
+  colors: ColorScheme;
 }
 
-const ChatCard = React.memo(({ item, onPress, t }: ChatCardProps) => {
+const ChatCard = React.memo(({ item, onPress, t, colors }: ChatCardProps) => {
   const isActive = item.status === 'active';
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <Pressable
@@ -147,12 +150,15 @@ const ChatCard = React.memo(({ item, onPress, t }: ChatCardProps) => {
 
 export function HistoryScreen() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const navigation = useNavigation<NavProp>();
 
   const [chats, setChats] = useState<OutfitChat[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const fetchChats = useCallback(async (isRefresh = false) => {
     try {
@@ -192,9 +198,9 @@ export function HistoryScreen() {
 
   const renderItem = useCallback(
     ({ item }: { item: OutfitChat }) => (
-      <ChatCard item={item} onPress={handlePress} t={t} />
+      <ChatCard item={item} onPress={handlePress} t={t} colors={colors} />
     ),
-    [handlePress, t],
+    [handlePress, t, colors],
   );
 
   const keyExtractor = useCallback(
@@ -278,150 +284,151 @@ export function HistoryScreen() {
 // Styles
 // ---------------------------------------------------------------------------
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  headerTitle: {
-    ...typography.h2,
-    color: colors.text,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.md,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing.xl,
-  },
-  listContent: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxxl,
-  },
-  emptyContainer: {
-    flexGrow: 1,
-  },
+const createStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    headerTitle: {
+      ...typography.h2,
+      color: colors.text,
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.lg,
+      paddingBottom: spacing.md,
+    },
+    centered: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: spacing.xl,
+    },
+    listContent: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xxxl,
+    },
+    emptyContainer: {
+      flexGrow: 1,
+    },
 
-  // Loading
-  loadingText: {
-    ...typography.body2,
-    color: colors.textSecondary,
-    marginTop: spacing.md,
-  },
+    // Loading
+    loadingText: {
+      ...typography.body2,
+      color: colors.textSecondary,
+      marginTop: spacing.md,
+    },
 
-  // Error
-  errorIcon: {
-    fontSize: 48,
-    marginBottom: spacing.lg,
-  },
-  errorText: {
-    ...typography.body1,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: spacing.xl,
-  },
-  retryButton: {
-    minWidth: 140,
-  },
+    // Error
+    errorIcon: {
+      fontSize: 48,
+      marginBottom: spacing.lg,
+    },
+    errorText: {
+      ...typography.body1,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginBottom: spacing.xl,
+    },
+    retryButton: {
+      minWidth: 140,
+    },
 
-  // Empty
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: spacing.xl,
-  },
-  emptyTitle: {
-    ...typography.h3,
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  emptySubtitle: {
-    ...typography.body1,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
+    // Empty
+    emptyIcon: {
+      fontSize: 64,
+      marginBottom: spacing.xl,
+    },
+    emptyTitle: {
+      ...typography.h3,
+      color: colors.text,
+      textAlign: 'center',
+      marginBottom: spacing.sm,
+    },
+    emptySubtitle: {
+      ...typography.body1,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
 
-  // Card
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    ...shadows.sm,
-  },
-  cardPressed: {
-    opacity: 0.85,
-  },
-  thumbnail: {
-    width: THUMBNAIL_SIZE,
-    height: THUMBNAIL_SIZE,
-    borderRadius: borderRadius.md,
-    backgroundColor: colors.background,
-  },
-  thumbnailPlaceholder: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: palette.violet50,
-  },
-  thumbnailIcon: {
-    fontSize: 28,
-  },
-  cardInfo: {
-    flex: 1,
-    marginLeft: spacing.md,
-    marginRight: spacing.sm,
-  },
-  cardTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.xs,
-  },
+    // Card
+    card: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.md,
+      marginBottom: spacing.md,
+      ...shadows.sm,
+    },
+    cardPressed: {
+      opacity: 0.85,
+    },
+    thumbnail: {
+      width: THUMBNAIL_SIZE,
+      height: THUMBNAIL_SIZE,
+      borderRadius: borderRadius.md,
+      backgroundColor: colors.background,
+    },
+    thumbnailPlaceholder: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.primaryLight,
+    },
+    thumbnailIcon: {
+      fontSize: 28,
+    },
+    cardInfo: {
+      flex: 1,
+      marginLeft: spacing.md,
+      marginRight: spacing.sm,
+    },
+    cardTopRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: spacing.xs,
+    },
 
-  // Badge
-  badge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xxs,
-    borderRadius: borderRadius.xs,
-  },
-  badgeActive: {
-    backgroundColor: palette.violet100,
-  },
-  badgeFinished: {
-    backgroundColor: '#DCFCE7', // green-100
-  },
-  badgeText: {
-    ...typography.caption,
-    fontWeight: '600',
-  },
-  badgeTextActive: {
-    color: palette.violet600,
-  },
-  badgeTextFinished: {
-    color: palette.green600,
-  },
+    // Badge
+    badge: {
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xxs,
+      borderRadius: borderRadius.xs,
+    },
+    badgeActive: {
+      backgroundColor: colors.primaryLight,
+    },
+    badgeFinished: {
+      backgroundColor: colors.successBackground,
+    },
+    badgeText: {
+      ...typography.caption,
+      fontWeight: '600',
+    },
+    badgeTextActive: {
+      color: colors.primary,
+    },
+    badgeTextFinished: {
+      color: colors.success,
+    },
 
-  // Time
-  time: {
-    ...typography.caption,
-    color: colors.textTertiary,
-  },
+    // Time
+    time: {
+      ...typography.caption,
+      color: colors.textTertiary,
+    },
 
-  // Last message
-  lastMessage: {
-    ...typography.body2,
-    color: colors.textSecondary,
-    marginTop: spacing.xxs,
-  },
+    // Last message
+    lastMessage: {
+      ...typography.body2,
+      color: colors.textSecondary,
+      marginTop: spacing.xxs,
+    },
 
-  // Chevron
-  chevron: {
-    fontSize: 22,
-    color: colors.textTertiary,
-    fontWeight: '300',
-  },
-});
+    // Chevron
+    chevron: {
+      fontSize: 22,
+      color: colors.textTertiary,
+      fontWeight: '300',
+    },
+  });

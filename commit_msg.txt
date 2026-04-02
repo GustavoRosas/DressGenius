@@ -1,0 +1,11 @@
+feat: mobile app + backend enhancements (waves 1-5)
+
+Mobile (React Native / Expo 55 / TypeScript):
+- Onboarding, Login, Register, Home Hub, Analyze, History, Chat
+- Closet (CRUD), Profile, AI Preferences, Paywall
+- i18n (EN + PT-BR), design system, reusable components
+
+Backend (Laravel 10):
+- ColorAnalysisService, OccasionStylingService, BackgroundRemovalService
+- CORS, multipart 10MB, POST /occasion-styling
+- Migration: processed_image_path on wardrobe_items

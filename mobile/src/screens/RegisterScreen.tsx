@@ -5,7 +5,7 @@
  * theme tokens, and i18n-ready STRINGS constant.
  */
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   KeyboardAvoidingView,
@@ -20,13 +20,15 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import { lightColors as colors } from '../theme/colors';
+import { SocialAuthButtons } from '../components/SocialAuthButtons';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
 import type { RootStackParamList } from '../navigation/types';
+import type { ColorScheme } from '../theme/colors';
 
 // ─── i18n-ready strings ─────────────────────────────────────────────
 const STRINGS = {
@@ -66,6 +68,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 
 export function RegisterScreen({ navigation }: Props) {
   const { signIn } = useAuth();
+  const { colors, isDark } = useTheme();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -131,9 +134,11 @@ export function RegisterScreen({ navigation }: Props) {
     }
   };
 
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+      <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} backgroundColor={colors.background} />
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -251,6 +256,9 @@ export function RegisterScreen({ navigation }: Props) {
               style={styles.registerButton}
             />
 
+            {/* ── Social Login ── */}
+            <SocialAuthButtons />
+
             {/* ── Login link ── */}
             <Pressable
               onPress={() => navigation.goBack()}
@@ -269,103 +277,104 @@ export function RegisterScreen({ navigation }: Props) {
 }
 
 // ─── Styles ──────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  flex: { flex: 1 },
-  scroll: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.xl + spacing.xs,
-    paddingVertical: spacing.xxxl,
-  },
-  content: {
-    width: '100%',
-    maxWidth: 400,
-    alignSelf: 'center',
-  },
+const createStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    flex: { flex: 1 },
+    scroll: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      paddingHorizontal: spacing.xl + spacing.xs,
+      paddingVertical: spacing.xxxl,
+    },
+    content: {
+      width: '100%',
+      maxWidth: 400,
+      alignSelf: 'center',
+    },
 
-  // Branding
-  brandingContainer: {
-    alignItems: 'center',
-    marginBottom: spacing.xxl + spacing.xs,
-  },
-  brandEmoji: {
-    fontSize: 48,
-    marginBottom: spacing.sm,
-  },
-  brandTitle: {
-    ...typography.h2,
-    fontWeight: '800',
-    color: colors.text,
-  },
-  brandSubtitle: {
-    ...typography.body2,
-    color: colors.textSecondary,
-    marginTop: spacing.sm - spacing.xxs,
-    textAlign: 'center',
-    letterSpacing: 0.2,
-  },
+    // Branding
+    brandingContainer: {
+      alignItems: 'center',
+      marginBottom: spacing.xxl + spacing.xs,
+    },
+    brandEmoji: {
+      fontSize: 48,
+      marginBottom: spacing.sm,
+    },
+    brandTitle: {
+      ...typography.h2,
+      fontWeight: '800',
+      color: colors.text,
+    },
+    brandSubtitle: {
+      ...typography.body2,
+      color: colors.textSecondary,
+      marginTop: spacing.sm - spacing.xxs,
+      textAlign: 'center',
+      letterSpacing: 0.2,
+    },
 
-  // Error
-  errorBox: {
-    backgroundColor: colors.errorBackground,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    marginBottom: spacing.xl - spacing.xs,
-    borderWidth: 1,
-    borderColor: '#FECACA',
-  },
-  errorText: {
-    ...typography.body2,
-    color: colors.error,
-    lineHeight: 20,
-  },
+    // Error
+    errorBox: {
+      backgroundColor: colors.errorBackground,
+      borderRadius: borderRadius.md,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      marginBottom: spacing.xl - spacing.xs,
+      borderWidth: 1,
+      borderColor: colors.error,
+    },
+    errorText: {
+      ...typography.body2,
+      color: colors.error,
+      lineHeight: 20,
+    },
 
-  // Input icon
-  inputIcon: {
-    fontSize: 18,
-  },
+    // Input icon
+    inputIcon: {
+      fontSize: 18,
+    },
 
-  // Password field — eye toggle overlay
-  passwordContainer: {
-    position: 'relative',
-  },
-  eyeButton: {
-    position: 'absolute',
-    right: spacing.lg,
-    top: spacing.xl + spacing.xs,
-    height: 52,
-    justifyContent: 'center',
-    zIndex: 1,
-  },
-  eyeIcon: {
-    fontSize: 20,
-  },
+    // Password field — eye toggle overlay
+    passwordContainer: {
+      position: 'relative',
+    },
+    eyeButton: {
+      position: 'absolute',
+      right: spacing.lg,
+      top: spacing.xl + spacing.xs,
+      height: 52,
+      justifyContent: 'center',
+      zIndex: 1,
+    },
+    eyeIcon: {
+      fontSize: 20,
+    },
 
-  // Register button
-  registerButton: {
-    ...shadows.lg,
-    height: 56,
-    marginTop: spacing.md,
-  },
+    // Register button
+    registerButton: {
+      ...shadows.lg,
+      height: 56,
+      marginTop: spacing.md,
+    },
 
-  // Login link
-  linkButton: {
-    alignItems: 'center',
-    marginTop: spacing.xl,
-    paddingVertical: spacing.sm,
-  },
-  linkText: {
-    ...typography.body2,
-    fontSize: 15,
-    color: colors.textSecondary,
-  },
-  linkBold: {
-    color: colors.primary,
-    fontWeight: '700',
-  },
-});
+    // Login link
+    linkButton: {
+      alignItems: 'center',
+      marginTop: spacing.xl,
+      paddingVertical: spacing.sm,
+    },
+    linkText: {
+      ...typography.body2,
+      fontSize: 15,
+      color: colors.textSecondary,
+    },
+    linkBold: {
+      color: colors.primary,
+      fontWeight: '700',
+    },
+  });

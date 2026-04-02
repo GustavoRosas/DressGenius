@@ -27,7 +27,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { api } from '../api/client';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import { lightColors as colors, palette } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import { palette, type ColorScheme } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
@@ -87,6 +88,7 @@ const INITIAL_FORM: FormState = { name: '', category: '', color: '', imageUri: '
 
 export function ClosetScreen() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
 
   // List state
   const [items, setItems] = useState<WardrobeItem[]>([]);
@@ -103,6 +105,8 @@ export function ClosetScreen() {
 
   // Category picker state
   const [categoryPickerVisible, setCategoryPickerVisible] = useState(false);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   // -------------------------------------------------------------------------
   // Data fetching
@@ -224,7 +228,6 @@ export function ClosetScreen() {
       const isLocalImage = form.imageUri.startsWith('file://') || form.imageUri.startsWith('content://');
 
       if (editingItem) {
-        // PATCH — update
         if (isLocalImage) {
           const fd = new FormData();
           fd.append('label', form.name.trim());
@@ -246,7 +249,6 @@ export function ClosetScreen() {
           });
         }
       } else {
-        // POST — create
         const fd = new FormData();
         fd.append('label', form.name.trim());
         fd.append('category', form.category);
@@ -324,14 +326,14 @@ export function ClosetScreen() {
         </View>
       </Pressable>
     ),
-    [openEditModal, confirmDelete, categoryLabel],
+    [openEditModal, confirmDelete, categoryLabel, styles, colors],
   );
 
   const keyExtractor = useCallback((item: WardrobeItem) => String(item.id), []);
 
   const listContentStyle = useMemo(
     () => [styles.listContent, items.length === 0 && styles.listContentEmpty],
-    [items.length],
+    [items.length, styles],
   );
 
   // -------------------------------------------------------------------------
@@ -356,7 +358,7 @@ export function ClosetScreen() {
         <Text style={styles.emptySubtitle}>{t('screens.closet.emptySubtitle')}</Text>
       </View>
     );
-  }, [loading, error, t, fetchItems]);
+  }, [loading, error, t, fetchItems, styles]);
 
   // -------------------------------------------------------------------------
   // Category Picker Modal
@@ -532,281 +534,282 @@ export function ClosetScreen() {
 // Styles
 // ---------------------------------------------------------------------------
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
+const createStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  // Header
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  headerTitle: {
-    ...typography.h2,
-    color: colors.text,
-  },
-  headerCount: {
-    ...typography.subtitle2,
-    color: colors.textSecondary,
-    backgroundColor: colors.primaryLight,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xxs,
-    borderRadius: borderRadius.full,
-    overflow: 'hidden',
-    minWidth: 28,
-    textAlign: 'center',
-  },
+    // Header
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+    },
+    headerTitle: {
+      ...typography.h2,
+      color: colors.text,
+    },
+    headerCount: {
+      ...typography.subtitle2,
+      color: colors.textSecondary,
+      backgroundColor: colors.primaryLight,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xxs,
+      borderRadius: borderRadius.full,
+      overflow: 'hidden',
+      minWidth: 28,
+      textAlign: 'center',
+    },
 
-  // List
-  listContent: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: 100,
-  },
-  listContentEmpty: {
-    flexGrow: 1,
-    justifyContent: 'center',
-  },
-  row: {
-    justifyContent: 'space-between',
-    marginBottom: CARD_GAP,
-  },
+    // List
+    listContent: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: 100,
+    },
+    listContentEmpty: {
+      flexGrow: 1,
+      justifyContent: 'center',
+    },
+    row: {
+      justifyContent: 'space-between',
+      marginBottom: CARD_GAP,
+    },
 
-  // Card
-  card: {
-    width: CARD_WIDTH,
-    height: CARD_HEIGHT,
-    borderRadius: borderRadius.md,
-    overflow: 'hidden',
-    backgroundColor: colors.surface,
-    ...shadows.md,
-  },
-  cardImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  cardOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.sm,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-  },
-  badge: {
-    alignSelf: 'flex-start',
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xxs,
-    borderRadius: borderRadius.xs,
-    marginBottom: spacing.xxs,
-  },
-  badgeText: {
-    ...typography.overline,
-    color: colors.textInverse,
-    fontSize: 9,
-  },
-  cardName: {
-    ...typography.subtitle2,
-    color: colors.textInverse,
-  },
+    // Card
+    card: {
+      width: CARD_WIDTH,
+      height: CARD_HEIGHT,
+      borderRadius: borderRadius.md,
+      overflow: 'hidden',
+      backgroundColor: colors.surface,
+      ...shadows.md,
+    },
+    cardImage: {
+      width: '100%',
+      height: '100%',
+      resizeMode: 'cover',
+    },
+    cardOverlay: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.sm,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+    },
+    badge: {
+      alignSelf: 'flex-start',
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xxs,
+      borderRadius: borderRadius.xs,
+      marginBottom: spacing.xxs,
+    },
+    badgeText: {
+      ...typography.overline,
+      color: '#FFFFFF',
+      fontSize: 9,
+    },
+    cardName: {
+      ...typography.subtitle2,
+      color: '#FFFFFF',
+    },
 
-  // Empty
-  emptyContainer: {
-    alignItems: 'center',
-    paddingHorizontal: spacing.xl,
-  },
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: spacing.lg,
-  },
-  emptyTitle: {
-    ...typography.h3,
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: spacing.sm,
-  },
-  emptySubtitle: {
-    ...typography.body1,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
+    // Empty
+    emptyContainer: {
+      alignItems: 'center',
+      paddingHorizontal: spacing.xl,
+    },
+    emptyIcon: {
+      fontSize: 64,
+      marginBottom: spacing.lg,
+    },
+    emptyTitle: {
+      ...typography.h3,
+      color: colors.text,
+      textAlign: 'center',
+      marginBottom: spacing.sm,
+    },
+    emptySubtitle: {
+      ...typography.body1,
+      color: colors.textSecondary,
+      textAlign: 'center',
+    },
 
-  // Loading
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
+    // Loading
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
 
-  // FAB
-  fab: {
-    position: 'absolute',
-    bottom: 32,
-    right: 24,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...shadows.xl,
-  },
-  fabIcon: {
-    fontSize: 28,
-    color: colors.textInverse,
-    lineHeight: 30,
-    fontWeight: '300',
-  },
+    // FAB
+    fab: {
+      position: 'absolute',
+      bottom: 32,
+      right: 24,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: colors.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...shadows.xl,
+    },
+    fabIcon: {
+      fontSize: 28,
+      color: colors.textInverse,
+      lineHeight: 30,
+      fontWeight: '300',
+    },
 
-  // Modal
-  modalContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  modalContent: {
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.xxxl,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  modalTitle: {
-    ...typography.h2,
-    color: colors.text,
-  },
-  modalClose: {
-    fontSize: 22,
-    color: colors.textSecondary,
-    padding: spacing.xs,
-  },
+    // Modal
+    modalContainer: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    modalContent: {
+      paddingHorizontal: spacing.xl,
+      paddingTop: spacing.lg,
+      paddingBottom: spacing.xxxl,
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: spacing.xl,
+    },
+    modalTitle: {
+      ...typography.h2,
+      color: colors.text,
+    },
+    modalClose: {
+      fontSize: 22,
+      color: colors.textSecondary,
+      padding: spacing.xs,
+    },
 
-  // Image picker
-  imagePicker: {
-    width: '100%',
-    height: 200,
-    borderRadius: borderRadius.md,
-    overflow: 'hidden',
-    marginBottom: spacing.lg,
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderStyle: 'dashed',
-  },
-  imagePreview: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  imagePlaceholder: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  imagePlaceholderIcon: {
-    fontSize: 40,
-    marginBottom: spacing.sm,
-  },
-  imagePlaceholderText: {
-    ...typography.body2,
-    color: colors.textSecondary,
-  },
+    // Image picker
+    imagePicker: {
+      width: '100%',
+      height: 200,
+      borderRadius: borderRadius.md,
+      overflow: 'hidden',
+      marginBottom: spacing.lg,
+      backgroundColor: colors.surface,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      borderStyle: 'dashed',
+    },
+    imagePreview: {
+      width: '100%',
+      height: '100%',
+      resizeMode: 'cover',
+    },
+    imagePlaceholder: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    imagePlaceholderIcon: {
+      fontSize: 40,
+      marginBottom: spacing.sm,
+    },
+    imagePlaceholderText: {
+      ...typography.body2,
+      color: colors.textSecondary,
+    },
 
-  // Category select
-  fieldContainer: {
-    marginBottom: spacing.lg,
-  },
-  fieldLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-    fontWeight: '600',
-  },
-  fieldLabelError: {
-    color: colors.error,
-  },
-  selectField: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.lg,
-    height: 52,
-  },
-  selectFieldError: {
-    borderColor: colors.error,
-  },
-  selectText: {
-    ...typography.body1,
-    color: colors.text,
-  },
-  selectPlaceholder: {
-    ...typography.body1,
-    color: colors.placeholder,
-  },
-  selectArrow: {
-    fontSize: 16,
-    color: colors.textSecondary,
-  },
-  fieldError: {
-    ...typography.caption,
-    color: colors.error,
-    marginTop: spacing.xs,
-  },
+    // Category select
+    fieldContainer: {
+      marginBottom: spacing.lg,
+    },
+    fieldLabel: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginBottom: spacing.xs,
+      fontWeight: '600',
+    },
+    fieldLabelError: {
+      color: colors.error,
+    },
+    selectField: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: colors.surface,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      borderRadius: borderRadius.md,
+      paddingHorizontal: spacing.lg,
+      height: 52,
+    },
+    selectFieldError: {
+      borderColor: colors.error,
+    },
+    selectText: {
+      ...typography.body1,
+      color: colors.text,
+    },
+    selectPlaceholder: {
+      ...typography.body1,
+      color: colors.placeholder,
+    },
+    selectArrow: {
+      fontSize: 16,
+      color: colors.textSecondary,
+    },
+    fieldError: {
+      ...typography.caption,
+      color: colors.error,
+      marginTop: spacing.xs,
+    },
 
-  // Category picker overlay
-  pickerOverlay: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  pickerContainer: {
-    width: SCREEN_WIDTH - spacing.xl * 2,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.xl,
-    ...shadows.lg,
-  },
-  pickerTitle: {
-    ...typography.subtitle1,
-    color: colors.text,
-    marginBottom: spacing.lg,
-  },
-  pickerOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm,
-    borderRadius: borderRadius.sm,
-  },
-  pickerOptionActive: {
-    backgroundColor: colors.primaryLight,
-  },
-  pickerDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: spacing.md,
-  },
-  pickerOptionText: {
-    ...typography.body1,
-    color: colors.text,
-  },
-  pickerOptionTextActive: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
-});
+    // Category picker overlay
+    pickerOverlay: {
+      flex: 1,
+      backgroundColor: colors.overlay,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    pickerContainer: {
+      width: SCREEN_WIDTH - spacing.xl * 2,
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.xl,
+      ...shadows.lg,
+    },
+    pickerTitle: {
+      ...typography.subtitle1,
+      color: colors.text,
+      marginBottom: spacing.lg,
+    },
+    pickerOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.sm,
+      borderRadius: borderRadius.sm,
+    },
+    pickerOptionActive: {
+      backgroundColor: colors.primaryLight,
+    },
+    pickerDot: {
+      width: 12,
+      height: 12,
+      borderRadius: 6,
+      marginRight: spacing.md,
+    },
+    pickerOptionText: {
+      ...typography.body1,
+      color: colors.text,
+    },
+    pickerOptionTextActive: {
+      color: colors.primary,
+      fontWeight: '600',
+    },
+  });

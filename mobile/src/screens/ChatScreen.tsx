@@ -5,7 +5,7 @@
  * message bubbles, typing indicator, finish + feedback flow.
  */
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -26,11 +26,12 @@ import { useNavigation, useRoute, type RouteProp } from '@react-navigation/nativ
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { api } from '../api/client';
-import { lightColors as colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
 import type { RootStackParamList } from '../navigation/types';
+import type { ColorScheme } from '../theme/colors';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -52,7 +53,7 @@ type ChatNavProp = NativeStackNavigationProp<RootStackParamList, 'Chat'>;
 
 // ─── Typing Indicator ─────────────────────────────────────────────────────────
 
-function TypingIndicator({ label }: { label: string }) {
+function TypingIndicator({ label, colors }: { label: string; colors: ColorScheme }) {
   const dot1 = useRef(new Animated.Value(0)).current;
   const dot2 = useRef(new Animated.Value(0)).current;
   const dot3 = useRef(new Animated.Value(0)).current;
@@ -86,13 +87,15 @@ function TypingIndicator({ label }: { label: string }) {
     transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [0, -4] }) }],
   });
 
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   return (
     <View style={styles.typingRow}>
       <View style={[styles.bubble, styles.aiBubble, styles.typingBubble]}>
         <View style={styles.dotsContainer}>
-          <Animated.View style={[styles.dot, dotStyle(dot1)]} />
-          <Animated.View style={[styles.dot, dotStyle(dot2)]} />
-          <Animated.View style={[styles.dot, dotStyle(dot3)]} />
+          <Animated.View style={[styles.dot, { backgroundColor: colors.primary }, dotStyle(dot1)]} />
+          <Animated.View style={[styles.dot, { backgroundColor: colors.primary }, dotStyle(dot2)]} />
+          <Animated.View style={[styles.dot, { backgroundColor: colors.primary }, dotStyle(dot3)]} />
         </View>
         <Text style={styles.typingLabel}>{label}</Text>
       </View>
@@ -106,17 +109,20 @@ function StarRating({
   rating,
   onRate,
   labels,
+  colors,
 }: {
   rating: number;
   onRate: (n: number) => void;
   labels: Record<string, string>;
+  colors: ColorScheme;
 }) {
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.starsContainer}>
       <View style={styles.starsRow}>
         {[1, 2, 3, 4, 5].map((n) => (
           <Pressable key={n} onPress={() => onRate(n)} style={styles.starButton}>
-            <Text style={[styles.starIcon, n <= rating && styles.starActive]}>
+            <Text style={[styles.starIcon, { color: colors.disabled }, n <= rating && { color: colors.secondary }]}>
               {n <= rating ? '★' : '☆'}
             </Text>
           </Pressable>
@@ -135,6 +141,7 @@ function StarRating({
 
 export function ChatScreen() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const route = useRoute<ChatRouteProp>();
   const navigation = useNavigation<ChatNavProp>();
   const { chatId } = route.params;
@@ -154,6 +161,8 @@ export function ChatScreen() {
 
   const flatListRef = useRef<FlatList<ChatMessage>>(null);
 
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
   // ─── Header ───────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -166,12 +175,12 @@ export function ChatScreen() {
       headerRight: () =>
         !chatFinished ? (
           <Pressable onPress={handleFinish} hitSlop={8}>
-            <Text style={styles.headerAction}>{t('screens.chat.finish')}</Text>
+            <Text style={[styles.headerAction, { color: colors.primary }]}>{t('screens.chat.finish')}</Text>
           </Pressable>
         ) : null,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chatFinished, t]);
+  }, [chatFinished, t, colors]);
 
   // ─── Fetch messages ───────────────────────────────────────────────────
 
@@ -314,7 +323,7 @@ export function ChatScreen() {
         </View>
       );
     },
-    [formatTime],
+    [formatTime, styles],
   );
 
   const keyExtractor = useCallback((item: ChatMessage) => String(item.id), []);
@@ -353,7 +362,7 @@ export function ChatScreen() {
           inverted
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
-          ListHeaderComponent={aiTyping ? <TypingIndicator label={t('screens.chat.aiTyping')} /> : null}
+          ListHeaderComponent={aiTyping ? <TypingIndicator label={t('screens.chat.aiTyping')} colors={colors} /> : null}
         />
 
         {/* Input bar */}
@@ -399,7 +408,7 @@ export function ChatScreen() {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{t('screens.chat.feedbackTitle')}</Text>
 
-            <StarRating rating={feedbackRating} onRate={setFeedbackRating} labels={ratingLabels} />
+            <StarRating rating={feedbackRating} onRate={setFeedbackRating} labels={ratingLabels} colors={colors} />
 
             <TextInput
               style={styles.feedbackInput}
@@ -445,245 +454,240 @@ export function ChatScreen() {
 
 const BUBBLE_RADIUS = 18;
 
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-  },
+const createStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    flex: { flex: 1 },
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    loaderContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.background,
+    },
 
-  // ─ List ─
-  listContent: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    paddingBottom: spacing.sm,
-  },
+    // ─ List ─
+    listContent: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.md,
+      paddingBottom: spacing.sm,
+    },
 
-  // ─ Message rows ─
-  messageRow: {
-    marginBottom: spacing.sm,
-    maxWidth: '80%',
-  },
-  messageRowUser: {
-    alignSelf: 'flex-end',
-  },
-  messageRowAI: {
-    alignSelf: 'flex-start',
-  },
+    // ─ Message rows ─
+    messageRow: {
+      marginBottom: spacing.sm,
+      maxWidth: '80%',
+    },
+    messageRowUser: {
+      alignSelf: 'flex-end',
+    },
+    messageRowAI: {
+      alignSelf: 'flex-start',
+    },
 
-  // ─ Bubbles ─
-  bubble: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
-    ...shadows.sm,
-  },
-  userBubble: {
-    backgroundColor: colors.primary,
-    borderTopLeftRadius: BUBBLE_RADIUS,
-    borderTopRightRadius: BUBBLE_RADIUS,
-    borderBottomLeftRadius: BUBBLE_RADIUS,
-    borderBottomRightRadius: spacing.xs,
-  },
-  aiBubble: {
-    backgroundColor: colors.surface,
-    borderTopLeftRadius: BUBBLE_RADIUS,
-    borderTopRightRadius: BUBBLE_RADIUS,
-    borderBottomRightRadius: BUBBLE_RADIUS,
-    borderBottomLeftRadius: spacing.xs,
-  },
-  bubbleText: {
-    ...typography.body2,
-  },
-  userBubbleText: {
-    color: colors.textInverse,
-  },
-  aiBubbleText: {
-    color: colors.text,
-  },
-  timestamp: {
-    ...typography.caption,
-    marginTop: spacing.xs,
-    fontSize: 10,
-  },
-  timestampUser: {
-    color: 'rgba(255,255,255,0.7)',
-    textAlign: 'right',
-  },
-  timestampAI: {
-    color: colors.textTertiary,
-    textAlign: 'left',
-  },
+    // ─ Bubbles ─
+    bubble: {
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+      ...shadows.sm,
+    },
+    userBubble: {
+      backgroundColor: colors.primary,
+      borderTopLeftRadius: BUBBLE_RADIUS,
+      borderTopRightRadius: BUBBLE_RADIUS,
+      borderBottomLeftRadius: BUBBLE_RADIUS,
+      borderBottomRightRadius: spacing.xs,
+    },
+    aiBubble: {
+      backgroundColor: colors.surface,
+      borderTopLeftRadius: BUBBLE_RADIUS,
+      borderTopRightRadius: BUBBLE_RADIUS,
+      borderBottomRightRadius: BUBBLE_RADIUS,
+      borderBottomLeftRadius: spacing.xs,
+    },
+    bubbleText: {
+      ...typography.body2,
+    },
+    userBubbleText: {
+      color: colors.textInverse,
+    },
+    aiBubbleText: {
+      color: colors.text,
+    },
+    timestamp: {
+      ...typography.caption,
+      marginTop: spacing.xs,
+      fontSize: 10,
+    },
+    timestampUser: {
+      color: 'rgba(255,255,255,0.7)',
+      textAlign: 'right',
+    },
+    timestampAI: {
+      color: colors.textTertiary,
+      textAlign: 'left',
+    },
 
-  // ─ Typing indicator ─
-  typingRow: {
-    alignSelf: 'flex-start',
-    marginBottom: spacing.sm,
-  },
-  typingBubble: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
-  },
-  dotsContainer: {
-    flexDirection: 'row',
-    gap: spacing.xs,
-    marginRight: spacing.sm,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.primary,
-  },
-  typingLabel: {
-    ...typography.caption,
-    color: colors.textTertiary,
-  },
+    // ─ Typing indicator ─
+    typingRow: {
+      alignSelf: 'flex-start',
+      marginBottom: spacing.sm,
+    },
+    typingBubble: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.lg,
+    },
+    dotsContainer: {
+      flexDirection: 'row',
+      gap: spacing.xs,
+      marginRight: spacing.sm,
+    },
+    dot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+    },
+    typingLabel: {
+      ...typography.caption,
+      color: colors.textTertiary,
+    },
 
-  // ─ Input bar ─
-  inputBar: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    backgroundColor: colors.surface,
-    borderTopWidth: 1,
-    borderTopColor: colors.divider,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    gap: spacing.sm,
-  },
-  textInput: {
-    flex: 1,
-    ...typography.body2,
-    color: colors.text,
-    backgroundColor: colors.background,
-    borderRadius: borderRadius.xl,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: Platform.OS === 'ios' ? spacing.md : spacing.sm,
-    maxHeight: 120,
-    minHeight: 40,
-  },
-  sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...shadows.sm,
-  },
-  sendButtonDisabled: {
-    backgroundColor: colors.disabled,
-  },
-  sendIcon: {
-    color: colors.textInverse,
-    fontSize: 18,
-    fontWeight: '700',
-  },
+    // ─ Input bar ─
+    inputBar: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      backgroundColor: colors.surface,
+      borderTopWidth: 1,
+      borderTopColor: colors.divider,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      gap: spacing.sm,
+    },
+    textInput: {
+      flex: 1,
+      ...typography.body2,
+      color: colors.text,
+      backgroundColor: colors.background,
+      borderRadius: borderRadius.xl,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: Platform.OS === 'ios' ? spacing.md : spacing.sm,
+      maxHeight: 120,
+      minHeight: 40,
+    },
+    sendButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      ...shadows.sm,
+    },
+    sendButtonDisabled: {
+      backgroundColor: colors.disabled,
+    },
+    sendIcon: {
+      color: colors.textInverse,
+      fontSize: 18,
+      fontWeight: '700',
+    },
 
-  // ─ Header ─
-  headerAction: {
-    ...typography.subtitle2,
-    color: colors.primary,
-  },
+    // ─ Header ─
+    headerAction: {
+      ...typography.subtitle2,
+    },
 
-  // ─ Feedback modal ─
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: colors.overlay,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing.xl,
-  },
-  modalContent: {
-    width: '100%',
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.xl,
-    ...shadows.lg,
-  },
-  modalTitle: {
-    ...typography.h3,
-    color: colors.text,
-    textAlign: 'center',
-    marginBottom: spacing.xl,
-  },
+    // ─ Feedback modal ─
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: colors.overlay,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: spacing.xl,
+    },
+    modalContent: {
+      width: '100%',
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.lg,
+      padding: spacing.xl,
+      ...shadows.lg,
+    },
+    modalTitle: {
+      ...typography.h3,
+      color: colors.text,
+      textAlign: 'center',
+      marginBottom: spacing.xl,
+    },
 
-  // Stars
-  starsContainer: {
-    alignItems: 'center',
-    marginBottom: spacing.xl,
-  },
-  starsRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  starButton: {
-    padding: spacing.xs,
-  },
-  starIcon: {
-    fontSize: 36,
-    color: colors.disabled,
-  },
-  starActive: {
-    color: colors.secondary,
-  },
-  ratingLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: spacing.sm,
-  },
+    // Stars
+    starsContainer: {
+      alignItems: 'center',
+      marginBottom: spacing.xl,
+    },
+    starsRow: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+    },
+    starButton: {
+      padding: spacing.xs,
+    },
+    starIcon: {
+      fontSize: 36,
+    },
+    ratingLabel: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: spacing.sm,
+    },
 
-  // Feedback input
-  feedbackInput: {
-    ...typography.body2,
-    color: colors.text,
-    backgroundColor: colors.background,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    minHeight: 80,
-    textAlignVertical: 'top',
-    marginBottom: spacing.xl,
-  },
+    // Feedback input
+    feedbackInput: {
+      ...typography.body2,
+      color: colors.text,
+      backgroundColor: colors.background,
+      borderRadius: borderRadius.md,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      minHeight: 80,
+      textAlignVertical: 'top',
+      marginBottom: spacing.xl,
+    },
 
-  // Modal buttons
-  modalButtons: {
-    flexDirection: 'row',
-    gap: spacing.md,
-  },
-  modalCancelButton: {
-    flex: 1,
-    height: 48,
-    borderRadius: borderRadius.xl,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalCancelText: {
-    ...typography.button,
-    color: colors.textSecondary,
-  },
-  modalSubmitButton: {
-    flex: 1,
-    height: 48,
-    borderRadius: borderRadius.xl,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    ...shadows.md,
-  },
-  modalSubmitText: {
-    ...typography.button,
-    color: colors.textInverse,
-  },
-});
+    // Modal buttons
+    modalButtons: {
+      flexDirection: 'row',
+      gap: spacing.md,
+    },
+    modalCancelButton: {
+      flex: 1,
+      height: 48,
+      borderRadius: borderRadius.xl,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    modalCancelText: {
+      ...typography.button,
+      color: colors.textSecondary,
+    },
+    modalSubmitButton: {
+      flex: 1,
+      height: 48,
+      borderRadius: borderRadius.xl,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+      ...shadows.md,
+    },
+    modalSubmitText: {
+      ...typography.button,
+      color: colors.textInverse,
+    },
+  });

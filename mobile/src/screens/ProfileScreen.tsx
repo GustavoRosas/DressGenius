@@ -5,7 +5,7 @@
  * Todas as strings via i18n. Integra com API /me, /profile, /profile/password, /profile/photo.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -26,14 +26,16 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
-import { lightColors as colors } from '../theme/colors';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
 import type { RootStackParamList } from '../navigation/types';
+import type { ColorScheme } from '../theme/colors';
 
 const APP_VERSION = '1.0.0';
 
@@ -41,6 +43,7 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 export function ProfileScreen() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const { user, signOut, signIn, token } = useAuth();
   const navigation = useNavigation<Nav>();
 
@@ -63,6 +66,8 @@ export function ProfileScreen() {
 
   // Photo
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   // Fetch user data on mount
   const fetchProfile = useCallback(async () => {
@@ -335,11 +340,24 @@ export function ProfileScreen() {
             <LanguageSwitcher />
           </View>
 
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>{t('settings.darkMode')}</Text>
+            <ThemeToggle />
+          </View>
+
           <Pressable
             style={styles.settingRow}
             onPress={() => navigation.navigate('AIPreferences')}
           >
             <Text style={styles.settingLabel}>{t('screens.profile.aiPreferences')}</Text>
+            <Text style={styles.chevron}>›</Text>
+          </Pressable>
+
+          <Pressable
+            style={styles.settingRow}
+            onPress={() => navigation.navigate('NotificationPrefs' as any)}
+          >
+            <Text style={styles.settingLabel}>{t('screens.profile.notifications') || 'Notifications'}</Text>
             <Text style={styles.chevron}>›</Text>
           </Pressable>
 
@@ -358,7 +376,7 @@ export function ProfileScreen() {
             title={t('screens.profile.signOut')}
             variant="ghost"
             onPress={handleSignOut}
-            textStyle={styles.signOutText}
+            textStyle={{ color: colors.error }}
           />
         </View>
 
@@ -373,107 +391,104 @@ export function ProfileScreen() {
 
 const AVATAR_SIZE = 100;
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  loader: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scroll: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxxl,
-  },
-  // Header
-  header: {
-    alignItems: 'center',
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.xxl,
-  },
-  avatarContainer: {
-    position: 'relative',
-    marginBottom: spacing.md,
-  },
-  avatar: {
-    width: AVATAR_SIZE,
-    height: AVATAR_SIZE,
-    borderRadius: AVATAR_SIZE / 2,
-  },
-  avatarPlaceholder: {
-    backgroundColor: colors.primaryLight,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarInitial: {
-    ...typography.h1,
-    color: colors.primary,
-  },
-  cameraOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...shadows.sm,
-  },
-  cameraIcon: {
-    fontSize: 16,
-  },
-  headerName: {
-    ...typography.h3,
-    color: colors.text,
-    marginBottom: spacing.xxs,
-  },
-  headerEmail: {
-    ...typography.body2,
-    color: colors.textSecondary,
-  },
-  // Cards
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
-    padding: spacing.xl,
-    marginBottom: spacing.lg,
-    ...shadows.sm,
-  },
-  sectionTitle: {
-    ...typography.subtitle2,
-    color: colors.text,
-    marginBottom: spacing.lg,
-  },
-  // Settings
-  settingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.divider,
-  },
-  settingLabel: {
-    ...typography.body1,
-    color: colors.text,
-  },
-  chevron: {
-    ...typography.h3,
-    color: colors.textTertiary,
-  },
-  // Sign out
-  signOutText: {
-    color: colors.error,
-  },
-  // Version
-  version: {
-    ...typography.caption,
-    color: colors.textTertiary,
-    textAlign: 'center',
-    marginTop: spacing.sm,
-  },
-});
+const createStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    loader: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    scroll: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xxxl,
+    },
+    // Header
+    header: {
+      alignItems: 'center',
+      paddingTop: spacing.xl,
+      paddingBottom: spacing.xxl,
+    },
+    avatarContainer: {
+      position: 'relative',
+      marginBottom: spacing.md,
+    },
+    avatar: {
+      width: AVATAR_SIZE,
+      height: AVATAR_SIZE,
+      borderRadius: AVATAR_SIZE / 2,
+    },
+    avatarPlaceholder: {
+      backgroundColor: colors.primaryLight,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    avatarInitial: {
+      ...typography.h1,
+      color: colors.primary,
+    },
+    cameraOverlay: {
+      position: 'absolute',
+      bottom: 0,
+      right: 0,
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: colors.primary,
+      justifyContent: 'center',
+      alignItems: 'center',
+      ...shadows.sm,
+    },
+    cameraIcon: {
+      fontSize: 16,
+    },
+    headerName: {
+      ...typography.h3,
+      color: colors.text,
+      marginBottom: spacing.xxs,
+    },
+    headerEmail: {
+      ...typography.body2,
+      color: colors.textSecondary,
+    },
+    // Cards
+    card: {
+      backgroundColor: colors.card,
+      borderRadius: borderRadius.lg,
+      padding: spacing.xl,
+      marginBottom: spacing.lg,
+      ...shadows.sm,
+    },
+    sectionTitle: {
+      ...typography.subtitle2,
+      color: colors.text,
+      marginBottom: spacing.lg,
+    },
+    // Settings
+    settingRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: spacing.md,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.divider,
+    },
+    settingLabel: {
+      ...typography.body1,
+      color: colors.text,
+    },
+    chevron: {
+      ...typography.h3,
+      color: colors.textTertiary,
+    },
+    // Version
+    version: {
+      ...typography.caption,
+      color: colors.textTertiary,
+      textAlign: 'center',
+      marginTop: spacing.sm,
+    },
+  });

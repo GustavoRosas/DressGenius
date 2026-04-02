@@ -45,4 +45,8 @@ return [
         'debug' => (bool) env('GEMINI_DEBUG', false),
     ],
 
+    'open_meteo' => [
+        'base_url' => 'https://api.open-meteo.com/v1',
+    ],
+
 ];

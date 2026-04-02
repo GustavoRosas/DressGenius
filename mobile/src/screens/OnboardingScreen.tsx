@@ -5,16 +5,14 @@
  * Persists completion flag in SecureStore so it only shows once.
  */
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
   FlatList,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  Pressable,
   StyleSheet,
   Text,
+  Pressable,
   View,
   ViewToken,
 } from 'react-native';
@@ -25,10 +23,11 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { Button } from '../components/Button';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import { typography } from '../theme/typography';
 import { spacing } from '../theme/spacing';
 import type { RootStackParamList } from '../navigation/types';
+import type { ColorScheme } from '../theme/colors';
 
 export const ONBOARDING_KEY = 'dressgenius_onboarding_complete';
 
@@ -72,6 +71,7 @@ type NavProp = NativeStackNavigationProp<RootStackParamList, 'Onboarding'>;
 
 export function OnboardingScreen() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavProp>();
 
@@ -130,23 +130,25 @@ export function OnboardingScreen() {
           style={[styles.slideContent, { opacity: fadeAnims[index] }]}
         >
           <Text style={styles.emoji}>{item.emoji}</Text>
-          <Text style={styles.title}>{t(item.titleKey)}</Text>
-          <Text style={styles.subtitle}>{t(item.subtitleKey)}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{t(item.titleKey)}</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{t(item.subtitleKey)}</Text>
         </Animated.View>
       </View>
     ),
-    [fadeAnims, t],
+    [fadeAnims, t, colors],
   );
 
   const isLastSlide = activeIndex === SLIDES.length - 1;
 
+  const dynamicStyles = useMemo(() => createStyles(colors), [colors]);
+
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[dynamicStyles.container, { paddingTop: insets.top }]}>
       {/* Skip button */}
       <View style={styles.header}>
         {!isLastSlide ? (
           <Pressable onPress={completeOnboarding} hitSlop={12}>
-            <Text style={styles.skipText}>{t('onboarding.skip')}</Text>
+            <Text style={[styles.skipText, { color: colors.textSecondary }]}>{t('onboarding.skip')}</Text>
           </Pressable>
         ) : (
           <View />
@@ -181,7 +183,9 @@ export function OnboardingScreen() {
               key={i}
               style={[
                 styles.dot,
-                i === activeIndex ? styles.dotActive : styles.dotInactive,
+                i === activeIndex
+                  ? [styles.dotActive, { backgroundColor: colors.primary }]
+                  : { backgroundColor: colors.disabled },
               ]}
             />
           ))}
@@ -210,11 +214,15 @@ export function OnboardingScreen() {
   );
 }
 
+const createStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+  });
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
   header: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
@@ -224,7 +232,6 @@ const styles = StyleSheet.create({
   },
   skipText: {
     ...typography.body1,
-    color: colors.textSecondary,
   },
   slide: {
     flex: 1,
@@ -241,13 +248,11 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.h1,
-    color: colors.text,
     textAlign: 'center',
     marginBottom: spacing.md,
   },
   subtitle: {
     ...typography.body1,
-    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 24,
     paddingHorizontal: spacing.lg,
@@ -268,12 +273,8 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.xs,
   },
   dotActive: {
-    backgroundColor: colors.primary,
     width: 24,
     borderRadius: 5,
-  },
-  dotInactive: {
-    backgroundColor: colors.disabled,
   },
   buttonContainer: {
     alignItems: 'center',

@@ -6,7 +6,7 @@
  * All strings i18n via react-i18next.
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -21,10 +21,11 @@ import { useTranslation } from 'react-i18next';
 
 import { api } from '../api/client';
 import { Button } from '../components/Button';
-import { lightColors as colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
+import type { ColorScheme } from '../theme/colors';
 
 // ────────────────────────────────────────────
 // Types
@@ -98,10 +99,13 @@ const BUDGET_LEVELS = ['$', '$$', '$$$', '$$$$'] as const;
 
 export function AIPreferencesScreen() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const [prefs, setPrefs] = useState<AIPreferences>(EMPTY_PREFS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   // ── Load existing preferences ──
   useEffect(() => {
@@ -199,6 +203,7 @@ export function AIPreferencesScreen() {
         <SectionHeader
           title={t('screens.aiPreferences.styles.title')}
           subtitle={t('screens.aiPreferences.styles.subtitle')}
+          colors={colors}
         />
         <View style={styles.chipRow}>
           {STYLE_OPTIONS.map((key) => (
@@ -207,6 +212,7 @@ export function AIPreferencesScreen() {
               label={t(`screens.aiPreferences.styles.${key}`)}
               selected={prefs.style.includes(key)}
               onPress={() => toggleMulti('style', key)}
+              colors={colors}
             />
           ))}
         </View>
@@ -215,6 +221,7 @@ export function AIPreferencesScreen() {
         <SectionHeader
           title={t('screens.aiPreferences.colors.title')}
           subtitle={t('screens.aiPreferences.colors.subtitle')}
+          colors={colors}
         />
         <View style={styles.colorRow}>
           {COLOR_OPTIONS.map(({ key, swatch }) => (
@@ -224,6 +231,7 @@ export function AIPreferencesScreen() {
               swatch={swatch}
               selected={prefs.colors.includes(key)}
               onPress={() => toggleMulti('colors', key)}
+              colors={colors}
             />
           ))}
         </View>
@@ -232,6 +240,7 @@ export function AIPreferencesScreen() {
         <SectionHeader
           title={t('screens.aiPreferences.occasions.title')}
           subtitle={t('screens.aiPreferences.occasions.subtitle')}
+          colors={colors}
         />
         <View style={styles.chipRow}>
           {OCCASION_OPTIONS.map((key) => (
@@ -240,6 +249,7 @@ export function AIPreferencesScreen() {
               label={t(`screens.aiPreferences.occasions.${key}`)}
               selected={prefs.occasions.includes(key)}
               onPress={() => toggleMulti('occasions', key)}
+              colors={colors}
             />
           ))}
         </View>
@@ -248,6 +258,7 @@ export function AIPreferencesScreen() {
         <SectionHeader
           title={t('screens.aiPreferences.bodyType.title')}
           subtitle={t('screens.aiPreferences.bodyType.subtitle')}
+          colors={colors}
         />
         <View style={styles.bodyTypeGrid}>
           {BODY_TYPE_OPTIONS.map(({ key, emoji }) => (
@@ -260,6 +271,7 @@ export function AIPreferencesScreen() {
               )}
               selected={prefs.body_type === key}
               onPress={() => selectSingle('body_type', key)}
+              colors={colors}
             />
           ))}
         </View>
@@ -268,6 +280,7 @@ export function AIPreferencesScreen() {
         <SectionHeader
           title={t('screens.aiPreferences.budget.title')}
           subtitle={t('screens.aiPreferences.budget.subtitle')}
+          colors={colors}
         />
         <View style={styles.chipRow}>
           {BUDGET_LEVELS.map((level) => (
@@ -276,6 +289,7 @@ export function AIPreferencesScreen() {
               label={level}
               selected={prefs.budget === level}
               onPress={() => selectSingle('budget', level)}
+              colors={colors}
             />
           ))}
         </View>
@@ -284,6 +298,7 @@ export function AIPreferencesScreen() {
         <SectionHeader
           title={t('screens.aiPreferences.brands.title')}
           subtitle={t('screens.aiPreferences.brands.subtitle')}
+          colors={colors}
         />
         <TextInput
           style={styles.brandsInput}
@@ -327,10 +342,13 @@ export function AIPreferencesScreen() {
 function SectionHeader({
   title,
   subtitle,
+  colors,
 }: {
   title: string;
   subtitle: string;
+  colors: ColorScheme;
 }) {
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -343,11 +361,14 @@ function Chip({
   label,
   selected,
   onPress,
+  colors,
 }: {
   label: string;
   selected: boolean;
   onPress: () => void;
+  colors: ColorScheme;
 }) {
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <Pressable
       onPress={onPress}
@@ -367,12 +388,15 @@ function ColorCircle({
   swatch,
   selected,
   onPress,
+  colors,
 }: {
   label: string;
   swatch: string;
   selected: boolean;
   onPress: () => void;
+  colors: ColorScheme;
 }) {
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <Pressable
       onPress={onPress}
@@ -406,13 +430,16 @@ function BodyTypeCard({
   description,
   selected,
   onPress,
+  colors,
 }: {
   emoji: string;
   name: string;
   description: string;
   selected: boolean;
   onPress: () => void;
+  colors: ColorScheme;
 }) {
+  const styles = useMemo(() => createStyles(colors), [colors]);
   return (
     <Pressable
       onPress={onPress}
@@ -435,193 +462,194 @@ function BodyTypeCard({
 // Styles
 // ────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  loaderContainer: {
-    flex: 1,
-    backgroundColor: colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  loaderText: {
-    ...typography.body2,
-    color: colors.textSecondary,
-  },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: spacing.xl,
-    paddingBottom: spacing.xxxl,
-  },
-  header: {
-    marginTop: spacing.lg,
-    marginBottom: spacing.xl,
-  },
-  title: {
-    ...typography.h1,
-    color: colors.text,
-  },
-  subtitle: {
-    ...typography.body1,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-  },
+const createStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    loaderContainer: {
+      flex: 1,
+      backgroundColor: colors.background,
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: spacing.md,
+    },
+    loaderText: {
+      ...typography.body2,
+      color: colors.textSecondary,
+    },
+    scroll: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingHorizontal: spacing.xl,
+      paddingBottom: spacing.xxxl,
+    },
+    header: {
+      marginTop: spacing.lg,
+      marginBottom: spacing.xl,
+    },
+    title: {
+      ...typography.h1,
+      color: colors.text,
+    },
+    subtitle: {
+      ...typography.body1,
+      color: colors.textSecondary,
+      marginTop: spacing.xs,
+    },
 
-  // ── Section ──
-  sectionHeader: {
-    marginTop: spacing.xxl,
-    marginBottom: spacing.lg,
-  },
-  sectionTitle: {
-    ...typography.subtitle1,
-    color: colors.text,
-  },
-  sectionSubtitle: {
-    ...typography.body2,
-    color: colors.textSecondary,
-    marginTop: spacing.xxs,
-  },
+    // ── Section ──
+    sectionHeader: {
+      marginTop: spacing.xxl,
+      marginBottom: spacing.lg,
+    },
+    sectionTitle: {
+      ...typography.subtitle1,
+      color: colors.text,
+    },
+    sectionSubtitle: {
+      ...typography.body2,
+      color: colors.textSecondary,
+      marginTop: spacing.xxs,
+    },
 
-  // ── Chips ──
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  chip: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.full,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  chipSelected: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  chipText: {
-    ...typography.body2,
-    color: colors.text,
-  },
-  chipTextSelected: {
-    color: colors.textInverse,
-    fontWeight: '600',
-  },
+    // ── Chips ──
+    chipRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    chip: {
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+      borderRadius: borderRadius.full,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      backgroundColor: colors.surface,
+    },
+    chipSelected: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    chipText: {
+      ...typography.body2,
+      color: colors.text,
+    },
+    chipTextSelected: {
+      color: colors.textInverse,
+      fontWeight: '600',
+    },
 
-  // ── Color circles ──
-  colorRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.lg,
-  },
-  colorItem: {
-    alignItems: 'center',
-    width: 72,
-  },
-  colorCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  colorCircleSelected: {
-    borderColor: colors.primary,
-    borderWidth: 3,
-  },
-  colorCheck: {
-    color: colors.textInverse,
-    fontSize: 20,
-    fontWeight: '700',
-    textShadowColor: 'rgba(0,0,0,0.4)',
-    textShadowRadius: 2,
-    textShadowOffset: { width: 0, height: 1 },
-  },
-  colorLabel: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginTop: spacing.xs,
-    textAlign: 'center',
-  },
-  colorLabelSelected: {
-    color: colors.primary,
-    fontWeight: '600',
-  },
+    // ── Color circles ──
+    colorRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.lg,
+    },
+    colorItem: {
+      alignItems: 'center',
+      width: 72,
+    },
+    colorCircle: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 2,
+      borderColor: 'transparent',
+    },
+    colorCircleSelected: {
+      borderColor: colors.primary,
+      borderWidth: 3,
+    },
+    colorCheck: {
+      color: '#FFFFFF',
+      fontSize: 20,
+      fontWeight: '700',
+      textShadowColor: 'rgba(0,0,0,0.4)',
+      textShadowRadius: 2,
+      textShadowOffset: { width: 0, height: 1 },
+    },
+    colorLabel: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      marginTop: spacing.xs,
+      textAlign: 'center',
+    },
+    colorLabelSelected: {
+      color: colors.primary,
+      fontWeight: '600',
+    },
 
-  // ── Body type cards ──
-  bodyTypeGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-  },
-  bodyCard: {
-    width: '47%' as unknown as number,
-    backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    padding: spacing.lg,
-    alignItems: 'center',
-    ...shadows.sm,
-  },
-  bodyCardSelected: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primaryLight,
-    borderWidth: 2,
-  },
-  bodyEmoji: {
-    fontSize: 36,
-    marginBottom: spacing.sm,
-  },
-  bodyName: {
-    ...typography.subtitle2,
-    color: colors.text,
-    textAlign: 'center',
-  },
-  bodyNameSelected: {
-    color: colors.primary,
-  },
-  bodyDesc: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: spacing.xxs,
-  },
+    // ── Body type cards ──
+    bodyTypeGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.md,
+    },
+    bodyCard: {
+      width: '47%' as unknown as number,
+      backgroundColor: colors.surface,
+      borderRadius: borderRadius.lg,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      padding: spacing.lg,
+      alignItems: 'center',
+      ...shadows.sm,
+    },
+    bodyCardSelected: {
+      borderColor: colors.primary,
+      backgroundColor: colors.primaryLight,
+      borderWidth: 2,
+    },
+    bodyEmoji: {
+      fontSize: 36,
+      marginBottom: spacing.sm,
+    },
+    bodyName: {
+      ...typography.subtitle2,
+      color: colors.text,
+      textAlign: 'center',
+    },
+    bodyNameSelected: {
+      color: colors.primary,
+    },
+    bodyDesc: {
+      ...typography.caption,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      marginTop: spacing.xxs,
+    },
 
-  // ── Brands input ──
-  brandsInput: {
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-    ...typography.body1,
-    color: colors.text,
-    minHeight: 60,
-    textAlignVertical: 'top',
-  },
+    // ── Brands input ──
+    brandsInput: {
+      backgroundColor: colors.surface,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      borderRadius: borderRadius.md,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+      ...typography.body1,
+      color: colors.text,
+      minHeight: 60,
+      textAlignVertical: 'top',
+    },
 
-  // ── Save ──
-  saveContainer: {
-    marginTop: spacing.xxl,
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  savedText: {
-    ...typography.body2,
-    color: colors.success,
-    fontWeight: '600',
-  },
-  saveButton: {
-    width: '100%',
-  },
-});
+    // ── Save ──
+    saveContainer: {
+      marginTop: spacing.xxl,
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    savedText: {
+      ...typography.body2,
+      color: colors.success,
+      fontWeight: '600',
+    },
+    saveButton: {
+      width: '100%',
+    },
+  });
