@@ -16,7 +16,8 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
-import { lightColors as colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import type { ColorScheme } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
@@ -31,6 +32,8 @@ export interface ButtonProps {
   disabled?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  /** Override theme colors (falls back to ThemeContext) */
+  colors?: ColorScheme;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -41,7 +44,11 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
   style,
   textStyle,
+  colors: colorsProp,
 }) => {
+  const themeColors = useTheme().colors;
+  const c = colorsProp ?? themeColors;
+
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = useCallback(() => {
@@ -64,9 +71,9 @@ export const Button: React.FC<ButtonProps> = ({
 
   const isDisabled = disabled || loading;
 
-  const containerStyles = getContainerStyle(variant, isDisabled);
-  const labelStyle = getLabelStyle(variant, isDisabled);
-  const spinnerColor = getSpinnerColor(variant);
+  const containerStyles = getContainerStyle(variant, isDisabled, c);
+  const labelStyle = getLabelStyle(variant, isDisabled, c);
+  const spinnerColor = getSpinnerColor(variant, c);
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
@@ -92,28 +99,28 @@ export const Button: React.FC<ButtonProps> = ({
 
 // — Style helpers —
 
-function getContainerStyle(variant: ButtonVariant, disabled: boolean): ViewStyle {
+function getContainerStyle(variant: ButtonVariant, disabled: boolean, c: ColorScheme): ViewStyle {
   if (disabled) {
     return variant === 'outline' || variant === 'ghost'
-      ? { backgroundColor: 'transparent', borderColor: colors.disabled, borderWidth: 1.5 }
-      : { backgroundColor: colors.disabled };
+      ? { backgroundColor: 'transparent', borderColor: c.disabled, borderWidth: 1.5 }
+      : { backgroundColor: c.disabled };
   }
 
   switch (variant) {
     case 'primary':
       return {
-        backgroundColor: colors.primary,
+        backgroundColor: c.primary,
         ...shadows.md,
       };
     case 'secondary':
       return {
-        backgroundColor: colors.secondary,
+        backgroundColor: c.secondary,
         ...shadows.sm,
       };
     case 'outline':
       return {
         backgroundColor: 'transparent',
-        borderColor: colors.primary,
+        borderColor: c.primary,
         borderWidth: 1.5,
       };
     case 'ghost':
@@ -123,31 +130,31 @@ function getContainerStyle(variant: ButtonVariant, disabled: boolean): ViewStyle
   }
 }
 
-function getLabelStyle(variant: ButtonVariant, disabled: boolean): TextStyle {
+function getLabelStyle(variant: ButtonVariant, disabled: boolean, c: ColorScheme): TextStyle {
   if (disabled) {
-    return { color: colors.disabledText };
+    return { color: c.disabledText };
   }
 
   switch (variant) {
     case 'primary':
-      return { color: colors.textInverse };
+      return { color: c.textInverse };
     case 'secondary':
-      return { color: colors.textInverse };
+      return { color: c.textInverse };
     case 'outline':
-      return { color: colors.primary };
+      return { color: c.primary };
     case 'ghost':
-      return { color: colors.primary };
+      return { color: c.primary };
   }
 }
 
-function getSpinnerColor(variant: ButtonVariant): string {
+function getSpinnerColor(variant: ButtonVariant, c: ColorScheme): string {
   switch (variant) {
     case 'primary':
     case 'secondary':
-      return colors.textInverse;
+      return c.textInverse;
     case 'outline':
     case 'ghost':
-      return colors.primary;
+      return c.primary;
   }
 }
 

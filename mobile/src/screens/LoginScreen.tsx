@@ -1,8 +1,8 @@
 /**
  * DressGenius — Login Screen
  *
- * Refactored to use design system components (Button, Input),
- * theme tokens, and i18n-ready STRINGS constant.
+ * Uses design system components (Button, Input),
+ * theme tokens, and react-i18next for localization.
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -18,6 +18,7 @@ import {
   View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -30,34 +31,12 @@ import { shadows } from '../theme/shadows';
 import type { RootStackParamList } from '../navigation/types';
 import type { ColorScheme } from '../theme/colors';
 
-// ─── i18n-ready strings ─────────────────────────────────────────────
-const STRINGS = {
-  title: 'DressGenius',
-  tagline: 'Your style, reinvented by AI',
-  brandEmoji: '👗',
-  emailLabel: 'Email',
-  emailPlaceholder: 'your@email.com',
-  passwordLabel: 'Password',
-  passwordPlaceholder: '••••••••',
-  forgotPassword: 'Forgot password?',
-  loginButton: 'Sign In',
-  loginButtonLoading: 'Signing in…',
-  noAccount: "Don't have an account? ",
-  signUp: 'Sign Up',
-  errorEmpty: 'Please fill in all fields.',
-  errorGeneric: 'Unable to sign in. Check your credentials.',
-  errorIcon: '⚠️',
-  emailIcon: '✉️',
-  passwordIcon: '🔒',
-  eyeOpen: '👁️',
-  eyeClosed: '🙈',
-} as const;
-
 type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
 
 export function LoginScreen({ navigation }: Props) {
   const { signIn } = useAuth();
   const { colors, isDark } = useTheme();
+  const { t } = useTranslation();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -87,7 +66,7 @@ export function LoginScreen({ navigation }: Props) {
   const handleLogin = async () => {
     setError('');
     if (!email.trim() || !password.trim()) {
-      setError(STRINGS.errorEmpty);
+      setError(t('auth.errors.fillAllFields'));
       return;
     }
     setLoading(true);
@@ -98,7 +77,7 @@ export function LoginScreen({ navigation }: Props) {
       const msg =
         err?.response?.data?.message ||
         err?.response?.data?.error ||
-        STRINGS.errorGeneric;
+        t('auth.errors.invalidCredentials');
       setError(msg);
     } finally {
       setLoading(false);
@@ -127,27 +106,27 @@ export function LoginScreen({ navigation }: Props) {
           >
             {/* ── Branding ── */}
             <View style={styles.brandingContainer}>
-              <Text style={styles.brandEmoji}>{STRINGS.brandEmoji}</Text>
-              <Text style={styles.brandName}>{STRINGS.title}</Text>
-              <Text style={styles.brandTagline}>{STRINGS.tagline}</Text>
+              <Text style={styles.brandEmoji}>👗</Text>
+              <Text style={styles.brandName}>{t('app.name')}</Text>
+              <Text style={styles.brandTagline}>{t('app.tagline')}</Text>
             </View>
 
             {/* ── Error ── */}
             {error ? (
               <View style={styles.errorBox}>
                 <Text style={styles.errorText}>
-                  {STRINGS.errorIcon} {error}
+                  ⚠️ {error}
                 </Text>
               </View>
             ) : null}
 
             {/* ── Email ── */}
             <Input
-              label={STRINGS.emailLabel}
+              label={t('login.email')}
               value={email}
               onChangeText={setEmail}
-              placeholder={STRINGS.emailPlaceholder}
-              icon={<Text style={styles.inputIcon}>{STRINGS.emailIcon}</Text>}
+              placeholder={t('login.emailPlaceholder')}
+              icon={<Text style={styles.inputIcon}>✉️</Text>}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -158,11 +137,11 @@ export function LoginScreen({ navigation }: Props) {
             {/* ── Password ── */}
             <View style={styles.passwordContainer}>
               <Input
-                label={STRINGS.passwordLabel}
+                label={t('login.password')}
                 value={password}
                 onChangeText={setPassword}
-                placeholder={STRINGS.passwordPlaceholder}
-                icon={<Text style={styles.inputIcon}>{STRINGS.passwordIcon}</Text>}
+                placeholder={t('login.passwordPlaceholder')}
+                icon={<Text style={styles.inputIcon}>🔒</Text>}
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
                 autoComplete="password"
@@ -176,7 +155,7 @@ export function LoginScreen({ navigation }: Props) {
                 accessibilityLabel="Toggle password visibility"
               >
                 <Text style={styles.eyeIcon}>
-                  {showPassword ? STRINGS.eyeClosed : STRINGS.eyeOpen}
+                  {showPassword ? '🙈' : '👁️'}
                 </Text>
               </Pressable>
             </View>
@@ -188,12 +167,12 @@ export function LoginScreen({ navigation }: Props) {
               }}
               style={styles.forgotButton}
             >
-              <Text style={styles.forgotText}>{STRINGS.forgotPassword}</Text>
+              <Text style={styles.forgotText}>{t('login.forgotPassword')}</Text>
             </Pressable>
 
             {/* ── Login Button ── */}
             <Button
-              title={loading ? STRINGS.loginButtonLoading : STRINGS.loginButton}
+              title={loading ? t('login.loading') : t('login.submit')}
               variant="primary"
               onPress={handleLogin}
               loading={loading}
@@ -209,8 +188,8 @@ export function LoginScreen({ navigation }: Props) {
               style={styles.linkButton}
             >
               <Text style={styles.linkText}>
-                {STRINGS.noAccount}
-                <Text style={styles.linkBold}>{STRINGS.signUp}</Text>
+                {t('login.noAccount')}{' '}
+                <Text style={styles.linkBold}>{t('login.signUp')}</Text>
               </Text>
             </Pressable>
           </Animated.View>
@@ -299,7 +278,7 @@ const createStyles = (colors: ColorScheme) =>
       fontSize: 20,
     },
 
-    // Forgot password
+    // Forgot password — Fix 5: uses colors.primary for proper contrast
     forgotButton: {
       alignSelf: 'flex-end',
       marginBottom: spacing.xl + spacing.xs,
@@ -307,7 +286,7 @@ const createStyles = (colors: ColorScheme) =>
     },
     forgotText: {
       ...typography.body2,
-      color: colors.primaryLight,
+      color: colors.primary,
       fontWeight: '600',
     },
 

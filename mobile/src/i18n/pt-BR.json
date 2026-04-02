@@ -7,7 +7,9 @@
     "title": "DressGenius",
     "subtitle": "Seu estilo, reinventado por IA",
     "email": "E-mail",
+    "emailPlaceholder": "seu@email.com",
     "password": "Senha",
+    "passwordPlaceholder": "••••••••",
     "submit": "Entrar",
     "loading": "Entrando…",
     "forgotPassword": "Esqueceu a senha?",
@@ -18,13 +20,20 @@
     "title": "Crie sua conta",
     "subtitle": "Comece sua jornada de estilo com DressGenius",
     "name": "Nome",
+    "namePlaceholder": "Seu nome completo",
     "email": "E-mail",
+    "emailPlaceholder": "seu@email.com",
     "password": "Senha (mín. 8 caracteres)",
+    "passwordPlaceholder": "Mín. 8 caracteres",
     "confirmPassword": "Confirmar senha",
+    "confirmPasswordPlaceholder": "Repita sua senha",
     "submit": "Criar conta",
     "loading": "Criando conta…",
     "hasAccount": "Já tem conta?",
-    "signIn": "Entrar"
+    "signIn": "Entrar",
+    "errors": {
+      "nameRequired": "Por favor, insira seu nome."
+    }
   },
   "auth": {
     "continueWithGoogle": "Continuar com Google",

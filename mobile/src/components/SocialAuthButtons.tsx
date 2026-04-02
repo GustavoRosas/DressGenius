@@ -16,12 +16,14 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import * as Google from 'expo-auth-session/providers/google';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as WebBrowser from 'expo-web-browser';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import { lightColors as colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import type { ColorScheme } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
@@ -33,16 +35,6 @@ import {
 } from '../config/auth';
 
 WebBrowser.maybeCompleteAuthSession();
-
-// ─── i18n-ready strings (replace with i18n hook later) ───────────────
-const STRINGS = {
-  continueWithGoogle: 'Continue with Google',
-  continueWithApple: 'Continue with Apple',
-  orDivider: 'or',
-  socialNotConfigured: 'Google Sign-In not configured yet',
-  socialComingSoon: 'Social login coming soon — please use email',
-  errorGeneric: 'Sign-in failed. Please try again.',
-} as const;
 
 interface SocialAuthButtonsProps {
   /** Shown above or below the form — includes the "or" divider */
@@ -56,6 +48,8 @@ export function SocialAuthButtons({
   dividerPosition = 'top',
 }: SocialAuthButtonsProps) {
   const { signIn } = useAuth();
+  const { colors } = useTheme();
+  const { t } = useTranslation();
 
   // Google Auth Request
   const [_request, response, promptAsync] = Google.useAuthRequest({
@@ -82,26 +76,26 @@ export function SocialAuthButtons({
         await signIn(data.token, data.user ?? null);
       } catch (err: any) {
         if (err?.response?.status === 404) {
-          Alert.alert(STRINGS.socialComingSoon);
+          Alert.alert(t('auth.socialComingSoon'));
         } else {
           const msg =
             err?.response?.data?.message ||
             err?.response?.data?.error ||
-            STRINGS.errorGeneric;
+            t('auth.errors.invalidCredentials');
           Alert.alert(msg);
         }
       }
     },
-    [signIn],
+    [signIn, t],
   );
 
   const handleGooglePress = useCallback(async () => {
     if (!isGoogleAuthConfigured) {
-      Alert.alert(STRINGS.socialNotConfigured);
+      Alert.alert(t('auth.socialNotConfigured'));
       return;
     }
     await promptAsync();
-  }, [promptAsync]);
+  }, [promptAsync, t]);
 
   const handleApplePress = useCallback(async () => {
     try {
@@ -117,33 +111,37 @@ export function SocialAuthButtons({
     } catch (err: any) {
       // User cancelled — ERR_REQUEST_CANCELED is normal, don't alert
       if (err.code !== 'ERR_REQUEST_CANCELED') {
-        Alert.alert(STRINGS.errorGeneric);
+        Alert.alert(t('auth.errors.invalidCredentials'));
       }
     }
-  }, [handleSocialLogin]);
+  }, [handleSocialLogin, t]);
 
-  const divider = showDivider ? <OrDivider /> : null;
+  const s = React.useMemo(() => createStyles(colors), [colors]);
+
+  const divider = showDivider ? <OrDivider colors={colors} /> : null;
 
   return (
-    <View style={styles.container}>
+    <View style={s.container}>
       {dividerPosition === 'top' && divider}
 
       {/* Apple — iOS only */}
       {Platform.OS === 'ios' && (
         <SocialButton
-          label={STRINGS.continueWithApple}
+          label={t('auth.continueWithApple')}
           icon="🍎"
           variant="apple"
           onPress={handleApplePress}
+          colors={colors}
         />
       )}
 
       {/* Google */}
       <SocialButton
-        label={STRINGS.continueWithGoogle}
+        label={t('auth.continueWithGoogle')}
         icon="G"
         variant="google"
         onPress={handleGooglePress}
+        colors={colors}
       />
 
       {dividerPosition === 'bottom' && divider}
@@ -153,12 +151,15 @@ export function SocialAuthButtons({
 
 // ─── OrDivider ───────────────────────────────────────────────────────
 
-function OrDivider() {
+function OrDivider({ colors }: { colors: ColorScheme }) {
+  const { t } = useTranslation();
+  const s = React.useMemo(() => createStyles(colors), [colors]);
+
   return (
-    <View style={styles.dividerContainer}>
-      <View style={styles.dividerLine} />
-      <Text style={styles.dividerText}>{STRINGS.orDivider}</Text>
-      <View style={styles.dividerLine} />
+    <View style={s.dividerContainer}>
+      <View style={s.dividerLine} />
+      <Text style={s.dividerText}>{t('auth.orDivider')}</Text>
+      <View style={s.dividerLine} />
     </View>
   );
 }
@@ -170,9 +171,10 @@ interface SocialButtonProps {
   icon: string;
   variant: 'google' | 'apple';
   onPress: () => void;
+  colors: ColorScheme;
 }
 
-function SocialButton({ label, icon, variant, onPress }: SocialButtonProps) {
+function SocialButton({ label, icon, variant, onPress, colors }: SocialButtonProps) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePressIn = useCallback(() => {
@@ -194,6 +196,7 @@ function SocialButton({ label, icon, variant, onPress }: SocialButtonProps) {
   }, [scaleAnim]);
 
   const isApple = variant === 'apple';
+  const s = React.useMemo(() => createStyles(colors), [colors]);
 
   return (
     <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
@@ -204,22 +207,22 @@ function SocialButton({ label, icon, variant, onPress }: SocialButtonProps) {
         accessibilityRole="button"
         accessibilityLabel={label}
         style={[
-          styles.socialButton,
-          isApple ? styles.appleButton : styles.googleButton,
+          s.socialButton,
+          isApple ? s.appleButton : s.googleButton,
         ]}
       >
         <Text
           style={[
-            styles.socialIcon,
-            isApple ? styles.appleIcon : styles.googleIcon,
+            s.socialIcon,
+            isApple ? s.appleIcon : s.googleIcon,
           ]}
         >
           {icon}
         </Text>
         <Text
           style={[
-            styles.socialLabel,
-            isApple ? styles.appleLabel : styles.googleLabel,
+            s.socialLabel,
+            isApple ? s.appleLabel : s.googleLabel,
           ]}
         >
           {label}
@@ -231,71 +234,72 @@ function SocialButton({ label, icon, variant, onPress }: SocialButtonProps) {
 
 // ─── Styles ──────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    gap: spacing.md,
-  },
+const createStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    container: {
+      width: '100%',
+      gap: spacing.md,
+    },
 
-  // Divider
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: spacing.lg,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: colors.divider,
-  },
-  dividerText: {
-    ...typography.body2,
-    color: colors.textTertiary,
-    marginHorizontal: spacing.lg,
-  },
+    // Divider
+    dividerContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: spacing.lg,
+    },
+    dividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: colors.divider,
+    },
+    dividerText: {
+      ...typography.body2,
+      color: colors.textTertiary,
+      marginHorizontal: spacing.lg,
+    },
 
-  // Shared social button
-  socialButton: {
-    height: 52,
-    borderRadius: borderRadius.xl,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.xl,
-  },
+    // Shared social button
+    socialButton: {
+      height: 52,
+      borderRadius: borderRadius.xl,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: spacing.xl,
+    },
 
-  // Apple variant — dark button
-  appleButton: {
-    backgroundColor: '#000000',
-    ...shadows.sm,
-  },
-  appleIcon: {
-    fontSize: 20,
-    marginRight: spacing.sm,
-  },
-  appleLabel: {
-    ...typography.button,
-    color: '#FFFFFF',
-  },
+    // Apple variant — dark button
+    appleButton: {
+      backgroundColor: '#000000',
+      ...shadows.sm,
+    },
+    appleIcon: {
+      fontSize: 20,
+      marginRight: spacing.sm,
+    },
+    appleLabel: {
+      ...typography.button,
+      color: '#FFFFFF',
+    },
 
-  // Google variant — white with border
-  googleButton: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    ...shadows.sm,
-  },
-  googleIcon: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#4285F4',
-    marginRight: spacing.sm,
-  },
-  googleLabel: {
-    ...typography.button,
-    color: colors.text,
-  },
+    // Google variant — uses theme surface instead of hardcoded white
+    googleButton: {
+      backgroundColor: colors.surface,
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      ...shadows.sm,
+    },
+    googleIcon: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: '#4285F4',
+      marginRight: spacing.sm,
+    },
+    googleLabel: {
+      ...typography.button,
+      color: colors.text,
+    },
 
-  socialIcon: {},
-  socialLabel: {},
-});
+    socialIcon: {},
+    socialLabel: {},
+  });

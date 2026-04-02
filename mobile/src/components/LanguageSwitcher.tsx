@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import * as SecureStore from 'expo-secure-store';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import type { ColorScheme } from '../theme/colors';
 
 const LANG_KEY = 'dressgenius_language';
 
@@ -13,6 +14,7 @@ const languages = [
 
 export function LanguageSwitcher() {
   const { i18n } = useTranslation();
+  const { colors } = useTheme();
   const [ready, setReady] = useState(false);
 
   // Load persisted language on mount
@@ -40,10 +42,12 @@ export function LanguageSwitcher() {
     }
   };
 
+  const s = useMemo(() => createStyles(colors), [colors]);
+
   if (!ready) return null;
 
   return (
-    <View style={styles.container}>
+    <View style={s.container}>
       {languages.map((lang) => {
         const isActive = i18n.language === lang.code ||
           (lang.code === 'en' && i18n.language.startsWith('en')) ||
@@ -53,9 +57,9 @@ export function LanguageSwitcher() {
           <Pressable
             key={lang.code}
             onPress={() => changeLanguage(lang.code)}
-            style={[styles.button, isActive && styles.buttonActive]}
+            style={[s.button, isActive && s.buttonActive]}
           >
-            <Text style={[styles.label, isActive && styles.labelActive]}>
+            <Text style={[s.label, isActive && s.labelActive]}>
               {lang.label}
             </Text>
           </Pressable>
@@ -65,29 +69,30 @@ export function LanguageSwitcher() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    borderRadius: 20,
-    overflow: 'hidden',
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    alignSelf: 'center',
-  },
-  button: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: colors.surface,
-  },
-  buttonActive: {
-    backgroundColor: colors.primary,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.textSecondary,
-  },
-  labelActive: {
-    color: colors.textInverse,
-  },
-});
+const createStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    container: {
+      flexDirection: 'row',
+      borderRadius: 20,
+      overflow: 'hidden',
+      borderWidth: 1.5,
+      borderColor: colors.border,
+      alignSelf: 'center',
+    },
+    button: {
+      paddingHorizontal: 16,
+      paddingVertical: 8,
+      backgroundColor: colors.surface,
+    },
+    buttonActive: {
+      backgroundColor: colors.primary,
+    },
+    label: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: colors.textSecondary,
+    },
+    labelActive: {
+      color: colors.textInverse,
+    },
+  });

@@ -1,8 +1,8 @@
 /**
  * DressGenius — Register Screen
  *
- * Refactored to use design system components (Button, Input),
- * theme tokens, and i18n-ready STRINGS constant.
+ * Uses design system components (Button, Input),
+ * theme tokens, and react-i18next for localization.
  */
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -18,6 +18,7 @@ import {
   View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -30,38 +31,6 @@ import { shadows } from '../theme/shadows';
 import type { RootStackParamList } from '../navigation/types';
 import type { ColorScheme } from '../theme/colors';
 
-// ─── i18n-ready strings ─────────────────────────────────────────────
-const STRINGS = {
-  brandEmoji: '✨',
-  title: 'Create your account',
-  subtitle: 'Start your style journey with DressGenius',
-  nameLabel: 'Name',
-  namePlaceholder: 'Your full name',
-  emailLabel: 'Email',
-  emailPlaceholder: 'your@email.com',
-  passwordLabel: 'Password',
-  passwordPlaceholder: 'Min. 8 characters',
-  confirmPasswordLabel: 'Confirm Password',
-  confirmPasswordPlaceholder: 'Repeat your password',
-  registerButton: 'Create Account',
-  registerButtonLoading: 'Creating account…',
-  hasAccount: 'Already have an account? ',
-  signIn: 'Sign In',
-  errorName: 'Please enter your name.',
-  errorEmail: 'Please enter your email.',
-  errorEmailInvalid: 'Invalid email address.',
-  errorPasswordLength: 'Password must be at least 8 characters.',
-  errorPasswordMatch: 'Passwords do not match.',
-  errorGeneric: 'Unable to create account. Please try again.',
-  errorIcon: '⚠️',
-  nameIcon: '👤',
-  emailIcon: '✉️',
-  passwordIcon: '🔒',
-  confirmIcon: '🔐',
-  eyeOpen: '👁️',
-  eyeClosed: '🙈',
-} as const;
-
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
@@ -69,6 +38,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Register'>;
 export function RegisterScreen({ navigation }: Props) {
   const { signIn } = useAuth();
   const { colors, isDark } = useTheme();
+  const { t } = useTranslation();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -99,11 +69,11 @@ export function RegisterScreen({ navigation }: Props) {
   }, []);
 
   const validate = (): string | null => {
-    if (!name.trim()) return STRINGS.errorName;
-    if (!email.trim()) return STRINGS.errorEmail;
-    if (!EMAIL_REGEX.test(email.trim())) return STRINGS.errorEmailInvalid;
-    if (password.length < 8) return STRINGS.errorPasswordLength;
-    if (password !== passwordConfirmation) return STRINGS.errorPasswordMatch;
+    if (!name.trim()) return t('register.errors.nameRequired');
+    if (!email.trim()) return t('auth.errors.fillAllFields');
+    if (!EMAIL_REGEX.test(email.trim())) return t('auth.errors.emailInvalid');
+    if (password.length < 8) return t('auth.errors.passwordTooShort');
+    if (password !== passwordConfirmation) return t('auth.errors.passwordMismatch');
     return null;
   };
 
@@ -127,7 +97,7 @@ export function RegisterScreen({ navigation }: Props) {
       const msg =
         err?.response?.data?.message ||
         err?.response?.data?.error ||
-        STRINGS.errorGeneric;
+        t('auth.errors.accountCreationFailed');
       setError(msg);
     } finally {
       setLoading(false);
@@ -156,27 +126,27 @@ export function RegisterScreen({ navigation }: Props) {
           >
             {/* ── Branding ── */}
             <View style={styles.brandingContainer}>
-              <Text style={styles.brandEmoji}>{STRINGS.brandEmoji}</Text>
-              <Text style={styles.brandTitle}>{STRINGS.title}</Text>
-              <Text style={styles.brandSubtitle}>{STRINGS.subtitle}</Text>
+              <Text style={styles.brandEmoji}>✨</Text>
+              <Text style={styles.brandTitle}>{t('register.title')}</Text>
+              <Text style={styles.brandSubtitle}>{t('register.subtitle')}</Text>
             </View>
 
             {/* ── Error ── */}
             {error ? (
               <View style={styles.errorBox}>
                 <Text style={styles.errorText}>
-                  {STRINGS.errorIcon} {error}
+                  ⚠️ {error}
                 </Text>
               </View>
             ) : null}
 
             {/* ── Name ── */}
             <Input
-              label={STRINGS.nameLabel}
+              label={t('register.name')}
               value={name}
               onChangeText={setName}
-              placeholder={STRINGS.namePlaceholder}
-              icon={<Text style={styles.inputIcon}>{STRINGS.nameIcon}</Text>}
+              placeholder={t('register.namePlaceholder')}
+              icon={<Text style={styles.inputIcon}>👤</Text>}
               autoCapitalize="words"
               autoComplete="name"
               returnKeyType="next"
@@ -184,11 +154,11 @@ export function RegisterScreen({ navigation }: Props) {
 
             {/* ── Email ── */}
             <Input
-              label={STRINGS.emailLabel}
+              label={t('register.email')}
               value={email}
               onChangeText={setEmail}
-              placeholder={STRINGS.emailPlaceholder}
-              icon={<Text style={styles.inputIcon}>{STRINGS.emailIcon}</Text>}
+              placeholder={t('register.emailPlaceholder')}
+              icon={<Text style={styles.inputIcon}>✉️</Text>}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -199,11 +169,11 @@ export function RegisterScreen({ navigation }: Props) {
             {/* ── Password ── */}
             <View style={styles.passwordContainer}>
               <Input
-                label={STRINGS.passwordLabel}
+                label={t('register.password')}
                 value={password}
                 onChangeText={setPassword}
-                placeholder={STRINGS.passwordPlaceholder}
-                icon={<Text style={styles.inputIcon}>{STRINGS.passwordIcon}</Text>}
+                placeholder={t('register.passwordPlaceholder')}
+                icon={<Text style={styles.inputIcon}>🔒</Text>}
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
                 autoComplete="new-password"
@@ -216,7 +186,7 @@ export function RegisterScreen({ navigation }: Props) {
                 accessibilityLabel="Toggle password visibility"
               >
                 <Text style={styles.eyeIcon}>
-                  {showPassword ? STRINGS.eyeClosed : STRINGS.eyeOpen}
+                  {showPassword ? '🙈' : '👁️'}
                 </Text>
               </Pressable>
             </View>
@@ -224,11 +194,11 @@ export function RegisterScreen({ navigation }: Props) {
             {/* ── Confirm Password ── */}
             <View style={styles.passwordContainer}>
               <Input
-                label={STRINGS.confirmPasswordLabel}
+                label={t('register.confirmPassword')}
                 value={passwordConfirmation}
                 onChangeText={setPasswordConfirmation}
-                placeholder={STRINGS.confirmPasswordPlaceholder}
-                icon={<Text style={styles.inputIcon}>{STRINGS.confirmIcon}</Text>}
+                placeholder={t('register.confirmPasswordPlaceholder')}
+                icon={<Text style={styles.inputIcon}>🔐</Text>}
                 secureTextEntry={!showConfirm}
                 autoCapitalize="none"
                 autoComplete="new-password"
@@ -242,14 +212,14 @@ export function RegisterScreen({ navigation }: Props) {
                 accessibilityLabel="Toggle password confirmation visibility"
               >
                 <Text style={styles.eyeIcon}>
-                  {showConfirm ? STRINGS.eyeClosed : STRINGS.eyeOpen}
+                  {showConfirm ? '🙈' : '👁️'}
                 </Text>
               </Pressable>
             </View>
 
             {/* ── Register Button ── */}
             <Button
-              title={loading ? STRINGS.registerButtonLoading : STRINGS.registerButton}
+              title={loading ? t('register.loading') : t('register.submit')}
               variant="primary"
               onPress={handleRegister}
               loading={loading}
@@ -265,8 +235,8 @@ export function RegisterScreen({ navigation }: Props) {
               style={styles.linkButton}
             >
               <Text style={styles.linkText}>
-                {STRINGS.hasAccount}
-                <Text style={styles.linkBold}>{STRINGS.signIn}</Text>
+                {t('register.hasAccount')}{' '}
+                <Text style={styles.linkBold}>{t('register.signIn')}</Text>
               </Text>
             </Pressable>
           </Animated.View>

@@ -1,11 +1,10 @@
-feat: mobile app + backend enhancements (waves 1-5)
+fix: UX audit critical fixes - dark mode, i18n, contrast
 
-Mobile (React Native / Expo 55 / TypeScript):
-- Onboarding, Login, Register, Home Hub, Analyze, History, Chat
-- Closet (CRUD), Profile, AI Preferences, Paywall
-- i18n (EN + PT-BR), design system, reusable components
-
-Backend (Laravel 10):
-- ColorAnalysisService, OccasionStylingService, BackgroundRemovalService
-- CORS, multipart 10MB, POST /occasion-styling
-- Migration: processed_image_path on wardrobe_items
+- Button.tsx: useTheme() + optional colors prop (dark mode aware)
+- Input.tsx: createStyles factory with dynamic colors (dark mode aware)
+- SocialAuthButtons.tsx: useTheme() + useTranslation() (was hardcoded)
+- LoginScreen: STRINGS removed, all strings via t() i18n
+- RegisterScreen: same STRINGS to t() migration
+- LanguageSwitcher: createStyles factory (dark mode aware)
+- Forgot password contrast: primaryLight to primary (1.2:1 to 7.4:1)
+- i18n: added missing keys in en.json and pt-BR.json

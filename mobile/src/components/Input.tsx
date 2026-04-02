@@ -5,7 +5,7 @@
  * Animated border color on focus. Sem dependências externas.
  */
 
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import {
   Animated,
   StyleSheet,
@@ -15,7 +15,8 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { lightColors as colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import type { ColorScheme } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
@@ -29,6 +30,8 @@ export interface InputProps extends Omit<TextInputProps, 'style'> {
   /** React element rendered inside the field, left side */
   icon?: React.ReactNode;
   containerStyle?: ViewStyle;
+  /** Override theme colors (falls back to ThemeContext) */
+  colors?: ColorScheme;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -39,8 +42,12 @@ export const Input: React.FC<InputProps> = ({
   secureTextEntry,
   icon,
   containerStyle,
+  colors: colorsProp,
   ...rest
 }) => {
+  const themeColors = useTheme().colors;
+  const c = colorsProp ?? themeColors;
+
   const [isFocused, setIsFocused] = useState(false);
   const borderColorAnim = useRef(new Animated.Value(0)).current;
 
@@ -63,20 +70,22 @@ export const Input: React.FC<InputProps> = ({
   }, [borderColorAnim]);
 
   const borderColor = error
-    ? colors.error
+    ? c.error
     : borderColorAnim.interpolate({
         inputRange: [0, 1],
-        outputRange: [colors.border, colors.borderFocused],
+        outputRange: [c.border, c.borderFocused],
       });
 
+  const dynamicStyles = useMemo(() => createStyles(c), [c]);
+
   return (
-    <View style={[styles.container, containerStyle]}>
+    <View style={[dynamicStyles.container, containerStyle]}>
       {/* Label */}
       <Text
         style={[
-          styles.label,
-          isFocused && !error && styles.labelFocused,
-          !!error && styles.labelError,
+          dynamicStyles.label,
+          isFocused && !error && dynamicStyles.labelFocused,
+          !!error && dynamicStyles.labelError,
         ]}
       >
         {label}
@@ -85,30 +94,30 @@ export const Input: React.FC<InputProps> = ({
       {/* Field wrapper */}
       <Animated.View
         style={[
-          styles.fieldWrapper,
+          dynamicStyles.fieldWrapper,
           { borderColor },
           isFocused && !error && shadows.sm,
         ]}
       >
-        {icon && <View style={styles.iconWrapper}>{icon}</View>}
+        {icon && <View style={dynamicStyles.iconWrapper}>{icon}</View>}
         <TextInput
           value={value}
           onChangeText={onChangeText}
           onFocus={handleFocus}
           onBlur={handleBlur}
           secureTextEntry={secureTextEntry}
-          placeholderTextColor={colors.placeholder}
-          selectionColor={colors.primary}
+          placeholderTextColor={c.placeholder}
+          selectionColor={c.primary}
           accessibilityLabel={label}
           accessibilityState={{ disabled: rest.editable === false }}
-          style={[styles.input, icon ? styles.inputWithIcon : undefined]}
+          style={[dynamicStyles.input, icon ? dynamicStyles.inputWithIcon : undefined]}
           {...rest}
         />
       </Animated.View>
 
       {/* Error message */}
       {!!error && (
-        <Text style={styles.errorText} accessibilityRole="alert">
+        <Text style={dynamicStyles.errorText} accessibilityRole="alert">
           {error}
         </Text>
       )}
@@ -116,48 +125,49 @@ export const Input: React.FC<InputProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: spacing.lg,
-  },
-  label: {
-    ...typography.caption,
-    color: colors.textSecondary,
-    marginBottom: spacing.xs,
-    fontWeight: '600',
-  },
-  labelFocused: {
-    color: colors.primary,
-  },
-  labelError: {
-    color: colors.error,
-  },
-  fieldWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: spacing.lg,
-    height: 52,
-  },
-  iconWrapper: {
-    marginRight: spacing.sm,
-  },
-  input: {
-    flex: 1,
-    ...typography.body1,
-    color: colors.text,
-    padding: 0,
-    height: '100%',
-  },
-  inputWithIcon: {
-    paddingLeft: 0,
-  },
-  errorText: {
-    ...typography.caption,
-    color: colors.error,
-    marginTop: spacing.xs,
-  },
-});
+const createStyles = (c: ColorScheme) =>
+  StyleSheet.create({
+    container: {
+      marginBottom: spacing.lg,
+    },
+    label: {
+      ...typography.caption,
+      color: c.textSecondary,
+      marginBottom: spacing.xs,
+      fontWeight: '600',
+    },
+    labelFocused: {
+      color: c.primary,
+    },
+    labelError: {
+      color: c.error,
+    },
+    fieldWrapper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: c.surface,
+      borderWidth: 1.5,
+      borderColor: c.border,
+      borderRadius: borderRadius.md,
+      paddingHorizontal: spacing.lg,
+      height: 52,
+    },
+    iconWrapper: {
+      marginRight: spacing.sm,
+    },
+    input: {
+      flex: 1,
+      ...typography.body1,
+      color: c.text,
+      padding: 0,
+      height: '100%',
+    },
+    inputWithIcon: {
+      paddingLeft: 0,
+    },
+    errorText: {
+      ...typography.caption,
+      color: c.error,
+      marginTop: spacing.xs,
+    },
+  });
