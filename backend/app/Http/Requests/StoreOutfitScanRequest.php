@@ -14,7 +14,7 @@ class StoreOutfitScanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'image' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:5120'],
+            'image' => ['required', 'file', 'mimes:jpg,jpeg,png,webp', 'max:10240'],
             'intake' => ['nullable', 'array'],
             'intake.occasion' => ['nullable', 'string', 'max:120'],
             'intake.weather' => ['nullable', 'string', 'max:120'],

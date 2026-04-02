@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\OutfitDetectedItem;
 use App\Models\WardrobeItem;
+use App\Services\BackgroundRemovalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -72,6 +73,14 @@ class WardrobeItemController extends Controller
                     'cover_image_path' => $coverImagePath,
                 ]
             );
+
+            // Background removal (graceful fallback)
+            if ($item->wasRecentlyCreated && $item->cover_image_path) {
+                $bgService = app(BackgroundRemovalService::class);
+                $processed = $bgService->removeBackground($item->cover_image_path);
+                $item->processed_image_path = $processed; // null if failed = graceful fallback
+                $item->save();
+            }
 
             return response()->json([
                 'created' => $item->wasRecentlyCreated,

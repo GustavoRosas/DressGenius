@@ -1,0 +1,283 @@
+{
+  "app": {
+    "name": "DressGenius",
+    "tagline": "Your style, reinvented by AI"
+  },
+  "login": {
+    "title": "DressGenius",
+    "subtitle": "Your style, reinvented by AI",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign In",
+    "loading": "Signing in…",
+    "forgotPassword": "Forgot your password?",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign Up"
+  },
+  "register": {
+    "title": "Create your account",
+    "subtitle": "Start your style journey with DressGenius",
+    "name": "Name",
+    "email": "Email",
+    "password": "Password (min. 8 characters)",
+    "confirmPassword": "Confirm password",
+    "submit": "Create Account",
+    "loading": "Creating account…",
+    "hasAccount": "Already have an account?",
+    "signIn": "Sign In"
+  },
+  "auth": {
+    "errors": {
+      "invalidCredentials": "Unable to sign in. Check your credentials.",
+      "fillAllFields": "Please fill in all fields.",
+      "emailInvalid": "Invalid email address.",
+      "passwordTooShort": "Password must be at least 8 characters.",
+      "passwordMismatch": "Passwords do not match.",
+      "accountCreationFailed": "Unable to create account. Please try again."
+    }
+  },
+  "tabs": {
+    "analyze": "Analyze",
+    "history": "History",
+    "closet": "Closet",
+    "profile": "Profile"
+  },
+  "screens": {
+    "analyze": {
+      "title": "Analyze Your Outfit",
+      "subtitle": "Take a photo or choose from gallery to get AI-powered style feedback",
+      "takePhoto": "Take Photo",
+      "takePhotoDesc": "Use your camera to capture your outfit",
+      "chooseGallery": "Choose from Gallery",
+      "chooseGalleryDesc": "Pick a photo from your library",
+      "analyzeButton": "Analyze Outfit",
+      "analyzing": "Analyzing your outfit…",
+      "chooseAnother": "Choose Another",
+      "newAnalysis": "New Analysis",
+      "startChat": "Start Chat",
+      "permissionTitle": "Permission Required",
+      "permissionMessage": "We need access to your {{resource}} to analyze outfits. Please grant permission in Settings.",
+      "openSettings": "Open Settings",
+      "error": "Something went wrong while analyzing your outfit.",
+      "errorRetry": "Try Again"
+    },
+    "history": {
+      "title": "History",
+      "empty": "No outfit chats yet",
+      "emptySubtitle": "Analyze your first outfit to start a conversation!",
+      "statusActive": "Active",
+      "statusFinished": "Finished",
+      "loadError": "Failed to load history",
+      "justNow": "Just now",
+      "minutesAgo": "{{count}}m ago",
+      "hoursAgo": "{{count}}h ago",
+      "yesterday": "Yesterday",
+      "daysAgo": "{{count}}d ago"
+    },
+    "closet": {
+      "title": "My Closet",
+      "comingSoon": "Your wardrobe is being prepared",
+      "empty": "Your closet is empty",
+      "emptySubtitle": "Start adding items to build your wardrobe!",
+      "addItem": "Add Item",
+      "editItem": "Edit Item",
+      "name": "Name",
+      "category": "Category",
+      "color": "Main Color",
+      "save": "Save",
+      "saving": "Saving…",
+      "delete": "Delete",
+      "deleteConfirm": "Are you sure you want to delete this item?",
+      "deleteTitle": "Delete Item",
+      "photo": "Photo",
+      "takePhoto": "Take Photo",
+      "chooseGallery": "Choose from Gallery",
+      "selectCategory": "Select a category",
+      "nameRequired": "Name is required",
+      "categoryRequired": "Category is required",
+      "photoRequired": "Photo is required",
+      "loadError": "Failed to load items",
+      "saveError": "Failed to save item",
+      "deleteError": "Failed to delete item",
+      "categories": {
+        "top": "Top",
+        "bottom": "Bottom",
+        "dress": "Dress",
+        "outerwear": "Outerwear",
+        "shoes": "Shoes",
+        "accessories": "Accessories"
+      }
+    },
+    "profile": {
+      "title": "Profile",
+      "editPhoto": "Edit Photo",
+      "name": "Name",
+      "email": "Email",
+      "saveChanges": "Save Changes",
+      "saved": "Profile updated successfully!",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "changePassword": "Change Password",
+      "passwordChanged": "Password changed successfully!",
+      "settings": "Settings",
+      "aiPreferences": "AI Preferences",
+      "subscription": "Subscription",
+      "language": "Language",
+      "signOut": "Sign Out",
+      "signOutConfirm": "Sign Out?",
+      "signOutMessage": "Are you sure you want to sign out?",
+      "version": "Version {{version}}",
+      "photoError": "Failed to upload photo.",
+      "saveError": "Failed to save changes.",
+      "passwordError": "Failed to change password.",
+      "loadError": "Failed to load profile."
+    },
+    "aiPreferences": {
+      "title": "Style Profile",
+      "subtitle": "Help our AI understand your unique style",
+      "styles": {
+        "title": "Style Preferences",
+        "subtitle": "What styles do you prefer?",
+        "casual": "Casual",
+        "classic": "Classic",
+        "bohemian": "Bohemian",
+        "sporty": "Sporty",
+        "elegant": "Elegant",
+        "minimalist": "Minimalist",
+        "streetwear": "Streetwear",
+        "romantic": "Romantic"
+      },
+      "colors": {
+        "title": "Color Preferences",
+        "subtitle": "What colors do you gravitate towards?",
+        "neutrals": "Neutrals",
+        "pastels": "Pastels",
+        "boldBright": "Bold / Bright",
+        "earthTones": "Earth Tones",
+        "monochrome": "Monochrome",
+        "jewelTones": "Jewel Tones"
+      },
+      "occasions": {
+        "title": "Occasions",
+        "subtitle": "What do you usually dress for?",
+        "workOffice": "Work / Office",
+        "casualDaily": "Casual / Daily",
+        "dateNight": "Date Night",
+        "formalEvents": "Formal Events",
+        "workout": "Workout",
+        "travel": "Travel",
+        "party": "Party"
+      },
+      "bodyType": {
+        "title": "Body Type",
+        "subtitle": "Which best describes your body shape?",
+        "types": {
+          "hourglass": {
+            "name": "Hourglass",
+            "description": "Balanced bust and hips with a defined waist"
+          },
+          "pear": {
+            "name": "Pear",
+            "description": "Hips wider than shoulders, defined waist"
+          },
+          "apple": {
+            "name": "Apple",
+            "description": "Fuller midsection, slimmer legs"
+          },
+          "rectangle": {
+            "name": "Rectangle",
+            "description": "Balanced proportions, subtle waist definition"
+          },
+          "invertedTriangle": {
+            "name": "Inverted Triangle",
+            "description": "Broader shoulders, narrower hips"
+          }
+        }
+      },
+      "budget": {
+        "title": "Budget Range",
+        "subtitle": "What's your typical spending per piece?"
+      },
+      "brands": {
+        "title": "Preferred Brands",
+        "subtitle": "Any brands you love? (optional)",
+        "placeholder": "e.g. Zara, Nike, Gucci…"
+      },
+      "save": "Save Preferences",
+      "saving": "Saving…",
+      "saved": "Preferences saved!"
+    },
+    "chat": {
+      "title": "Chat",
+      "inputPlaceholder": "Type your message…",
+      "send": "Send",
+      "finish": "Finish Chat",
+      "finishConfirm": "Finish Chat?",
+      "finishConfirmMessage": "This will end the conversation with the AI stylist. You can still view the chat history.",
+      "aiTyping": "AI is thinking…",
+      "feedback": "Feedback",
+      "feedbackTitle": "How was this chat?",
+      "feedbackPlaceholder": "Any additional comments? (optional)",
+      "feedbackSubmit": "Submit Feedback",
+      "feedbackThanks": "Thanks for your feedback!",
+      "rating": {
+        "1": "Poor",
+        "2": "Fair",
+        "3": "Good",
+        "4": "Great",
+        "5": "Excellent"
+      },
+      "errorLoad": "Failed to load messages",
+      "errorSend": "Failed to send message",
+      "errorFinish": "Failed to finish chat",
+      "errorFeedback": "Failed to submit feedback",
+      "today": "Today",
+      "yesterday": "Yesterday"
+    }
+  },
+  "onboarding": {
+    "slide1Title": "Analyze Your Outfit",
+    "slide1Subtitle": "Take a photo and get AI-powered feedback on your look",
+    "slide2Title": "Chat with AI Stylist",
+    "slide2Subtitle": "Talk about style, ask for suggestions, and get answers",
+    "slide3Title": "Your Digital Closet",
+    "slide3Subtitle": "Organize your clothes and discover new combinations",
+    "slide4Title": "Let's Get Started",
+    "slide4Subtitle": "Your personal AI stylist is ready to help you shine",
+    "next": "Next",
+    "skip": "Skip",
+    "getStarted": "Get Started"
+  },
+  "paywall": {
+    "title": "Unlock DressGenius Premium",
+    "subtitle": "Get the most out of your personal AI stylist",
+    "benefits": {
+      "unlimitedWardrobe": "Unlimited wardrobe items",
+      "unlimitedAnalyses": "Unlimited outfit analyses",
+      "unlimitedChat": "Unlimited AI chat",
+      "colorTheory": "Color theory & harmony analysis",
+      "weatherAware": "Weather-aware suggestions",
+      "styleAnalytics": "Style analytics"
+    },
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "monthAbbr": "mo",
+    "yearAbbr": "yr",
+    "bestValue": "Best Value",
+    "savings": "Save {{percent}}%",
+    "subscribe": "Subscribe Now",
+    "restore": "Restore Purchases",
+    "continueFree": "Continue with Free",
+    "comingSoon": "Subscriptions coming soon! Stay tuned."
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Error",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "confirm": "Confirm"
+  }
+}

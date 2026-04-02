@@ -16,6 +16,7 @@ class WardrobeItem extends Model
         'category',
         'colors',
         'cover_image_path',
+        'processed_image_path',
         'meta',
     ];
 

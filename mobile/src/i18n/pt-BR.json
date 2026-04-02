@@ -1,0 +1,283 @@
+{
+  "app": {
+    "name": "DressGenius",
+    "tagline": "Seu estilo, reinventado por IA"
+  },
+  "login": {
+    "title": "DressGenius",
+    "subtitle": "Seu estilo, reinventado por IA",
+    "email": "E-mail",
+    "password": "Senha",
+    "submit": "Entrar",
+    "loading": "Entrando…",
+    "forgotPassword": "Esqueceu a senha?",
+    "noAccount": "Não tem conta?",
+    "signUp": "Cadastre-se"
+  },
+  "register": {
+    "title": "Crie sua conta",
+    "subtitle": "Comece sua jornada de estilo com DressGenius",
+    "name": "Nome",
+    "email": "E-mail",
+    "password": "Senha (mín. 8 caracteres)",
+    "confirmPassword": "Confirmar senha",
+    "submit": "Criar conta",
+    "loading": "Criando conta…",
+    "hasAccount": "Já tem conta?",
+    "signIn": "Entrar"
+  },
+  "auth": {
+    "errors": {
+      "invalidCredentials": "Não foi possível entrar. Verifique suas credenciais.",
+      "fillAllFields": "Preencha todos os campos.",
+      "emailInvalid": "E-mail inválido.",
+      "passwordTooShort": "A senha deve ter pelo menos 8 caracteres.",
+      "passwordMismatch": "As senhas não coincidem.",
+      "accountCreationFailed": "Não foi possível criar a conta. Tente novamente."
+    }
+  },
+  "tabs": {
+    "analyze": "Analisar",
+    "history": "Histórico",
+    "closet": "Closet",
+    "profile": "Perfil"
+  },
+  "screens": {
+    "analyze": {
+      "title": "Analise Seu Look",
+      "subtitle": "Tire uma foto ou escolha da galeria para receber feedback de estilo com IA",
+      "takePhoto": "Tirar Foto",
+      "takePhotoDesc": "Use sua câmera para capturar seu look",
+      "chooseGallery": "Escolher da Galeria",
+      "chooseGalleryDesc": "Selecione uma foto da sua biblioteca",
+      "analyzeButton": "Analisar Outfit",
+      "analyzing": "Analisando seu outfit…",
+      "chooseAnother": "Escolher Outra",
+      "newAnalysis": "Nova Análise",
+      "startChat": "Iniciar Chat",
+      "permissionTitle": "Permissão Necessária",
+      "permissionMessage": "Precisamos de acesso à sua {{resource}} para analisar outfits. Conceda permissão nos Ajustes.",
+      "openSettings": "Abrir Ajustes",
+      "error": "Algo deu errado ao analisar seu outfit.",
+      "errorRetry": "Tentar Novamente"
+    },
+    "history": {
+      "title": "Histórico",
+      "empty": "Nenhum chat de outfit ainda",
+      "emptySubtitle": "Analise seu primeiro outfit para iniciar uma conversa!",
+      "statusActive": "Ativo",
+      "statusFinished": "Finalizado",
+      "loadError": "Falha ao carregar histórico",
+      "justNow": "Agora",
+      "minutesAgo": "{{count}}min atrás",
+      "hoursAgo": "{{count}}h atrás",
+      "yesterday": "Ontem",
+      "daysAgo": "{{count}}d atrás"
+    },
+    "closet": {
+      "title": "Meu Closet",
+      "comingSoon": "Seu guarda-roupa está sendo preparado",
+      "empty": "Seu closet está vazio",
+      "emptySubtitle": "Comece adicionando itens ao seu guarda-roupa!",
+      "addItem": "Adicionar Item",
+      "editItem": "Editar Item",
+      "name": "Nome",
+      "category": "Categoria",
+      "color": "Cor Principal",
+      "save": "Salvar",
+      "saving": "Salvando\u2026",
+      "delete": "Excluir",
+      "deleteConfirm": "Tem certeza que deseja excluir este item?",
+      "deleteTitle": "Excluir Item",
+      "photo": "Foto",
+      "takePhoto": "Tirar Foto",
+      "chooseGallery": "Escolher da Galeria",
+      "selectCategory": "Selecione uma categoria",
+      "nameRequired": "Nome é obrigatório",
+      "categoryRequired": "Categoria é obrigatória",
+      "photoRequired": "Foto é obrigatória",
+      "loadError": "Falha ao carregar itens",
+      "saveError": "Falha ao salvar item",
+      "deleteError": "Falha ao excluir item",
+      "categories": {
+        "top": "Parte de Cima",
+        "bottom": "Parte de Baixo",
+        "dress": "Vestido",
+        "outerwear": "Agasalho",
+        "shoes": "Calçados",
+        "accessories": "Acessórios"
+      }
+    },
+    "profile": {
+      "title": "Perfil",
+      "editPhoto": "Editar Foto",
+      "name": "Nome",
+      "email": "E-mail",
+      "saveChanges": "Salvar Alterações",
+      "saved": "Perfil atualizado com sucesso!",
+      "currentPassword": "Senha Atual",
+      "newPassword": "Nova Senha",
+      "confirmPassword": "Confirmar Nova Senha",
+      "changePassword": "Alterar Senha",
+      "passwordChanged": "Senha alterada com sucesso!",
+      "settings": "Configurações",
+      "aiPreferences": "Preferências de IA",
+      "subscription": "Assinatura",
+      "language": "Idioma",
+      "signOut": "Sair",
+      "signOutConfirm": "Sair?",
+      "signOutMessage": "Tem certeza que deseja sair?",
+      "version": "Versão {{version}}",
+      "photoError": "Falha ao enviar foto.",
+      "saveError": "Falha ao salvar alterações.",
+      "passwordError": "Falha ao alterar senha.",
+      "loadError": "Falha ao carregar perfil."
+    },
+    "aiPreferences": {
+      "title": "Perfil de Estilo",
+      "subtitle": "Ajude nossa IA a entender seu estilo único",
+      "styles": {
+        "title": "Preferências de Estilo",
+        "subtitle": "Quais estilos você prefere?",
+        "casual": "Casual",
+        "classic": "Clássico",
+        "bohemian": "Boho",
+        "sporty": "Esportivo",
+        "elegant": "Elegante",
+        "minimalist": "Minimalista",
+        "streetwear": "Streetwear",
+        "romantic": "Romântico"
+      },
+      "colors": {
+        "title": "Preferências de Cores",
+        "subtitle": "Quais cores te atraem mais?",
+        "neutrals": "Neutros",
+        "pastels": "Pastéis",
+        "boldBright": "Vibrantes",
+        "earthTones": "Terrosos",
+        "monochrome": "Monocromático",
+        "jewelTones": "Tons de Joia"
+      },
+      "occasions": {
+        "title": "Ocasiões",
+        "subtitle": "Para quais ocasiões você costuma se vestir?",
+        "workOffice": "Trabalho",
+        "casualDaily": "Dia a Dia",
+        "dateNight": "Encontro",
+        "formalEvents": "Eventos Formais",
+        "workout": "Treino",
+        "travel": "Viagem",
+        "party": "Festa"
+      },
+      "bodyType": {
+        "title": "Tipo de Corpo",
+        "subtitle": "Qual descreve melhor o formato do seu corpo?",
+        "types": {
+          "hourglass": {
+            "name": "Ampulheta",
+            "description": "Busto e quadril equilibrados com cintura definida"
+          },
+          "pear": {
+            "name": "Pera",
+            "description": "Quadril mais largo que os ombros, cintura marcada"
+          },
+          "apple": {
+            "name": "Maçã",
+            "description": "Tronco mais cheio, pernas mais finas"
+          },
+          "rectangle": {
+            "name": "Retângulo",
+            "description": "Proporções equilibradas, cintura sutil"
+          },
+          "invertedTriangle": {
+            "name": "Triângulo Invertido",
+            "description": "Ombros mais largos, quadril mais estreito"
+          }
+        }
+      },
+      "budget": {
+        "title": "Faixa de Preço",
+        "subtitle": "Quanto você costuma gastar por peça?"
+      },
+      "brands": {
+        "title": "Marcas Preferidas",
+        "subtitle": "Alguma marca que você ama? (opcional)",
+        "placeholder": "ex: Zara, Nike, Gucci…"
+      },
+      "save": "Salvar Preferências",
+      "saving": "Salvando…",
+      "saved": "Preferências salvas!"
+    },
+    "chat": {
+      "title": "Chat",
+      "inputPlaceholder": "Digite sua mensagem…",
+      "send": "Enviar",
+      "finish": "Finalizar Chat",
+      "finishConfirm": "Finalizar Chat?",
+      "finishConfirmMessage": "Isso encerrará a conversa com a estilista IA. Você ainda poderá ver o histórico.",
+      "aiTyping": "IA pensando…",
+      "feedback": "Feedback",
+      "feedbackTitle": "Como foi este chat?",
+      "feedbackPlaceholder": "Algum comentário adicional? (opcional)",
+      "feedbackSubmit": "Enviar Feedback",
+      "feedbackThanks": "Obrigado pelo feedback!",
+      "rating": {
+        "1": "Ruim",
+        "2": "Regular",
+        "3": "Bom",
+        "4": "Ótimo",
+        "5": "Excelente"
+      },
+      "errorLoad": "Falha ao carregar mensagens",
+      "errorSend": "Falha ao enviar mensagem",
+      "errorFinish": "Falha ao finalizar chat",
+      "errorFeedback": "Falha ao enviar feedback",
+      "today": "Hoje",
+      "yesterday": "Ontem"
+    }
+  },
+  "onboarding": {
+    "slide1Title": "Analise Seu Outfit",
+    "slide1Subtitle": "Tire uma foto e receba feedback da IA sobre seu look",
+    "slide2Title": "Converse com a IA Estilista",
+    "slide2Subtitle": "Fale sobre estilo, peça sugestões e tire suas dúvidas",
+    "slide3Title": "Seu Closet Digital",
+    "slide3Subtitle": "Organize suas roupas e descubra novas combinações",
+    "slide4Title": "Vamos Começar",
+    "slide4Subtitle": "Sua estilista pessoal de IA está pronta para te ajudar a brilhar",
+    "next": "Próximo",
+    "skip": "Pular",
+    "getStarted": "Começar"
+  },
+  "paywall": {
+    "title": "Desbloqueie o DressGenius Premium",
+    "subtitle": "Aproveite ao máximo sua estilista pessoal de IA",
+    "benefits": {
+      "unlimitedWardrobe": "Itens ilimitados no guarda-roupa",
+      "unlimitedAnalyses": "Análises de outfit ilimitadas",
+      "unlimitedChat": "Chat com IA ilimitado",
+      "colorTheory": "Análise de teoria das cores e harmonia",
+      "weatherAware": "Sugestões baseadas no clima",
+      "styleAnalytics": "Análise de estilo"
+    },
+    "monthly": "Mensal",
+    "yearly": "Anual",
+    "monthAbbr": "mês",
+    "yearAbbr": "ano",
+    "bestValue": "Melhor Valor",
+    "savings": "Economize {{percent}}%",
+    "subscribe": "Assinar Agora",
+    "restore": "Restaurar Compras",
+    "continueFree": "Continuar com o Gratuito",
+    "comingSoon": "Assinaturas em breve! Fique ligado."
+  },
+  "common": {
+    "loading": "Carregando…",
+    "error": "Erro",
+    "retry": "Tentar novamente",
+    "cancel": "Cancelar",
+    "save": "Salvar",
+    "delete": "Excluir",
+    "confirm": "Confirmar"
+  }
+}

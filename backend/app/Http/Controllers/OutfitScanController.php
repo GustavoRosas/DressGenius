@@ -6,6 +6,7 @@ use App\Http\Requests\StoreOutfitScanRequest;
 use App\Models\OutfitAnalysisProcess;
 use App\Models\OutfitDetectedItem;
 use App\Models\OutfitScan;
+use App\Services\ColorAnalysisService;
 use App\Services\GeminiChatService;
 use App\Services\GeminiVisionService;
 use App\Services\OutfitAnalysisService;
@@ -84,6 +85,16 @@ class OutfitScanController extends Controller
                 'process_id' => $process->id,
                 'retry_after' => $retryAfter,
             ], $status);
+        }
+
+        // Color Theory Analysis (graceful — non-blocking)
+        try {
+            $colorService = app(ColorAnalysisService::class);
+            $colorAnalysis = $colorService->analyzeColors($path);
+            $analysisResult['color_analysis'] = $colorAnalysis;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Color analysis failed (non-blocking): ' . $e->getMessage());
+            $analysisResult['color_analysis'] = null;
         }
 
         $scan = OutfitScan::create([
