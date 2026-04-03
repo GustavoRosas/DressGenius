@@ -62,9 +62,9 @@ interface ColorAnalysis {
 
 interface AnalysisResult {
   id?: number;
-  analysis?: string;
+  analysis?: Record<string, unknown> | string | null;
   score?: number;
-  color_analysis?: ColorAnalysis;
+  color_analysis?: ColorAnalysis | null;
   occasion_tips?: string[];
   [key: string]: unknown;
 }
@@ -228,7 +228,20 @@ export function AnalyzeScreen() {
         refetchUsage();
 
         animateTransition(() => {
-          setResult(response.data);
+          // Backend returns { scan: { id, score, analysis, ... }, detected_items, process_id }
+          const raw = response.data as any;
+          const scan = raw.scan ?? raw;
+          setResult({
+            id: scan.id,
+            score: scan.score,
+            analysis: scan.analysis,
+            color_analysis: scan.analysis?.color_analysis ?? null,
+            occasion_tips: scan.analysis?.context_feedback
+              ? Object.values(scan.analysis.context_feedback)
+                  .filter((f: any) => f?.message)
+                  .map((f: any) => f.message)
+              : [],
+          });
           setState('result');
         });
       } catch (_err) {
@@ -361,8 +374,12 @@ export function AnalyzeScreen() {
         <View style={styles.resultCard}>
           <Text style={styles.resultCardTitle}>{t('analyze.result.score')}</Text>
           <View style={styles.scoreRow}>
-            <Text style={styles.scoreNumber}>{result.score}</Text>
-            <Text style={styles.scoreOutOf}>{t('analyze.result.outOf')}</Text>
+            <Text style={styles.scoreNumber}>
+              {typeof result.score === 'number' && result.score > 10
+                ? (result.score / 10).toFixed(1)
+                : result.score}
+            </Text>
+            <Text style={styles.scoreOutOf}>/10</Text>
           </View>
         </View>
       )}
@@ -449,15 +466,8 @@ export function AnalyzeScreen() {
         </View>
       )}
 
-      {/* Fallback: raw analysis text */}
-      {result?.analysis && !result.score && !result.color_analysis && (
-        <View style={styles.resultCard}>
-          <Text style={styles.resultText}>{result.analysis}</Text>
-        </View>
-      )}
-
-      {/* Always show raw analysis if present, even with structured data */}
-      {result?.analysis && (result.score != null || result.color_analysis) && (
+      {/* Fallback: raw analysis text (only if string, skip objects) */}
+      {result?.analysis && typeof result.analysis === 'string' && (
         <View style={styles.resultCard}>
           <Text style={styles.resultText}>{result.analysis}</Text>
         </View>

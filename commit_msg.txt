@@ -1,10 +1,11 @@
-fix: UI polish - confirm modal, weather i18n, intake improvements
+fix: score display, analysis rendering, UI polish
 
-- ConfirmModal component (custom styled, replaces ugly native Alert)
-- Sign out now uses ConfirmModal with emoji + styled buttons
-- Weather WMO descriptions translated (EN + PT-BR, 10 conditions)
-- Comfort level labels shortened (PT-BR: Conforto/Equilibrio/Estilo)
-- Image preview removed from intake sheet (was cropped)
-- Bottom sheet height increased to 92% (covers tab bar)
-- AI Preferences save button text shortened
-- Body type description numberOfLines removed (full text visible)
+- Score normalization: 83 -> 8.3/10 (auto-detect >10 scale)
+- Analysis object rendering fix (was crashing as React child)
+- Only render analysis as text if actually a string
+- Weather WMO descriptions translated (10 conditions EN+PT-BR)
+- Comfort labels shortened (PT-BR)
+- Image preview removed from intake
+- Bottom sheet 92% height (covers tab bar)
+- ConfirmModal component (styled replacement for Alert.alert)
+- Sign out uses ConfirmModal with emoji
