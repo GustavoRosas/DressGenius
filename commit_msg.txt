@@ -1,6 +1,7 @@
-fix: QA review fixes - duplicate i18n keys, dead code, hardcoded strings
+feat: Fly.io deployment (GRU Sao Paulo) + production env update
 
-- Removed duplicate "errors" root key from en.json and pt-BR.json
-- Style Level "Casual"/"Formal" now use t() i18n keys
-- Removed dead stackScreenOptions from RootNavigator
-- Removed unused Image import from AnalyzeIntakeSheet
+- fly.toml configured for dressgenius-api (region gru, shared-cpu-1x, 512MB)
+- PostgreSQL on Fly (dressgenius-db) in Sao Paulo
+- Secrets configured (DB, Gemini, Laravel)
+- mobile/.env.production updated to https://dressgenius-api.fly.dev/api
+- Latency: ~10-30ms for Brazilian users (was 200-300ms on Render)
