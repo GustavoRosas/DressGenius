@@ -30,6 +30,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { Button } from '../components/Button';
+import { ConfirmModal } from '../components/ConfirmModal';
 import { Input } from '../components/Input';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
@@ -262,16 +263,8 @@ export function ProfileScreen() {
   };
 
   // Sign out
-  const handleSignOut = () => {
-    Alert.alert(t('screens.profile.signOutConfirm'), t('screens.profile.signOutMessage'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('screens.profile.signOut'),
-        style: 'destructive',
-        onPress: () => signOut(),
-      },
-    ]);
-  };
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
+  const handleSignOut = () => setShowSignOutModal(true);
 
   if (loadingProfile) {
     return (
@@ -452,6 +445,18 @@ export function ProfileScreen() {
           {t('screens.profile.version', { version: APP_VERSION })}
         </Text>
       </ScrollView>
+
+      <ConfirmModal
+        visible={showSignOutModal}
+        emoji="👋"
+        title={t('screens.profile.signOutConfirm')}
+        message={t('screens.profile.signOutMessage')}
+        confirmLabel={t('screens.profile.signOut')}
+        cancelLabel={t('common.cancel')}
+        variant="danger"
+        onConfirm={() => { setShowSignOutModal(false); signOut(); }}
+        onCancel={() => setShowSignOutModal(false)}
+      />
     </SafeAreaView>
   );
 }

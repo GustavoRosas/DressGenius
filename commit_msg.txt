@@ -1,12 +1,10 @@
-feat: navigation restructure + HomeScreen + FAB + Settings
+fix: UI polish - confirm modal, weather i18n, intake improvements
 
-- Tab Navigator: 5 tabs (Home, Closet, Analyze FAB center, Settings, Profile)
-- Analyze FAB: 64px violet circle, elevated, scale animation, no label
-- HomeScreen: greeting, weather, monthly stats, last analysis, quick actions, Style DNA
-- SettingsScreen: notifications, AI prefs, language, dark mode, subscription
-- History moved into Profile (inline last 3 + View All)
-- Back button universal on all stack screens
-- PremiumBanner clickable -> Paywall navigation
-- Analytics accessible via Home Quick Actions (stack screen)
-- AI Preferences save button text shortened (PT-BR)
-- Body type description numberOfLines removed
+- ConfirmModal component (custom styled, replaces ugly native Alert)
+- Sign out now uses ConfirmModal with emoji + styled buttons
+- Weather WMO descriptions translated (EN + PT-BR, 10 conditions)
+- Comfort level labels shortened (PT-BR: Conforto/Equilibrio/Estilo)
+- Image preview removed from intake sheet (was cropped)
+- Bottom sheet height increased to 92% (covers tab bar)
+- AI Preferences save button text shortened
+- Body type description numberOfLines removed (full text visible)

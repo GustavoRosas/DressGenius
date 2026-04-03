@@ -15,4 +15,7 @@ export { ThemeToggle } from './ThemeToggle';
 export { PremiumBanner } from './PremiumBanner';
 
 export { Toast } from './Toast';
+
+export { ConfirmModal } from './ConfirmModal';
+export type { } from './ConfirmModal';
 export type { ToastType, ToastConfig } from './Toast';

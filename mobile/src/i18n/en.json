@@ -328,7 +328,19 @@
       "mild": "🌤️ Mild",
       "hot": "🌡️ Hot",
       "temperature": "Temperature (°C)",
-      "locationDenied": "Location permission denied"
+      "locationDenied": "Location permission denied",
+      "wmo": {
+        "clear": "Clear sky",
+        "mainlyClear": "Mainly clear",
+        "partlyCloudy": "Partly cloudy",
+        "overcast": "Overcast",
+        "drizzle": "Drizzle",
+        "rain": "Rain",
+        "snow": "Snow",
+        "rainShowers": "Rain showers",
+        "thunderstorm": "Thunderstorm",
+        "cloudy": "Cloudy"
+      }
     },
     "extraContext": {
       "title": "Extra context (optional)",

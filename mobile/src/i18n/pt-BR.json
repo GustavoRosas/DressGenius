@@ -312,9 +312,9 @@
     },
     "comfort": {
       "title": "Como você quer se sentir?",
-      "comfort": "Conforto primeiro",
-      "balanced": "Equilibrado",
-      "style": "Estilo primeiro"
+      "comfort": "Conforto",
+      "balanced": "Equilíbrio",
+      "style": "Estilo"
     },
     "weather": {
       "title": "Condições climáticas",
@@ -328,7 +328,19 @@
       "mild": "🌤️ Ameno",
       "hot": "🌡️ Quente",
       "temperature": "Temperatura (°C)",
-      "locationDenied": "Permissão de localização negada"
+      "locationDenied": "Permissão de localização negada",
+      "wmo": {
+        "clear": "Céu limpo",
+        "mainlyClear": "Predominantemente limpo",
+        "partlyCloudy": "Parcialmente nublado",
+        "overcast": "Nublado",
+        "drizzle": "Garoa",
+        "rain": "Chuva",
+        "snow": "Neve",
+        "rainShowers": "Pancadas de chuva",
+        "thunderstorm": "Tempestade",
+        "cloudy": "Nublado"
+      }
     },
     "extraContext": {
       "title": "Contexto extra (opcional)",

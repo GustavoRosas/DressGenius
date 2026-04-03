@@ -97,17 +97,18 @@ function wmoToEmoji(code: number): string {
   return '🌤️';
 }
 
-function wmoToDescription(code: number): string {
-  if (code === 0) return 'Clear sky';
-  if (code === 1) return 'Mainly clear';
-  if (code === 2) return 'Partly cloudy';
-  if (code === 3) return 'Overcast';
-  if (code >= 51 && code <= 55) return 'Drizzle';
-  if (code >= 61 && code <= 65) return 'Rain';
-  if (code >= 71 && code <= 75) return 'Snow';
-  if (code >= 80 && code <= 82) return 'Rain showers';
-  if (code >= 95) return 'Thunderstorm';
-  return 'Cloudy';
+// WMO description keys — resolved via i18n in the component
+function wmoToDescriptionKey(code: number): string {
+  if (code === 0) return 'analyze.weather.wmo.clear';
+  if (code === 1) return 'analyze.weather.wmo.mainlyClear';
+  if (code === 2) return 'analyze.weather.wmo.partlyCloudy';
+  if (code === 3) return 'analyze.weather.wmo.overcast';
+  if (code >= 51 && code <= 55) return 'analyze.weather.wmo.drizzle';
+  if (code >= 61 && code <= 65) return 'analyze.weather.wmo.rain';
+  if (code >= 71 && code <= 75) return 'analyze.weather.wmo.snow';
+  if (code >= 80 && code <= 82) return 'analyze.weather.wmo.rainShowers';
+  if (code >= 95) return 'analyze.weather.wmo.thunderstorm';
+  return 'analyze.weather.wmo.cloudy';
 }
 
 interface AnalyzeIntakeSheetProps {
@@ -179,7 +180,7 @@ export function AnalyzeIntakeSheet({
 
       const condition = wmoToCondition(code);
       const emoji = wmoToEmoji(code);
-      const desc = wmoToDescription(code);
+      const desc = t(wmoToDescriptionKey(code));
 
       setWeatherCondition(condition);
       setWeatherTemp(String(temp));
@@ -230,19 +231,14 @@ export function AnalyzeIntakeSheet({
   const styles = React.useMemo(() => createStyles(colors), [colors]);
 
   return (
-    <BottomSheet visible={visible} onClose={onClose} heightFraction={0.75}>
+    <BottomSheet visible={visible} onClose={onClose} heightFraction={0.92}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Photo preview */}
-        {imageUri && (
-          <View style={styles.previewContainer}>
-            <Image source={{ uri: imageUri }} style={styles.preview} resizeMode="cover" />
-          </View>
-        )}
+        {/* Photo preview removed — was cropped and distracting */}
 
         {/* Occasion */}
         <Text style={styles.sectionTitle}>{t('analyze.occasion.title')}</Text>
