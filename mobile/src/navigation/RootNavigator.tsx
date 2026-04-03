@@ -3,7 +3,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '../context/AuthContext';
-import { LoginScreen, RegisterScreen, OnboardingScreen, ChatScreen, PaywallScreen, AIPreferencesScreen, NotificationPrefsScreen } from '../screens';
+import { LoginScreen, RegisterScreen, OnboardingScreen, ChatScreen, PaywallScreen, AIPreferencesScreen, NotificationPrefsScreen, MonthlyReportScreen } from '../screens';
 import { TabNavigator } from './TabNavigator';
 import { ONBOARDING_KEY } from '../screens/OnboardingScreen';
 import { colors } from '../theme/colors';
@@ -60,6 +60,11 @@ export function RootNavigator() {
           <Stack.Screen
             name="NotificationPrefs"
             component={NotificationPrefsScreen}
+            options={{ animation: 'slide_from_right' }}
+          />
+          <Stack.Screen
+            name="MonthlyReport"
+            component={MonthlyReportScreen}
             options={{ animation: 'slide_from_right' }}
           />
         </>

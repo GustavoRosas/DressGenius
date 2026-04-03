@@ -1,16 +1,11 @@
-feat: analytics sprint 1+2 - endpoints + full analytics screen
+feat: analytics sprint 3 - AI insights + monthly report
 
 Backend:
-- AnalyticsController with 5 endpoints: summary, score-trend,
-  color-breakdown, style-distribution, closet-intelligence
-- Style DNA builder, streak calculator, color merge (RGB distance)
-- Cache-aware with UserAnalyticsCache fallback
+- InsightEngineService: Gemini-powered personalized insights (cache 24h)
+- GET /analytics/insights endpoint with fallback
+- GET /analytics/monthly-report/{year}/{month} with highlights + comparison
 
 Mobile:
-- AnalyticsScreen with 5 sections: Style DNA, Score Trend (LineChart),
-  Color Palette, Closet Intelligence (BarChart), Empty State
-- New Analytics tab in TabNavigator
-- useAnalytics hook (Promise.allSettled, partial failure graceful)
-- Premium gate: blur overlay on sections 2-4 for free users
-- react-native-gifted-charts installed
-- i18n: all analytics strings EN + PT-BR
+- MonthlyReportScreen: full month report with nav arrows, score, stats, highlights
+- Route + navigation registered
+- Insights + monthly report endpoints in AnalyticsController

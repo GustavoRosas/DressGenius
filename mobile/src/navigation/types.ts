@@ -7,6 +7,7 @@ export type RootStackParamList = {
   Paywall: undefined;
   AIPreferences: undefined;
   NotificationPrefs: undefined;
+  MonthlyReport: { year: number; month: number };
 };
 
 export type TabParamList = {

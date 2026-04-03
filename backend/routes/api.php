@@ -53,5 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/color-breakdown', [AnalyticsController::class, 'colorBreakdown']);
         Route::get('/style-distribution', [AnalyticsController::class, 'styleDistribution']);
         Route::get('/closet-intelligence', [AnalyticsController::class, 'closetIntelligence']);
+        Route::get('/insights', [AnalyticsController::class, 'insights']);
+        Route::get('/monthly-report/{year}/{month}', [AnalyticsController::class, 'monthlyReport']);
     });
 });

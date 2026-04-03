@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\OutfitAnalysisProcess;
 use App\Models\OutfitScan;
+use App\Services\InsightEngineService;
 use App\Models\UserAnalyticsCache;
 use App\Models\WardrobeItem;
 use Carbon\Carbon;
@@ -543,6 +544,92 @@ class AnalyticsController extends Controller
             return 'cool';
         }
         return 'neutral';
+    }
+
+    // ─── Endpoint 6: GET /analytics/insights ─────────────────────────
+
+    public function insights(Request $request): JsonResponse
+    {
+        try {
+            $insights = app(InsightEngineService::class)->generateInsights($request->user()->id);
+            return response()->json(['insights' => $insights]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Insights generation failed: ' . $e->getMessage());
+            return response()->json(['insights' => [
+                ['type' => 'tip', 'emoji' => '💡', 'title' => 'Keep analyzing!', 'message' => 'The more outfits you analyze, the better your insights will be.', 'priority' => 3],
+            ]]);
+        }
+    }
+
+    // ─── Endpoint 7: GET /analytics/monthly-report/{year}/{month} ─────
+
+    public function monthlyReport(Request $request, int $year, int $month): JsonResponse
+    {
+        $user = $request->user();
+        $start = Carbon::create($year, $month, 1)->startOfMonth();
+        $end = (clone $start)->endOfMonth();
+
+        $scans = OutfitScan::where('user_id', $user->id)
+            ->whereBetween('created_at', [$start, $end])
+            ->get();
+
+        $totalAnalyses = $scans->count();
+        $avgScore = $totalAnalyses > 0 ? round($scans->avg('score'), 1) : 0;
+
+        // Top colors this month
+        $topColors = [];
+        foreach ($scans as $scan) {
+            $colors = data_get($scan->analysis, 'color_analysis.color_names', []);
+            foreach ((array) $colors as $color) {
+                if (is_string($color)) {
+                    $topColors[$color] = ($topColors[$color] ?? 0) + 1;
+                }
+            }
+        }
+        arsort($topColors);
+        $topColor = !empty($topColors) ? array_key_first($topColors) : null;
+
+        // Dominant style
+        $dominantStyle = $this->getDominantStyle($user->id, $start, $end);
+
+        // Highlights
+        $highlights = [];
+        if ($totalAnalyses > 0) {
+            $bestScan = $scans->sortByDesc('score')->first();
+            if ($bestScan) {
+                $highlights[] = 'Best score: ' . $bestScan->score . ' on ' . Carbon::parse($bestScan->created_at)->format('M j');
+            }
+            $highlights[] = 'Total analyses: ' . $totalAnalyses;
+            if ($topColor) {
+                $highlights[] = 'Most used color: ' . $topColor;
+            }
+        }
+
+        // Comparison vs previous month
+        $prevStart = (clone $start)->subMonth()->startOfMonth();
+        $prevEnd = (clone $start)->subMonth()->endOfMonth();
+        $prevScans = OutfitScan::where('user_id', $user->id)
+            ->whereBetween('created_at', [$prevStart, $prevEnd])
+            ->get();
+        $prevAvg = $prevScans->count() > 0 ? round($prevScans->avg('score'), 1) : 0;
+        $scoreDiff = round($avgScore - $prevAvg, 1);
+        $countDiff = $totalAnalyses - $prevScans->count();
+
+        return response()->json([
+            'year' => $year,
+            'month' => $month,
+            'total_analyses' => $totalAnalyses,
+            'avg_score' => $avgScore,
+            'top_color' => $topColor,
+            'dominant_style' => $dominantStyle,
+            'highlights' => $highlights,
+            'comparison' => [
+                'score_diff' => ($scoreDiff >= 0 ? '+' : '') . $scoreDiff,
+                'count_diff' => ($countDiff >= 0 ? '+' : '') . $countDiff,
+                'prev_avg_score' => $prevAvg,
+                'prev_count' => $prevScans->count(),
+            ],
+        ]);
     }
 
     private function analyzeGaps(array $byCategory, int $totalItems): array

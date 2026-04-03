@@ -11,3 +11,4 @@ export { PaywallScreen } from './PaywallScreen';
 export { ChatScreen } from './ChatScreen';
 export { AIPreferencesScreen } from './AIPreferencesScreen';
 export { NotificationPrefsScreen } from './NotificationPrefsScreen';
+export { MonthlyReportScreen } from './MonthlyReportScreen';
