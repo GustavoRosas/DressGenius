@@ -56,18 +56,6 @@ export function RootNavigator() {
     );
   }
 
-  /** Shared options for stack screens with back button */
-  const stackScreenOptions = {
-    headerShown: true,
-    headerShadowVisible: false,
-    headerStyle: { backgroundColor: colors.background },
-    headerTintColor: colors.text,
-    headerTitle: '',
-    headerLeft: ({ canGoBack }: { canGoBack?: boolean }) =>
-      canGoBack ? (
-        <BackButton onPress={() => {}} tintColor={colors.text} />
-      ) : null,
-  };
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>

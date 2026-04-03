@@ -1,16 +1,6 @@
-feat: rich AI feedback - 7 section outfit analysis result
+fix: QA review fixes - duplicate i18n keys, dead code, hardcoded strings
 
-Backend:
-- GeminiVisionService prompt rewritten for structured JSON output
-- 8 fields: score (0-10), label, summary, breakdown, strengths,
-  style_level, occasion_assessment, improvements, climate_assessment
-- maxOutputTokens 1024->2048, auto-correct 0-100 to 0-10 scale
-- OutfitAnalysisService propagates rich fields with legacy compat
-
-Mobile:
-- AnalyzeScreen renderResult() rewritten with 7 sections:
-  Score Hero (badge+breakdown bars), Strengths carousel,
-  Color Analysis (warm/cool), Style Level (formality slider),
-  Occasion Assessment (verdict+chips), Improvements (prioritized),
-  Climate (conditional)
-- 25+ new i18n strings EN + PT-BR
+- Removed duplicate "errors" root key from en.json and pt-BR.json
+- Style Level "Casual"/"Formal" now use t() i18n keys
+- Removed dead stackScreenOptions from RootNavigator
+- Removed unused Image import from AnalyzeIntakeSheet

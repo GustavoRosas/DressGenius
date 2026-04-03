@@ -647,8 +647,8 @@ export function AnalyzeScreen() {
                 />
               </View>
               <View style={styles.formalityLabelsRow}>
-                <Text style={[styles.formalityEndLabel, { color: colors.textTertiary }]}>Casual</Text>
-                <Text style={[styles.formalityEndLabel, { color: colors.textTertiary }]}>Formal</Text>
+                <Text style={[styles.formalityEndLabel, { color: colors.textTertiary }]}>{t('analyze.result.styleLevel.casual')}</Text>
+                <Text style={[styles.formalityEndLabel, { color: colors.textTertiary }]}>{t('analyze.result.styleLevel.formal')}</Text>
               </View>
             </View>
 

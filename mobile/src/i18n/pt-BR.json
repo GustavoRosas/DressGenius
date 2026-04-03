@@ -378,7 +378,9 @@
       },
       "styleLevel": {
         "title": "Nível de Estilo ⚖️",
-        "formality": "Formalidade"
+        "formality": "Formalidade",
+        "casual": "Casual",
+        "formal": "Formal"
       },
       "occasion": {
         "title": "Avaliação de Ocasião 📍",
@@ -513,17 +515,5 @@
     "save": "Salvar",
     "delete": "Excluir",
     "confirm": "Confirmar"
-  },
-  "errors": {
-    "timeout": "A análise está demorando mais que o normal. Tente novamente.",
-    "quotaExceeded": "Nossa IA está ocupada no momento. Tente novamente em alguns minutos.",
-    "serviceUnavailable": "Serviço temporariamente indisponível. Tente novamente mais tarde.",
-    "noConnection": "Sem conexão com a internet. Verifique sua conexão e tente novamente.",
-    "imageTooLarge": "Imagem muito grande. Escolha uma foto menor.",
-    "sessionExpired": "Sessão expirada. Faça login novamente.",
-    "generic": "Algo deu errado. Tente novamente.",
-    "limitReached": "Você atingiu seu limite gratuito este mês.",
-    "analysisFailed": "Não conseguimos analisar este outfit. Tente com uma foto mais clara.",
-    "imageCorrupted": "Esta imagem não pôde ser processada. Tente outra."
   }
 }
