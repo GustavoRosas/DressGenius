@@ -38,6 +38,7 @@
     "react": "19.2.0",
     "react-i18next": "^17.0.2",
     "react-native": "0.83.4",
+    "react-native-gifted-charts": "^1.4.76",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.23.0"
   },

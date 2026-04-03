@@ -53,6 +53,7 @@
   "tabs": {
     "analyze": "Analyze",
     "history": "History",
+    "analytics": "Analytics",
     "closet": "Closet",
     "profile": "Profile"
   },
@@ -263,6 +264,37 @@
     "next": "Next",
     "skip": "Skip",
     "getStarted": "Get Started"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "styleDna": {
+      "title": "STYLE DNA"
+    },
+    "scoreTrend": {
+      "title": "Score Trend",
+      "overall": "Overall",
+      "trend": "Trend"
+    },
+    "colors": {
+      "title": "Color Palette",
+      "dominantPalette": "Dominant Palette"
+    },
+    "closet": {
+      "title": "Closet Intelligence",
+      "gaps": "Gaps",
+      "unused": "Never Worn",
+      "mostWorn": "Most Worn",
+      "donate": "Donate?"
+    },
+    "empty": {
+      "title": "Build Your Style DNA",
+      "subtitle": "Start analyzing outfits to build your Style DNA! You need at least 3 analyses.",
+      "needMore": "{{count}} of {{needed}} analyses completed"
+    },
+    "premium": {
+      "locked": "Premium Feature",
+      "unlock": "Upgrade to Unlock"
+    }
   },
   "analyze": {
     "occasion": {

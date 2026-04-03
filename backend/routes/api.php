@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AIPreferencesController;
 use App\Http\Controllers\ErrorLogController;
@@ -45,4 +46,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/wardrobe-items/{wardrobeItem}', [WardrobeItemController::class, 'update']);
     Route::patch('/wardrobe-items/{wardrobeItem}/worn', [WardrobeItemController::class, 'markWorn']);
     Route::delete('/wardrobe-items/{wardrobeItem}', [WardrobeItemController::class, 'destroy']);
+
+    Route::prefix('analytics')->group(function () {
+        Route::get('/summary', [AnalyticsController::class, 'summary']);
+        Route::get('/score-trend', [AnalyticsController::class, 'scoreTrend']);
+        Route::get('/color-breakdown', [AnalyticsController::class, 'colorBreakdown']);
+        Route::get('/style-distribution', [AnalyticsController::class, 'styleDistribution']);
+        Route::get('/closet-intelligence', [AnalyticsController::class, 'closetIntelligence']);
+    });
 });

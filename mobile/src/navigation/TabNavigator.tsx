@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
-import { AnalyzeScreen, HistoryScreen, ClosetScreen, ProfileScreen } from '../screens';
+import { AnalyzeScreen, HistoryScreen, AnalyticsScreen, ClosetScreen, ProfileScreen } from '../screens';
 import { useTheme } from '../context/ThemeContext';
 import type { TabParamList } from './types';
 import type { ColorScheme } from '../theme/colors';
@@ -12,6 +12,7 @@ const Tab = createBottomTabNavigator<TabParamList>();
 const TAB_ICONS: Record<keyof TabParamList, string> = {
   Analyze: '🔍',
   History: '📜',
+  Analytics: '📊',
   Closet: '👔',
   Profile: '👤',
 };
@@ -45,6 +46,11 @@ export function TabNavigator() {
         name="History"
         component={HistoryScreen}
         options={{ tabBarLabel: t('tabs.history') }}
+      />
+      <Tab.Screen
+        name="Analytics"
+        component={AnalyticsScreen}
+        options={{ tabBarLabel: t('tabs.analytics') }}
       />
       <Tab.Screen
         name="Closet"

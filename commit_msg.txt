@@ -1,11 +1,16 @@
-feat: analytics sprint 0 - data foundation
+feat: analytics sprint 1+2 - endpoints + full analytics screen
 
 Backend:
-- Migration: add price, wear_count, last_worn_at, season_tags to wardrobe_items
-- Migration: add items_used, has_accessories, season to outfit_analysis_processes
-- Migration: create user_analytics_cache table
-- Model: UserAnalyticsCache with JSON casts
-- Service: AnalyticsAggregatorService (aggregate scores, colors, styles per period)
-- Endpoint: PATCH /wardrobe-items/:id/worn (mark item as worn)
-- Trigger: aggregate analytics after each outfit scan
-- Updated WardrobeItem and OutfitAnalysisProcess models
+- AnalyticsController with 5 endpoints: summary, score-trend,
+  color-breakdown, style-distribution, closet-intelligence
+- Style DNA builder, streak calculator, color merge (RGB distance)
+- Cache-aware with UserAnalyticsCache fallback
+
+Mobile:
+- AnalyticsScreen with 5 sections: Style DNA, Score Trend (LineChart),
+  Color Palette, Closet Intelligence (BarChart), Empty State
+- New Analytics tab in TabNavigator
+- useAnalytics hook (Promise.allSettled, partial failure graceful)
+- Premium gate: blur overlay on sections 2-4 for free users
+- react-native-gifted-charts installed
+- i18n: all analytics strings EN + PT-BR

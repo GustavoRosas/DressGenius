@@ -4,6 +4,7 @@ export { LoginScreen } from './LoginScreen';
 export { RegisterScreen } from './RegisterScreen';
 export { AnalyzeScreen } from './AnalyzeScreen';
 export { HistoryScreen } from './HistoryScreen';
+export { AnalyticsScreen } from './AnalyticsScreen';
 export { ClosetScreen } from './ClosetScreen';
 export { ProfileScreen } from './ProfileScreen';
 export { PaywallScreen } from './PaywallScreen';
