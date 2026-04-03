@@ -26,6 +26,9 @@ class OutfitAnalysisProcess extends Model
         'error_message',
         'started_at',
         'completed_at',
+        'items_used',
+        'has_accessories',
+        'season',
     ];
 
     protected $casts = [
@@ -36,6 +39,8 @@ class OutfitAnalysisProcess extends Model
         'context_feedback' => 'array',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
+        'items_used' => 'array',
+        'has_accessories' => 'boolean',
     ];
 
     public function user()

@@ -1,17 +1,11 @@
-feat: error handling, logging system, toast, ui polish
-
-Mobile:
-- Toast component (success/error/info/warning, animated, dark mode)
-- ToastContext + useToast() hook with queue system
-- ErrorLogger service (buffer, AsyncStorage fallback, backend flush)
-- errorHelper.ts: getErrorKey() maps 13 HTTP scenarios to i18n messages
-- i18n: 10 error messages in EN + PT-BR
-- Profile: collapsible password section, name/email pre-fill fix
-- ThemeToggle: removed black border
-- Password header: aligned text + chevron on same line
-- @react-native-async-storage/async-storage installed
+feat: analytics sprint 0 - data foundation
 
 Backend:
-- ErrorLogController: POST /error-logs endpoint
-- Migration: create_error_logs_table
-- Route added
+- Migration: add price, wear_count, last_worn_at, season_tags to wardrobe_items
+- Migration: add items_used, has_accessories, season to outfit_analysis_processes
+- Migration: create user_analytics_cache table
+- Model: UserAnalyticsCache with JSON casts
+- Service: AnalyticsAggregatorService (aggregate scores, colors, styles per period)
+- Endpoint: PATCH /wardrobe-items/:id/worn (mark item as worn)
+- Trigger: aggregate analytics after each outfit scan
+- Updated WardrobeItem and OutfitAnalysisProcess models

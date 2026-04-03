@@ -176,6 +176,25 @@ class WardrobeItemController extends Controller
         ]);
     }
 
+    public function markWorn(Request $request, WardrobeItem $wardrobeItem)
+    {
+        $userId = $request->user()->id;
+        if ($wardrobeItem->user_id !== $userId) {
+            return response()->json(['message' => 'Wardrobe item not found.'], 404);
+        }
+
+        $wardrobeItem->increment('wear_count');
+        $wardrobeItem->update(['last_worn_at' => now()]);
+
+        return response()->json([
+            'item' => [
+                'id' => $wardrobeItem->id,
+                'wear_count' => $wardrobeItem->wear_count,
+                'last_worn_at' => $wardrobeItem->last_worn_at,
+            ],
+        ]);
+    }
+
     public function destroy(Request $request, WardrobeItem $wardrobeItem)
     {
         $userId = $request->user()->id;

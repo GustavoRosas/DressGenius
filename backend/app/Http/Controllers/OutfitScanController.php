@@ -6,6 +6,7 @@ use App\Http\Requests\StoreOutfitScanRequest;
 use App\Models\OutfitAnalysisProcess;
 use App\Models\OutfitDetectedItem;
 use App\Models\OutfitScan;
+use App\Services\AnalyticsAggregatorService;
 use App\Services\ColorAnalysisService;
 use App\Services\GeminiChatService;
 use App\Services\GeminiVisionService;
@@ -121,6 +122,13 @@ class OutfitScanController extends Controller
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
         $disk = Storage::disk('public');
+
+        // Fire analytics aggregation (non-blocking)
+        try {
+            app(AnalyticsAggregatorService::class)->aggregate($user->id);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Analytics aggregation failed: ' . $e->getMessage());
+        }
 
         return response()->json([
             'scan' => [
