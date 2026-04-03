@@ -19,7 +19,10 @@ class InsightEngineService
     {
         return Cache::remember("insights:{$userId}", 86400, function () use ($userId) {
             try {
-                return $this->fetchFromGemini($userId);
+                $provider = config('services.ai.text_provider', 'gemini');
+                return $provider === 'anthropic'
+                    ? $this->fetchFromAnthropic($userId)
+                    : $this->fetchFromGemini($userId);
             } catch (\Throwable $e) {
                 Log::warning('InsightEngine: Gemini failed, returning generic insights', [
                     'user_id' => $userId,
@@ -252,5 +255,16 @@ PROMPT;
     private function toJson(array $data): string
     {
         return json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    }
+
+    private function fetchFromAnthropic(int $userId): array
+    {
+        $prompt = $this->buildPrompt($userId);
+        $anthropic = app(\App\Services\AI\AnthropicService::class);
+        $result = $anthropic->textPrompt($prompt, 1024);
+
+        // Normalize — same as Gemini path
+        $insights = is_array($result) && isset($result[0]) ? $result : (array) data_get($result, 'insights', [$result]);
+        return !empty($insights) ? array_slice($insights, 0, 5) : $this->genericInsights();
     }
 }

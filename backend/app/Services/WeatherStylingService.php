@@ -47,7 +47,10 @@ class WeatherStylingService
         $prompt = $this->buildPrompt($weather, $items, $preferences);
 
         try {
-            $result = $this->callGemini($prompt);
+            $provider = config('services.ai.text_provider', 'gemini');
+            $result = $provider === 'anthropic'
+                ? app(\App\Services\AI\AnthropicService::class)->textPrompt($prompt, 1024)
+                : $this->callGemini($prompt);
         } catch (\Throwable $e) {
             Log::error('Weather styling Gemini call failed', ['error' => $e->getMessage()]);
             return [

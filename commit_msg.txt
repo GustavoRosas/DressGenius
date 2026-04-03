@@ -1,7 +1,11 @@
-feat: Fly.io deployment (GRU Sao Paulo) + production env update
+feat: migrate AI provider from Gemini to Claude Haiku 3.5
 
-- fly.toml configured for dressgenius-api (region gru, shared-cpu-1x, 512MB)
-- PostgreSQL on Fly (dressgenius-db) in Sao Paulo
-- Secrets configured (DB, Gemini, Laravel)
-- mobile/.env.production updated to https://dressgenius-api.fly.dev/api
-- Latency: ~10-30ms for Brazilian users (was 200-300ms on Render)
+- AnthropicService: unified HTTP client for Claude vision + text
+- GeminiVisionService: routes to Claude when AI_VISION_PROVIDER=anthropic
+- ColorAnalysisService: same provider routing
+- InsightEngineService: Claude text fallback
+- OccasionStylingService: Claude text fallback
+- WeatherStylingService: Claude text fallback
+- Config: services.ai.vision_provider, services.anthropic.*
+- Gemini kept as fallback (not deleted)
+- Claude JSON parsing simpler (no repair needed)

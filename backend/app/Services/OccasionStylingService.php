@@ -38,7 +38,10 @@ class OccasionStylingService
         }
 
         $prompt = $this->buildPrompt($occasion, $notes, $items, $preferences);
-        $result = $this->callGemini($prompt);
+        $provider = config('services.ai.text_provider', 'gemini');
+        $result = $provider === 'anthropic'
+            ? app(\App\Services\AI\AnthropicService::class)->textPrompt($prompt, 1024)
+            : $this->callGemini($prompt);
 
         return $this->normalize($result, $occasion, $items);
     }

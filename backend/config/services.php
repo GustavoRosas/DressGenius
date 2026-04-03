@@ -39,6 +39,17 @@ return [
         'key' => env('REMOVEBG_API_KEY'),
     ],
 
+    'ai' => [
+        'vision_provider' => env('AI_VISION_PROVIDER', 'anthropic'),
+        'text_provider' => env('AI_TEXT_PROVIDER', 'anthropic'),
+    ],
+
+    'anthropic' => [
+        'api_key' => env('ANTHROPIC_API_KEY'),
+        'vision_model' => env('ANTHROPIC_VISION_MODEL', 'claude-haiku-4-5'),
+        'text_model' => env('ANTHROPIC_TEXT_MODEL', 'claude-haiku-4-5'),
+    ],
+
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
         'model' => env('GEMINI_MODEL', 'gemini-2.5-flash'),

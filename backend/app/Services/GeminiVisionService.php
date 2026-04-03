@@ -11,6 +11,12 @@ class GeminiVisionService
 {
     public function analyzeOutfitImage(UploadedFile $image, array $intake = []): array
     {
+        // Check if we should use Anthropic instead
+        $provider = config('services.ai.vision_provider', 'gemini');
+        if ($provider === 'anthropic') {
+            return $this->analyzeViaAnthropic($image, $intake);
+        }
+
         $apiKey = config('services.gemini.api_key');
         $debug = (bool) config('services.gemini.debug', false);
         if (!$apiKey) {
@@ -412,5 +418,21 @@ PROMPT;
         }
 
         return $text;
+    }
+
+    /**
+     * Analyze outfit via Anthropic Claude (used when AI_VISION_PROVIDER=anthropic).
+     */
+    private function analyzeViaAnthropic(UploadedFile $image, array $intake): array
+    {
+        $anthropic = app(\App\Services\AI\AnthropicService::class);
+
+        $base64 = base64_encode(file_get_contents($image->getRealPath()));
+        $mimeType = $image->getMimeType() ?: 'image/jpeg';
+        $prompt = $this->buildRichPrompt($intake);
+
+        $result = $anthropic->analyzeImage($base64, $mimeType, $prompt, 2048);
+
+        return $this->normalizeVisionPayload($result);
     }
 }

@@ -16,6 +16,12 @@ class ColorAnalysisService
      */
     public function analyzeColors(string $imagePath): array
     {
+        // Check if we should use Anthropic
+        $provider = config('services.ai.vision_provider', 'gemini');
+        if ($provider === 'anthropic') {
+            return $this->analyzeViaAnthropic($imagePath);
+        }
+
         $apiKey = config('services.gemini.api_key');
         $debug = (bool) config('services.gemini.debug', false);
 
@@ -250,5 +256,23 @@ PROMPT;
         }
 
         return array_slice($normalized, 0, 5);
+    }
+
+    private function analyzeViaAnthropic(string $imagePath): array
+    {
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+        if (!$disk->exists($imagePath)) {
+            throw new \RuntimeException('Image not found: ' . $imagePath);
+        }
+
+        $base64 = base64_encode($disk->get($imagePath));
+        $mimeType = $disk->mimeType($imagePath) ?: 'image/jpeg';
+        $prompt = $this->buildPrompt();
+
+        $anthropic = app(\App\Services\AI\AnthropicService::class);
+        $result = $anthropic->analyzeImage($base64, $mimeType, $prompt, 1024);
+
+        return $this->normalize($result);
     }
 }
