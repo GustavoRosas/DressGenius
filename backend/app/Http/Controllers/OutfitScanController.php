@@ -98,12 +98,15 @@ class OutfitScanController extends Controller
             $analysisResult['color_analysis'] = null;
         }
 
+        // Use the rich Gemini score (0-10) if available
+        $finalScore = data_get($analysisResult, 'score');
+
         $scan = OutfitScan::create([
             'user_id' => $user->id,
             'image_path' => $path,
             'vision' => $visionResult,
             'analysis' => $analysisResult,
-            'score' => data_get($analysisResult, 'score'),
+            'score' => $finalScore,
         ]);
 
         $detectedItems = $this->persistDetectedItems(

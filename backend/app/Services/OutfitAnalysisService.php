@@ -181,12 +181,32 @@ class OutfitAnalysisService
 
         $score = max(0, min(100, $score));
 
-        return [
-            'score' => $score,
+        // --- Rich analysis from Gemini (if present in vision) ---
+        $richScore = data_get($vision, 'score');
+        $hasRichAnalysis = $richScore !== null && is_numeric($richScore);
+
+        $result = [
+            'score' => $hasRichAnalysis ? (float) $richScore : $score,
+            'score_label' => (string) data_get($vision, 'score_label', ''),
+            'score_summary' => (string) data_get($vision, 'score_summary', ''),
+            'score_breakdown' => data_get($vision, 'score_breakdown', [
+                'color_harmony' => 0,
+                'style_balance' => 0,
+                'occasion_fit' => 0,
+                'overall_cohesion' => 0,
+            ]),
+            'strengths' => data_get($vision, 'strengths', []),
+            'style_level' => data_get($vision, 'style_level'),
+            'occasion_assessment' => data_get($vision, 'occasion_assessment'),
+            'improvements' => data_get($vision, 'improvements', []),
+            'climate_assessment' => data_get($vision, 'climate_assessment'),
+            // Legacy fields kept for backward compat
             'pros' => $pros,
             'issues' => $issues,
             'suggestions' => $suggestions,
             'context_feedback' => $contextFeedback,
         ];
+
+        return $result;
     }
 }

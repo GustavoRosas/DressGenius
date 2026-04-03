@@ -353,13 +353,57 @@
     },
     "result": {
       "score": "Overall Score",
-      "colorAnalysis": "Color Analysis",
+      "colorAnalysis": "Color Analysis 🎨",
       "palette": "Palette",
       "season": "Season",
       "harmony": "Harmony",
       "suggestions": "Suggestions",
       "occasionTips": "Occasion Tips",
-      "outOf": "/10"
+      "outOf": "/10",
+      "scoreLabel": {
+        "poor": "Poor Look",
+        "fair": "Fair Look",
+        "good": "Good Look",
+        "great": "Great Look",
+        "perfect": "Perfect Look"
+      },
+      "breakdown": {
+        "colorHarmony": "Color Harmony",
+        "styleBalance": "Style Balance",
+        "occasionFit": "Occasion Fit",
+        "cohesion": "Overall Cohesion"
+      },
+      "strengths": {
+        "title": "✅ What Works"
+      },
+      "styleLevel": {
+        "title": "Style Level ⚖️",
+        "formality": "Formality"
+      },
+      "occasion": {
+        "title": "Occasion Assessment 📍",
+        "verdict": {
+          "great": "Great Fit",
+          "good": "Good Fit",
+          "fair": "Fair Fit",
+          "poor": "Poor Fit"
+        },
+        "worksFor": "Works for",
+        "doesntWorkFor": "Doesn't work for"
+      },
+      "improvements": {
+        "title": "Improvements 💡",
+        "priority": {
+          "high": "High",
+          "medium": "Medium",
+          "low": "Low"
+        },
+        "impact": "Impact"
+      },
+      "climate": {
+        "title": "Climate 🌤️",
+        "risk": "Risk"
+      }
     },
     "usageLeft": "{{count}} left",
     "upgrade": "Upgrade",

@@ -18,6 +18,8 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Dimensions,
+  FlatList,
   Image,
   Linking,
   Platform,
@@ -60,14 +62,70 @@ interface ColorAnalysis {
   suggestions?: string[];
 }
 
+interface ScoreBreakdown {
+  color_harmony: number;
+  style_balance: number;
+  occasion_fit: number;
+  overall_cohesion: number;
+}
+
+interface Strength {
+  title: string;
+  description: string;
+}
+
+interface StyleLevel {
+  detected: string;
+  formality_score: number;
+  balance_note: string;
+}
+
+interface OccasionAssessment {
+  fit_score: number;
+  verdict: string;
+  verdict_note: string;
+  would_work_for: string[];
+  would_not_work_for: string[];
+}
+
+interface Improvement {
+  priority: 'high' | 'medium' | 'low';
+  area: string;
+  suggestion: string;
+  impact: string;
+}
+
+interface ClimateAssessment {
+  fit_score: number;
+  note: string;
+  risk: string | null;
+}
+
+interface RichAnalysis {
+  score?: number;
+  score_label?: string;
+  score_summary?: string;
+  score_breakdown?: ScoreBreakdown;
+  strengths?: Strength[];
+  style_level?: StyleLevel;
+  occasion_assessment?: OccasionAssessment;
+  improvements?: Improvement[];
+  climate_assessment?: ClimateAssessment;
+  color_analysis?: ColorAnalysis | null;
+  context_feedback?: Record<string, { status: string; message: string }>;
+}
+
 interface AnalysisResult {
   id?: number;
-  analysis?: Record<string, unknown> | string | null;
+  analysis?: RichAnalysis | string | null;
   score?: number;
   color_analysis?: ColorAnalysis | null;
   occasion_tips?: string[];
   [key: string]: unknown;
 }
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const STRENGTH_CARD_WIDTH = 260;
 
 export function AnalyzeScreen() {
   const { t } = useTranslation();
@@ -356,144 +414,389 @@ export function AnalyzeScreen() {
     </View>
   );
 
-  // — #56 — Enriched result —
-  const renderResult = () => (
-    <ScrollView
-      style={styles.scrollView}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
-      {imageUri && (
-        <View style={styles.thumbnailContainer}>
-          <Image source={{ uri: imageUri }} style={styles.thumbnail} resizeMode="cover" />
+  // — Helper: get analysis data safely —
+  const getAnalysis = useCallback((): RichAnalysis | null => {
+    if (!result?.analysis || typeof result.analysis === 'string') return null;
+    return result.analysis as RichAnalysis;
+  }, [result]);
+
+  // — Helper: score badge color —
+  const getScoreBadgeColor = useCallback(
+    (score: number) => {
+      if (score >= 9) return { bg: '#7C3AED20', text: '#7C3AED' }; // purple
+      if (score >= 7) return { bg: colors.successBackground, text: colors.success };
+      if (score >= 4) return { bg: colors.warningBackground, text: colors.warning };
+      return { bg: colors.errorBackground, text: colors.error };
+    },
+    [colors],
+  );
+
+  // — Helper: verdict badge —
+  const getVerdictEmoji = (verdict: string) => {
+    const v = verdict.toLowerCase();
+    if (v.includes('great')) return '🟢';
+    if (v.includes('good')) return '🟡';
+    if (v.includes('fair')) return '🟠';
+    return '🔴';
+  };
+
+  // — Helper: priority badge —
+  const getPriorityBadge = (priority: string) => {
+    switch (priority.toLowerCase()) {
+      case 'high': return { emoji: '🔴', label: t('analyze.result.priority.high') };
+      case 'medium': return { emoji: '🟡', label: t('analyze.result.priority.medium') };
+      default: return { emoji: '⚪', label: t('analyze.result.priority.low') };
+    }
+  };
+
+  // — Render breakdown bar —
+  const renderBreakdownBar = (label: string, value: number) => {
+    const barColor = value >= 7 ? colors.success : value >= 4 ? colors.warning : colors.error;
+    return (
+      <View style={styles.breakdownRow} key={label}>
+        <View style={styles.breakdownLabelRow}>
+          <Text style={[styles.breakdownLabel, { color: colors.textSecondary }]}>{label}</Text>
+          <Text style={[styles.breakdownValue, { color: colors.text }]}>{value.toFixed(1)}</Text>
         </View>
-      )}
-
-      {/* Score card */}
-      {result?.score != null && (
-        <View style={styles.resultCard}>
-          <Text style={styles.resultCardTitle}>{t('analyze.result.score')}</Text>
-          <View style={styles.scoreRow}>
-            <Text style={styles.scoreNumber}>
-              {typeof result.score === 'number' && result.score > 10
-                ? (result.score / 10).toFixed(1)
-                : result.score}
-            </Text>
-            <Text style={styles.scoreOutOf}>/10</Text>
-          </View>
+        <View style={[styles.breakdownTrack, { backgroundColor: colors.border }]}>
+          <View
+            style={[
+              styles.breakdownFill,
+              { width: `${Math.min(100, (value / 10) * 100)}%`, backgroundColor: barColor },
+            ]}
+          />
         </View>
-      )}
+      </View>
+    );
+  };
 
-      {/* Color Analysis card */}
-      {result?.color_analysis && (
-        <View style={styles.resultCard}>
-          <Text style={styles.resultCardTitle}>{t('analyze.result.colorAnalysis')}</Text>
+  // — Render strength card —
+  const renderStrengthCard = ({ item }: { item: Strength }) => (
+    <View style={[styles.strengthCard, { backgroundColor: colors.card }]}>
+      <Text style={[styles.strengthIcon]}>✅</Text>
+      <Text style={[styles.strengthTitle, { color: colors.text }]} numberOfLines={1}>
+        {item.title}
+      </Text>
+      <Text style={[styles.strengthDesc, { color: colors.textSecondary }]} numberOfLines={2}>
+        {item.description}
+      </Text>
+    </View>
+  );
 
-          {/* Color swatches */}
-          {result.color_analysis.dominant_colors &&
-            result.color_analysis.dominant_colors.length > 0 && (
-              <View style={styles.swatchRow}>
-                {result.color_analysis.dominant_colors.map((hex, i) => (
-                  <View
-                    key={i}
-                    style={[styles.swatch, { backgroundColor: hex }]}
-                  />
-                ))}
-              </View>
-            )}
+  // — #56 — Enriched result with 7 sections —
+  const renderResult = () => {
+    const analysis = getAnalysis();
+    const displayScore = result?.score ?? analysis?.score;
+    const scoreLabel = analysis?.score_label ?? '';
+    const scoreSummary = analysis?.score_summary ?? '';
+    const breakdown = analysis?.score_breakdown;
+    const strengths = analysis?.strengths ?? [];
+    const colorAnalysis = analysis?.color_analysis ?? result?.color_analysis;
+    const styleLevel = analysis?.style_level;
+    const occasionAssessment = analysis?.occasion_assessment;
+    const improvements = analysis?.improvements ?? [];
+    const climateAssessment = analysis?.climate_assessment;
 
-          {/* Badges */}
-          <View style={styles.badgeRow}>
-            {result.color_analysis.palette_type && (
-              <View style={[styles.badge, { backgroundColor: colors.primaryLight }]}>
-                <Text style={[styles.badgeText, { color: colors.primary }]}>
-                  {t('analyze.result.palette')}: {result.color_analysis.palette_type}
-                </Text>
-              </View>
-            )}
-            {result.color_analysis.season && (
-              <View style={[styles.badge, { backgroundColor: colors.secondaryLight }]}>
-                <Text style={[styles.badgeText, { color: colors.text }]}>
-                  {t('analyze.result.season')}: {result.color_analysis.season}
-                </Text>
-              </View>
-            )}
+    const scoreBadge = displayScore != null ? getScoreBadgeColor(displayScore) : null;
+
+    return (
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {imageUri && (
+          <View style={styles.thumbnailContainer}>
+            <Image source={{ uri: imageUri }} style={styles.thumbnail} resizeMode="cover" />
           </View>
+        )}
 
-          {/* Harmony score */}
-          {result.color_analysis.harmony_score != null && (
-            <View style={styles.harmonyRow}>
-              <Text style={[styles.harmonyLabel, { color: colors.textSecondary }]}>
-                {t('analyze.result.harmony')}:
+        {/* ═══ Section 1: Score Hero Card ═══ */}
+        {displayScore != null && (
+          <View style={styles.resultCard}>
+            <View style={styles.scoreHeroRow}>
+              <Text style={[styles.scoreNumber, { color: scoreBadge?.text ?? colors.primary }]}>
+                {displayScore.toFixed ? displayScore.toFixed(1) : displayScore}
               </Text>
-              <Text style={[styles.harmonyScore, { color: colors.primary }]}>
-                {result.color_analysis.harmony_score}{t('analyze.result.outOf')}
-              </Text>
-              {result.color_analysis.harmony_feedback && (
-                <Text style={[styles.harmonyFeedback, { color: colors.textSecondary }]}>
-                  {' — '}{result.color_analysis.harmony_feedback}
-                </Text>
+              {scoreLabel !== '' && scoreBadge && (
+                <View style={[styles.scoreLabelBadge, { backgroundColor: scoreBadge.bg }]}>
+                  <Text style={[styles.scoreLabelText, { color: scoreBadge.text }]}>
+                    {scoreLabel}
+                  </Text>
+                </View>
               )}
             </View>
-          )}
 
-          {/* Suggestions */}
-          {result.color_analysis.suggestions &&
-            result.color_analysis.suggestions.length > 0 && (
-              <View style={styles.suggestionsSection}>
-                <Text style={styles.resultCardSubtitle}>
-                  {t('analyze.result.suggestions')}
-                </Text>
-                {result.color_analysis.suggestions.map((s, i) => (
-                  <Text key={i} style={[styles.suggestionItem, { color: colors.text }]}>
-                    • {s}
-                  </Text>
+            {scoreSummary !== '' && (
+              <Text style={[styles.scoreSummary, { color: colors.textSecondary }]}>
+                {scoreSummary}
+              </Text>
+            )}
+
+            {/* Breakdown bars */}
+            {breakdown && (
+              <View style={styles.breakdownContainer}>
+                {renderBreakdownBar(t('analyze.result.breakdown.colorHarmony'), breakdown.color_harmony)}
+                {renderBreakdownBar(t('analyze.result.breakdown.styleBalance'), breakdown.style_balance)}
+                {renderBreakdownBar(t('analyze.result.breakdown.occasionFit'), breakdown.occasion_fit)}
+                {renderBreakdownBar(t('analyze.result.breakdown.cohesion'), breakdown.overall_cohesion)}
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* ═══ Section 2: Strengths ═══ */}
+        {strengths.length > 0 && (
+          <View style={styles.sectionContainer}>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>
+              {t('analyze.result.strengths.title')}
+            </Text>
+            <FlatList
+              data={strengths}
+              renderItem={renderStrengthCard}
+              keyExtractor={(_, i) => `str-${i}`}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              snapToInterval={STRENGTH_CARD_WIDTH + spacing.md}
+              decelerationRate="fast"
+              contentContainerStyle={styles.strengthListContent}
+            />
+          </View>
+        )}
+
+        {/* ═══ Section 3: Color Analysis 🎨 ═══ */}
+        {colorAnalysis && (
+          <View style={styles.resultCard}>
+            <Text style={styles.resultCardTitle}>{t('analyze.result.colorAnalysis')}</Text>
+
+            {colorAnalysis.dominant_colors && colorAnalysis.dominant_colors.length > 0 && (
+              <View style={styles.swatchRow}>
+                {colorAnalysis.dominant_colors.map((hex, i) => (
+                  <View key={i} style={[styles.swatch, { backgroundColor: hex }]} />
                 ))}
               </View>
             )}
-        </View>
-      )}
 
-      {/* Occasion Tips card */}
-      {result?.occasion_tips && result.occasion_tips.length > 0 && (
-        <View style={styles.resultCard}>
-          <Text style={styles.resultCardTitle}>{t('analyze.result.occasionTips')}</Text>
-          {result.occasion_tips.map((tip, i) => (
-            <Text key={i} style={[styles.suggestionItem, { color: colors.text }]}>
-              • {tip}
+            <View style={styles.badgeRow}>
+              {colorAnalysis.palette_type && (
+                <View style={[styles.badge, { backgroundColor: colors.primaryLight }]}>
+                  <Text style={[styles.badgeText, { color: colors.primary }]}>
+                    {colorAnalysis.palette_type === 'warm' ? '🔴 ' : colorAnalysis.palette_type === 'cool' ? '🔵 ' : ''}
+                    {t('analyze.result.palette')}: {colorAnalysis.palette_type}
+                  </Text>
+                </View>
+              )}
+              {colorAnalysis.season && (
+                <View style={[styles.badge, { backgroundColor: colors.secondaryLight }]}>
+                  <Text style={[styles.badgeText, { color: colors.text }]}>
+                    {t('analyze.result.season')}: {colorAnalysis.season}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {colorAnalysis.harmony_score != null && (
+              <View style={styles.harmonyRow}>
+                <Text style={[styles.harmonyLabel, { color: colors.textSecondary }]}>
+                  {t('analyze.result.harmony')}:
+                </Text>
+                <Text style={[styles.harmonyScore, { color: colors.primary }]}>
+                  {colorAnalysis.harmony_score}{t('analyze.result.outOf')}
+                </Text>
+                {colorAnalysis.harmony_feedback && (
+                  <Text style={[styles.harmonyFeedback, { color: colors.textSecondary }]}>
+                    {' — '}{colorAnalysis.harmony_feedback}
+                  </Text>
+                )}
+              </View>
+            )}
+
+            {colorAnalysis.suggestions && colorAnalysis.suggestions.length > 0 && (
+              <View style={styles.suggestionsSection}>
+                <Text style={styles.resultCardSubtitle}>{t('analyze.result.suggestions')}</Text>
+                {colorAnalysis.suggestions.map((s, i) => (
+                  <Text key={i} style={[styles.suggestionItem, { color: colors.text }]}>• {s}</Text>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* ═══ Section 4: Style Level ⚖️ ═══ */}
+        {styleLevel && (
+          <View style={styles.resultCard}>
+            <Text style={styles.resultCardTitle}>{t('analyze.result.styleLevel.title')}</Text>
+            <Text style={[styles.styleLevelDetected, { color: colors.primary }]}>
+              {styleLevel.detected}
             </Text>
-          ))}
-        </View>
-      )}
 
-      {/* Fallback: raw analysis text (only if string, skip objects) */}
-      {result?.analysis && typeof result.analysis === 'string' && (
-        <View style={styles.resultCard}>
-          <Text style={styles.resultText}>{result.analysis}</Text>
-        </View>
-      )}
+            {/* Formality slider */}
+            <View style={styles.formalityContainer}>
+              <Text style={[styles.formalityLabel, { color: colors.textSecondary }]}>
+                {t('analyze.result.styleLevel.formality')}
+              </Text>
+              <View style={[styles.formalityTrack, { backgroundColor: colors.border }]}>
+                <View
+                  style={[
+                    styles.formalityMarker,
+                    {
+                      left: `${Math.min(100, Math.max(0, (styleLevel.formality_score / 10) * 100))}%`,
+                      backgroundColor: colors.primary,
+                    },
+                  ]}
+                />
+              </View>
+              <View style={styles.formalityLabelsRow}>
+                <Text style={[styles.formalityEndLabel, { color: colors.textTertiary }]}>Casual</Text>
+                <Text style={[styles.formalityEndLabel, { color: colors.textTertiary }]}>Formal</Text>
+              </View>
+            </View>
 
-      {/* Action buttons */}
-      <View style={styles.buttonGroup}>
-        <Button
-          title={t('screens.analyze.newAnalysis')}
-          variant="primary"
-          onPress={resetScreen}
-          style={styles.actionButton}
-        />
-        <Button
-          title={t('screens.analyze.startChat')}
-          variant="outline"
-          onPress={() => {
-            if (result?.id) {
-              navigation.navigate('Chat', { chatId: result.id });
-            }
-          }}
-          style={styles.actionButton}
-        />
-      </View>
-    </ScrollView>
-  );
+            {styleLevel.balance_note !== '' && (
+              <Text style={[styles.balanceNote, { color: colors.textSecondary }]}>
+                {styleLevel.balance_note}
+              </Text>
+            )}
+          </View>
+        )}
+
+        {/* ═══ Section 5: Occasion Assessment 📍 ═══ */}
+        {occasionAssessment && (
+          <View style={styles.resultCard}>
+            <Text style={styles.resultCardTitle}>{t('analyze.result.occasion.title')}</Text>
+
+            <View style={styles.verdictRow}>
+              <Text style={styles.verdictEmoji}>{getVerdictEmoji(occasionAssessment.verdict)}</Text>
+              <Text style={[styles.verdictText, { color: colors.text }]}>
+                {occasionAssessment.verdict}
+              </Text>
+              <Text style={[styles.verdictScore, { color: colors.textSecondary }]}>
+                {occasionAssessment.fit_score.toFixed(1)}/10
+              </Text>
+            </View>
+
+            {occasionAssessment.verdict_note !== '' && (
+              <Text style={[styles.verdictNote, { color: colors.textSecondary }]}>
+                {occasionAssessment.verdict_note}
+              </Text>
+            )}
+
+            {/* Works for chips */}
+            {occasionAssessment.would_work_for.length > 0 && (
+              <View style={styles.chipsSection}>
+                <Text style={[styles.chipsLabel, { color: colors.textSecondary }]}>
+                  {t('analyze.result.occasion.worksFor')}
+                </Text>
+                <View style={styles.chipsRow}>
+                  {occasionAssessment.would_work_for.map((item, i) => (
+                    <View key={i} style={[styles.chip, { backgroundColor: colors.successBackground }]}>
+                      <Text style={[styles.chipText, { color: colors.success }]}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+
+            {/* Doesn't work for chips */}
+            {occasionAssessment.would_not_work_for.length > 0 && (
+              <View style={styles.chipsSection}>
+                <Text style={[styles.chipsLabel, { color: colors.textSecondary }]}>
+                  {t('analyze.result.occasion.doesntWorkFor')}
+                </Text>
+                <View style={styles.chipsRow}>
+                  {occasionAssessment.would_not_work_for.map((item, i) => (
+                    <View key={i} style={[styles.chip, { backgroundColor: colors.errorBackground }]}>
+                      <Text style={[styles.chipText, { color: colors.error }]}>{item}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* ═══ Section 6: Improvements 💡 ═══ */}
+        {improvements.length > 0 && (
+          <View style={styles.resultCard}>
+            <Text style={styles.resultCardTitle}>{t('analyze.result.improvements.title')}</Text>
+            {improvements.map((imp, i) => {
+              const badge = getPriorityBadge(imp.priority);
+              return (
+                <View key={i} style={[styles.improvementCard, { borderColor: colors.border }]}>
+                  <View style={styles.improvementHeader}>
+                    <Text style={styles.improvementPriorityEmoji}>{badge.emoji}</Text>
+                    <Text style={[styles.improvementPriorityLabel, { color: colors.textSecondary }]}>
+                      {badge.label}
+                    </Text>
+                    <Text style={[styles.improvementArea, { color: colors.text }]}>
+                      {imp.area}
+                    </Text>
+                  </View>
+                  <Text style={[styles.improvementSuggestion, { color: colors.text }]}>
+                    {imp.suggestion}
+                  </Text>
+                  {imp.impact !== '' && (
+                    <Text style={[styles.improvementImpact, { color: colors.textTertiary }]}>
+                      {t('analyze.result.improvements.impact')}: {imp.impact}
+                    </Text>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        )}
+
+        {/* ═══ Section 7: Climate 🌤️ ═══ */}
+        {climateAssessment && (
+          <View style={[styles.resultCard, styles.climateCard]}>
+            <Text style={styles.resultCardTitle}>{t('analyze.result.climate.title')}</Text>
+            <View style={styles.climateRow}>
+              <Text style={[styles.climateScore, { color: colors.primary }]}>
+                {climateAssessment.fit_score.toFixed(1)}/10
+              </Text>
+              <Text style={[styles.climateNote, { color: colors.textSecondary }]}>
+                {climateAssessment.note}
+              </Text>
+            </View>
+            {climateAssessment.risk != null && climateAssessment.risk !== '' && (
+              <View style={[styles.climateRisk, { backgroundColor: colors.warningBackground }]}>
+                <Text style={[styles.climateRiskText, { color: colors.warning }]}>
+                  ⚠️ {t('analyze.result.climate.risk')}: {climateAssessment.risk}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Fallback: raw analysis text */}
+        {result?.analysis && typeof result.analysis === 'string' && (
+          <View style={styles.resultCard}>
+            <Text style={styles.resultText}>{result.analysis}</Text>
+          </View>
+        )}
+
+        {/* ═══ Action Buttons ═══ */}
+        <View style={styles.buttonGroup}>
+          <Button
+            title={t('screens.analyze.newAnalysis')}
+            variant="primary"
+            onPress={resetScreen}
+            style={styles.actionButton}
+          />
+          <Button
+            title={t('screens.analyze.startChat')}
+            variant="outline"
+            onPress={() => {
+              if (result?.id) {
+                navigation.navigate('Chat', { chatId: result.id });
+              }
+            }}
+            style={styles.actionButton}
+          />
+        </View>
+      </ScrollView>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -540,7 +843,7 @@ const createStyles = (colors: ColorScheme) =>
       flex: 1,
     },
     scrollContent: {
-      paddingHorizontal: spacing.xl,
+      paddingHorizontal: spacing.lg,
       paddingTop: spacing.xxl,
       paddingBottom: spacing.xxxl,
       alignItems: 'center',
@@ -566,7 +869,7 @@ const createStyles = (colors: ColorScheme) =>
       paddingHorizontal: spacing.lg,
     },
 
-    // — Cards —
+    // — Cards (initial) —
     cardsRow: {
       flexDirection: 'column',
       gap: spacing.lg,
@@ -609,7 +912,7 @@ const createStyles = (colors: ColorScheme) =>
       height: '100%',
     },
 
-    // — Result (#56) —
+    // — Result —
     thumbnailContainer: {
       width: 120,
       height: 160,
@@ -646,24 +949,94 @@ const createStyles = (colors: ColorScheme) =>
       color: colors.text,
     },
 
-    // Score
-    scoreRow: {
+    // — Section 1: Score Hero —
+    scoreHeroRow: {
       flexDirection: 'row',
-      alignItems: 'baseline',
+      alignItems: 'center',
       justifyContent: 'center',
+      gap: spacing.md,
+      marginBottom: spacing.sm,
     },
     scoreNumber: {
       fontSize: 56,
       fontWeight: '800',
-      color: colors.primary,
     },
-    scoreOutOf: {
-      ...typography.h2,
-      color: colors.textTertiary,
-      marginLeft: spacing.xxs,
+    scoreLabelBadge: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      borderRadius: borderRadius.full,
+    },
+    scoreLabelText: {
+      ...typography.subtitle2,
+      fontWeight: '700',
+    },
+    scoreSummary: {
+      ...typography.body1,
+      textAlign: 'center',
+      marginBottom: spacing.lg,
+    },
+    breakdownContainer: {
+      gap: spacing.sm,
+    },
+    breakdownRow: {
+      marginBottom: spacing.xs,
+    },
+    breakdownLabelRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: spacing.xxs,
+    },
+    breakdownLabel: {
+      ...typography.caption,
+    },
+    breakdownValue: {
+      ...typography.caption,
+      fontWeight: '700',
+    },
+    breakdownTrack: {
+      height: 6,
+      borderRadius: 3,
+      overflow: 'hidden',
+    },
+    breakdownFill: {
+      height: '100%',
+      borderRadius: 3,
     },
 
-    // Color swatches
+    // — Section 2: Strengths —
+    sectionContainer: {
+      width: '100%',
+      marginBottom: spacing.md,
+    },
+    sectionTitle: {
+      ...typography.subtitle1,
+      marginBottom: spacing.sm,
+      paddingHorizontal: spacing.xs,
+    },
+    strengthListContent: {
+      paddingRight: spacing.lg,
+    },
+    strengthCard: {
+      width: STRENGTH_CARD_WIDTH,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      marginRight: spacing.md,
+      ...shadows.sm,
+    },
+    strengthIcon: {
+      fontSize: 20,
+      marginBottom: spacing.xs,
+    },
+    strengthTitle: {
+      ...typography.subtitle2,
+      fontWeight: '700',
+      marginBottom: spacing.xxs,
+    },
+    strengthDesc: {
+      ...typography.body2,
+    },
+
+    // — Section 3: Color Analysis —
     swatchRow: {
       flexDirection: 'row',
       gap: spacing.sm,
@@ -676,8 +1049,6 @@ const createStyles = (colors: ColorScheme) =>
       borderWidth: 2,
       borderColor: colors.border,
     },
-
-    // Badges
     badgeRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -694,8 +1065,6 @@ const createStyles = (colors: ColorScheme) =>
       fontWeight: '700',
       textTransform: 'capitalize',
     },
-
-    // Harmony
     harmonyRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -713,14 +1082,157 @@ const createStyles = (colors: ColorScheme) =>
     harmonyFeedback: {
       ...typography.body2,
     },
-
-    // Suggestions
     suggestionsSection: {
       marginTop: spacing.sm,
     },
     suggestionItem: {
       ...typography.body2,
       marginBottom: spacing.xs,
+    },
+
+    // — Section 4: Style Level —
+    styleLevelDetected: {
+      ...typography.h3,
+      fontWeight: '700',
+      marginBottom: spacing.md,
+    },
+    formalityContainer: {
+      marginBottom: spacing.md,
+    },
+    formalityLabel: {
+      ...typography.caption,
+      marginBottom: spacing.xs,
+    },
+    formalityTrack: {
+      height: 8,
+      borderRadius: 4,
+      position: 'relative',
+    },
+    formalityMarker: {
+      position: 'absolute',
+      top: -4,
+      width: 16,
+      height: 16,
+      borderRadius: 8,
+      marginLeft: -8,
+    },
+    formalityLabelsRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: spacing.xs,
+    },
+    formalityEndLabel: {
+      ...typography.caption,
+    },
+    balanceNote: {
+      ...typography.body2,
+      fontStyle: 'italic',
+    },
+
+    // — Section 5: Occasion Assessment —
+    verdictRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      marginBottom: spacing.sm,
+    },
+    verdictEmoji: {
+      fontSize: 24,
+    },
+    verdictText: {
+      ...typography.subtitle1,
+      fontWeight: '700',
+    },
+    verdictScore: {
+      ...typography.body2,
+      marginLeft: 'auto',
+    },
+    verdictNote: {
+      ...typography.body2,
+      marginBottom: spacing.md,
+    },
+    chipsSection: {
+      marginBottom: spacing.sm,
+    },
+    chipsLabel: {
+      ...typography.caption,
+      fontWeight: '600',
+      marginBottom: spacing.xs,
+    },
+    chipsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    chip: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      borderRadius: borderRadius.full,
+    },
+    chipText: {
+      ...typography.caption,
+      fontWeight: '600',
+    },
+
+    // — Section 6: Improvements —
+    improvementCard: {
+      borderWidth: 1,
+      borderRadius: borderRadius.md,
+      padding: spacing.lg,
+      marginBottom: spacing.sm,
+    },
+    improvementHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      marginBottom: spacing.xs,
+    },
+    improvementPriorityEmoji: {
+      fontSize: 14,
+    },
+    improvementPriorityLabel: {
+      ...typography.caption,
+      fontWeight: '600',
+      textTransform: 'uppercase',
+    },
+    improvementArea: {
+      ...typography.subtitle2,
+      fontWeight: '700',
+    },
+    improvementSuggestion: {
+      ...typography.body2,
+      marginBottom: spacing.xxs,
+    },
+    improvementImpact: {
+      ...typography.caption,
+      fontStyle: 'italic',
+    },
+
+    // — Section 7: Climate —
+    climateCard: {
+      // extra subtle styling
+    },
+    climateRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: spacing.md,
+    },
+    climateScore: {
+      ...typography.h3,
+      fontWeight: '700',
+    },
+    climateNote: {
+      ...typography.body2,
+      flex: 1,
+    },
+    climateRisk: {
+      marginTop: spacing.sm,
+      padding: spacing.md,
+      borderRadius: borderRadius.md,
+    },
+    climateRiskText: {
+      ...typography.body2,
+      fontWeight: '600',
     },
 
     // — Buttons —

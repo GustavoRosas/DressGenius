@@ -353,13 +353,57 @@
     },
     "result": {
       "score": "Pontuação Geral",
-      "colorAnalysis": "Análise de Cores",
+      "colorAnalysis": "Análise de Cores 🎨",
       "palette": "Paleta",
       "season": "Estação",
       "harmony": "Harmonia",
       "suggestions": "Sugestões",
       "occasionTips": "Dicas para a Ocasião",
-      "outOf": "/10"
+      "outOf": "/10",
+      "scoreLabel": {
+        "poor": "Look Fraco",
+        "fair": "Look Regular",
+        "good": "Bom Look",
+        "great": "Ótimo Look",
+        "perfect": "Look Perfeito"
+      },
+      "breakdown": {
+        "colorHarmony": "Harmonia de Cores",
+        "styleBalance": "Equilíbrio de Estilo",
+        "occasionFit": "Adequação à Ocasião",
+        "cohesion": "Coesão Geral"
+      },
+      "strengths": {
+        "title": "✅ O que funciona"
+      },
+      "styleLevel": {
+        "title": "Nível de Estilo ⚖️",
+        "formality": "Formalidade"
+      },
+      "occasion": {
+        "title": "Avaliação de Ocasião 📍",
+        "verdict": {
+          "great": "Ótima Escolha",
+          "good": "Boa Escolha",
+          "fair": "Escolha Regular",
+          "poor": "Escolha Fraca"
+        },
+        "worksFor": "Funciona para",
+        "doesntWorkFor": "Não funciona para"
+      },
+      "improvements": {
+        "title": "Melhorias 💡",
+        "priority": {
+          "high": "Alta",
+          "medium": "Média",
+          "low": "Baixa"
+        },
+        "impact": "Impacto"
+      },
+      "climate": {
+        "title": "Clima 🌤️",
+        "risk": "Risco"
+      }
     },
     "usageLeft": "{{count}} restante(s)",
     "upgrade": "Fazer Upgrade",

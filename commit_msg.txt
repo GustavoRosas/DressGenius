@@ -1,11 +1,16 @@
-fix: score display, analysis rendering, UI polish
+feat: rich AI feedback - 7 section outfit analysis result
 
-- Score normalization: 83 -> 8.3/10 (auto-detect >10 scale)
-- Analysis object rendering fix (was crashing as React child)
-- Only render analysis as text if actually a string
-- Weather WMO descriptions translated (10 conditions EN+PT-BR)
-- Comfort labels shortened (PT-BR)
-- Image preview removed from intake
-- Bottom sheet 92% height (covers tab bar)
-- ConfirmModal component (styled replacement for Alert.alert)
-- Sign out uses ConfirmModal with emoji
+Backend:
+- GeminiVisionService prompt rewritten for structured JSON output
+- 8 fields: score (0-10), label, summary, breakdown, strengths,
+  style_level, occasion_assessment, improvements, climate_assessment
+- maxOutputTokens 1024->2048, auto-correct 0-100 to 0-10 scale
+- OutfitAnalysisService propagates rich fields with legacy compat
+
+Mobile:
+- AnalyzeScreen renderResult() rewritten with 7 sections:
+  Score Hero (badge+breakdown bars), Strengths carousel,
+  Color Analysis (warm/cool), Style Level (formality slider),
+  Occasion Assessment (verdict+chips), Improvements (prioritized),
+  Climate (conditional)
+- 25+ new i18n strings EN + PT-BR
