@@ -1,15 +1,8 @@
-feat: premium visibility + analyze intake form (sprint 1)
+feat: sprint 2 - weather detect, premium banner, enriched results
 
-Mobile:
-- Usage counter chip on Analyze header (N left / Upgrade)
-- Soft paywall modal after free limit (3/month)
-- Analyze intake bottom sheet: occasion chips, comfort level, extra context
-- Reusable BottomSheet component (pure RN Animated)
-- Profile: name/email pre-fill fix, collapsible password section
-- Tab bar dark mode, button alignment fix, i18n labels, BRL/USD pricing
-
-Backend:
-- GET /me returns usage (analyses_used, analyses_limit)
-- POST /outfit-scans accepts occasion, comfort_level, weather, extra_context
-- Gemini prompt enriched with intake context
-- Backward compatible (all new fields optional)
+- Weather auto-detect via expo-location + Open-Meteo API (WMO code mapping)
+- Manual weather override chips (sunny/rainy/cold/mild/hot) + temp input
+- Smart premium banner on Analyze (gradient, 1x/week, dismissable)
+- Enriched analysis results: score card, color swatches, palette/season badges,
+  harmony score, occasion tips, structured suggestions
+- expo-location plugin added to app.json

@@ -11,3 +11,5 @@ export type { InputProps } from './Input';
 export { LanguageSwitcher } from './LanguageSwitcher';
 
 export { ThemeToggle } from './ThemeToggle';
+
+export { PremiumBanner } from './PremiumBanner';

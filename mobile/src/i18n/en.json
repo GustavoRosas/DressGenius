@@ -68,7 +68,7 @@
       "analyzing": "Analyzing your outfit…",
       "chooseAnother": "Choose Another",
       "newAnalysis": "New Analysis",
-      "startChat": "Start Chat",
+      "startChat": "💬 Start Chat",
       "permissionTitle": "Permission Required",
       "permissionMessage": "We need access to your {{resource}} to analyze outfits. Please grant permission in Settings.",
       "openSettings": "Open Settings",
@@ -282,9 +282,38 @@
       "balanced": "Balanced",
       "style": "Style first"
     },
+    "weather": {
+      "title": "Weather conditions",
+      "detect": "🌤️ Detect my weather",
+      "detecting": "Detecting weather…",
+      "detected": "{{emoji}} {{temp}}°C — {{desc}}",
+      "manual": "Or select manually:",
+      "sunny": "☀️ Sunny",
+      "rainy": "🌧️ Rainy",
+      "cold": "❄️ Cold",
+      "mild": "🌤️ Mild",
+      "hot": "🌡️ Hot",
+      "temperature": "Temperature (°C)",
+      "locationDenied": "Location permission denied"
+    },
     "extraContext": {
       "title": "Extra context (optional)",
       "placeholder": "Beach wedding, job interview..."
+    },
+    "banner": {
+      "title": "✨ Unlock unlimited analyses + weather styling",
+      "cta": "Upgrade — {{price}}/mo",
+      "dismiss": "Dismiss"
+    },
+    "result": {
+      "score": "Overall Score",
+      "colorAnalysis": "Color Analysis",
+      "palette": "Palette",
+      "season": "Season",
+      "harmony": "Harmony",
+      "suggestions": "Suggestions",
+      "occasionTips": "Occasion Tips",
+      "outOf": "/10"
     },
     "usageLeft": "{{count}} left",
     "upgrade": "Upgrade",

@@ -8,6 +8,9 @@
  *  #50 — Usage counter chip
  *  #51 — Soft paywall modal
  *  #52 — Bottom sheet intake form
+ *  #53 — Weather in payload
+ *  #55 — Premium banner (initial state)
+ *  #56 — Enriched analysis result cards
  */
 
 import React, { useCallback, useMemo, useState } from 'react';
@@ -35,6 +38,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { Button } from '../components/Button';
 import { UsageChip } from '../components/UsageChip';
 import { SoftPaywallModal } from '../components/SoftPaywallModal';
+import { PremiumBanner } from '../components/PremiumBanner';
 import { AnalyzeIntakeSheet } from '../components/AnalyzeIntakeSheet';
 import type { IntakeData } from '../components/AnalyzeIntakeSheet';
 import { useTheme } from '../context/ThemeContext';
@@ -47,9 +51,21 @@ import type { ColorScheme } from '../theme/colors';
 
 type ScreenState = 'initial' | 'preview' | 'result';
 
+interface ColorAnalysis {
+  dominant_colors?: string[];
+  palette_type?: 'warm' | 'cool' | 'neutral';
+  season?: 'spring' | 'summer' | 'autumn' | 'winter';
+  harmony_score?: number;
+  harmony_feedback?: string;
+  suggestions?: string[];
+}
+
 interface AnalysisResult {
   id?: number;
   analysis?: string;
+  score?: number;
+  color_analysis?: ColorAnalysis;
+  occasion_tips?: string[];
   [key: string]: unknown;
 }
 
@@ -194,6 +210,14 @@ export function AnalyzeScreen() {
           formData.append('extra_context', intake.extra_context);
         }
 
+        // #53 — Append weather data
+        if (intake.weather) {
+          formData.append(
+            'intake[weather]',
+            JSON.stringify(intake.weather),
+          );
+        }
+
         const response = await api.post<AnalysisResult>('/outfit-scans', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
@@ -253,6 +277,9 @@ export function AnalyzeScreen() {
   // — Render helpers —
   const renderInitial = () => (
     <View style={styles.centerContent}>
+      {/* #55 — Premium banner */}
+      <PremiumBanner />
+
       {/* #50 — Usage chip in header */}
       <View style={styles.headerRow}>
         <Text style={styles.title}>{t('screens.analyze.title')}</Text>
@@ -316,6 +343,7 @@ export function AnalyzeScreen() {
     </View>
   );
 
+  // — #56 — Enriched result —
   const renderResult = () => (
     <ScrollView
       style={styles.scrollView}
@@ -328,12 +356,114 @@ export function AnalyzeScreen() {
         </View>
       )}
 
-      <View style={styles.resultCard}>
-        <Text style={styles.resultText}>
-          {result?.analysis || JSON.stringify(result, null, 2)}
-        </Text>
-      </View>
+      {/* Score card */}
+      {result?.score != null && (
+        <View style={styles.resultCard}>
+          <Text style={styles.resultCardTitle}>{t('analyze.result.score')}</Text>
+          <View style={styles.scoreRow}>
+            <Text style={styles.scoreNumber}>{result.score}</Text>
+            <Text style={styles.scoreOutOf}>{t('analyze.result.outOf')}</Text>
+          </View>
+        </View>
+      )}
 
+      {/* Color Analysis card */}
+      {result?.color_analysis && (
+        <View style={styles.resultCard}>
+          <Text style={styles.resultCardTitle}>{t('analyze.result.colorAnalysis')}</Text>
+
+          {/* Color swatches */}
+          {result.color_analysis.dominant_colors &&
+            result.color_analysis.dominant_colors.length > 0 && (
+              <View style={styles.swatchRow}>
+                {result.color_analysis.dominant_colors.map((hex, i) => (
+                  <View
+                    key={i}
+                    style={[styles.swatch, { backgroundColor: hex }]}
+                  />
+                ))}
+              </View>
+            )}
+
+          {/* Badges */}
+          <View style={styles.badgeRow}>
+            {result.color_analysis.palette_type && (
+              <View style={[styles.badge, { backgroundColor: colors.primaryLight }]}>
+                <Text style={[styles.badgeText, { color: colors.primary }]}>
+                  {t('analyze.result.palette')}: {result.color_analysis.palette_type}
+                </Text>
+              </View>
+            )}
+            {result.color_analysis.season && (
+              <View style={[styles.badge, { backgroundColor: colors.secondaryLight }]}>
+                <Text style={[styles.badgeText, { color: colors.text }]}>
+                  {t('analyze.result.season')}: {result.color_analysis.season}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Harmony score */}
+          {result.color_analysis.harmony_score != null && (
+            <View style={styles.harmonyRow}>
+              <Text style={[styles.harmonyLabel, { color: colors.textSecondary }]}>
+                {t('analyze.result.harmony')}:
+              </Text>
+              <Text style={[styles.harmonyScore, { color: colors.primary }]}>
+                {result.color_analysis.harmony_score}{t('analyze.result.outOf')}
+              </Text>
+              {result.color_analysis.harmony_feedback && (
+                <Text style={[styles.harmonyFeedback, { color: colors.textSecondary }]}>
+                  {' — '}{result.color_analysis.harmony_feedback}
+                </Text>
+              )}
+            </View>
+          )}
+
+          {/* Suggestions */}
+          {result.color_analysis.suggestions &&
+            result.color_analysis.suggestions.length > 0 && (
+              <View style={styles.suggestionsSection}>
+                <Text style={styles.resultCardSubtitle}>
+                  {t('analyze.result.suggestions')}
+                </Text>
+                {result.color_analysis.suggestions.map((s, i) => (
+                  <Text key={i} style={[styles.suggestionItem, { color: colors.text }]}>
+                    • {s}
+                  </Text>
+                ))}
+              </View>
+            )}
+        </View>
+      )}
+
+      {/* Occasion Tips card */}
+      {result?.occasion_tips && result.occasion_tips.length > 0 && (
+        <View style={styles.resultCard}>
+          <Text style={styles.resultCardTitle}>{t('analyze.result.occasionTips')}</Text>
+          {result.occasion_tips.map((tip, i) => (
+            <Text key={i} style={[styles.suggestionItem, { color: colors.text }]}>
+              • {tip}
+            </Text>
+          ))}
+        </View>
+      )}
+
+      {/* Fallback: raw analysis text */}
+      {result?.analysis && !result.score && !result.color_analysis && (
+        <View style={styles.resultCard}>
+          <Text style={styles.resultText}>{result.analysis}</Text>
+        </View>
+      )}
+
+      {/* Always show raw analysis if present, even with structured data */}
+      {result?.analysis && (result.score != null || result.color_analysis) && (
+        <View style={styles.resultCard}>
+          <Text style={styles.resultText}>{result.analysis}</Text>
+        </View>
+      )}
+
+      {/* Action buttons */}
       <View style={styles.buttonGroup}>
         <Button
           title={t('screens.analyze.newAnalysis')}
@@ -469,7 +599,7 @@ const createStyles = (colors: ColorScheme) =>
       height: '100%',
     },
 
-    // — Result —
+    // — Result (#56) —
     thumbnailContainer: {
       width: 120,
       height: 160,
@@ -487,12 +617,100 @@ const createStyles = (colors: ColorScheme) =>
       backgroundColor: colors.card,
       borderRadius: borderRadius.lg,
       padding: spacing.xl,
-      marginBottom: spacing.xl,
+      marginBottom: spacing.md,
       ...shadows.md,
+    },
+    resultCardTitle: {
+      ...typography.subtitle1,
+      color: colors.text,
+      marginBottom: spacing.md,
+    },
+    resultCardSubtitle: {
+      ...typography.subtitle2,
+      color: colors.text,
+      marginBottom: spacing.sm,
+      marginTop: spacing.md,
     },
     resultText: {
       ...typography.body1,
       color: colors.text,
+    },
+
+    // Score
+    scoreRow: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      justifyContent: 'center',
+    },
+    scoreNumber: {
+      fontSize: 56,
+      fontWeight: '800',
+      color: colors.primary,
+    },
+    scoreOutOf: {
+      ...typography.h2,
+      color: colors.textTertiary,
+      marginLeft: spacing.xxs,
+    },
+
+    // Color swatches
+    swatchRow: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      marginBottom: spacing.md,
+    },
+    swatch: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      borderWidth: 2,
+      borderColor: colors.border,
+    },
+
+    // Badges
+    badgeRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+      marginBottom: spacing.sm,
+    },
+    badge: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      borderRadius: borderRadius.full,
+    },
+    badgeText: {
+      ...typography.caption,
+      fontWeight: '700',
+      textTransform: 'capitalize',
+    },
+
+    // Harmony
+    harmonyRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      marginBottom: spacing.sm,
+    },
+    harmonyLabel: {
+      ...typography.body2,
+    },
+    harmonyScore: {
+      ...typography.body2,
+      fontWeight: '700',
+      marginLeft: spacing.xs,
+    },
+    harmonyFeedback: {
+      ...typography.body2,
+    },
+
+    // Suggestions
+    suggestionsSection: {
+      marginTop: spacing.sm,
+    },
+    suggestionItem: {
+      ...typography.body2,
+      marginBottom: spacing.xs,
     },
 
     // — Buttons —

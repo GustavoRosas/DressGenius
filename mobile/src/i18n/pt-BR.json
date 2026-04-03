@@ -68,7 +68,7 @@
       "analyzing": "Analisando seu outfit…",
       "chooseAnother": "Escolher Outra",
       "newAnalysis": "Nova Análise",
-      "startChat": "Iniciar Chat",
+      "startChat": "💬 Iniciar Chat",
       "permissionTitle": "Permissão Necessária",
       "permissionMessage": "Precisamos de acesso à sua {{resource}} para analisar outfits. Conceda permissão nos Ajustes.",
       "openSettings": "Abrir Ajustes",
@@ -282,9 +282,38 @@
       "balanced": "Equilibrado",
       "style": "Estilo primeiro"
     },
+    "weather": {
+      "title": "Condições climáticas",
+      "detect": "🌤️ Detectar meu clima",
+      "detecting": "Detectando clima…",
+      "detected": "{{emoji}} {{temp}}°C — {{desc}}",
+      "manual": "Ou selecione manualmente:",
+      "sunny": "☀️ Ensolarado",
+      "rainy": "🌧️ Chuvoso",
+      "cold": "❄️ Frio",
+      "mild": "🌤️ Ameno",
+      "hot": "🌡️ Quente",
+      "temperature": "Temperatura (°C)",
+      "locationDenied": "Permissão de localização negada"
+    },
     "extraContext": {
       "title": "Contexto extra (opcional)",
       "placeholder": "Casamento na praia, entrevista de emprego..."
+    },
+    "banner": {
+      "title": "✨ Desbloqueie análises ilimitadas + estilo por clima",
+      "cta": "Upgrade — {{price}}/mês",
+      "dismiss": "Dispensar"
+    },
+    "result": {
+      "score": "Pontuação Geral",
+      "colorAnalysis": "Análise de Cores",
+      "palette": "Paleta",
+      "season": "Estação",
+      "harmony": "Harmonia",
+      "suggestions": "Sugestões",
+      "occasionTips": "Dicas para a Ocasião",
+      "outOf": "/10"
     },
     "usageLeft": "{{count}} restante(s)",
     "upgrade": "Fazer Upgrade",

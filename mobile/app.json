@@ -34,6 +34,12 @@
         }
       ],
       "expo-localization",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow location to detect weather for outfit suggestions."
+        }
+      ],
       "expo-web-browser",
       [
         "expo-notifications",
