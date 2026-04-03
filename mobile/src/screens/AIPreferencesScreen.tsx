@@ -22,6 +22,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../api/client';
 import { Button } from '../components/Button';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
@@ -100,10 +101,10 @@ const BUDGET_LEVELS = ['$', '$$', '$$$', '$$$$'] as const;
 export function AIPreferencesScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const [prefs, setPrefs] = useState<AIPreferences>(EMPTY_PREFS);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
 
   const styles = useMemo(() => createStyles(colors), [colors]);
 
@@ -137,17 +138,15 @@ export function AIPreferencesScreen() {
   // ── Save ──
   const handleSave = useCallback(async () => {
     setSaving(true);
-    setSaved(false);
     try {
       await api.put('/ai-preferences', prefs);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
+      showToast(t('screens.aiPreferences.saved'), 'success');
     } catch {
-      // TODO: show error toast
+      showToast(t('common.error'), 'error');
     } finally {
       setSaving(false);
     }
-  }, [prefs]);
+  }, [prefs, showToast, t]);
 
   // ── Toggle helpers ──
   const toggleMulti = useCallback(
@@ -313,11 +312,6 @@ export function AIPreferencesScreen() {
 
         {/* ── Save ── */}
         <View style={styles.saveContainer}>
-          {saved && (
-            <Text style={styles.savedText}>
-              ✓ {t('screens.aiPreferences.saved')}
-            </Text>
-          )}
           <Button
             title={
               saving
@@ -643,11 +637,6 @@ const createStyles = (colors: ColorScheme) =>
       marginTop: spacing.xxl,
       alignItems: 'center',
       gap: spacing.sm,
-    },
-    savedText: {
-      ...typography.body2,
-      color: colors.success,
-      fontWeight: '600',
     },
     saveButton: {
       width: '100%',

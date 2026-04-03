@@ -363,6 +363,18 @@
     "permissionMessage": "Allow DressGenius to send you style tips, analysis updates and more.",
     "enable": "Enable"
   },
+  "errors": {
+    "timeout": "Analysis is taking longer than usual. Please try again.",
+    "quotaExceeded": "Our AI is busy right now. Please try again in a few minutes.",
+    "serviceUnavailable": "Service temporarily unavailable. Please try again later.",
+    "noConnection": "No internet connection. Check your connection and try again.",
+    "imageTooLarge": "Image is too large. Please choose a smaller photo.",
+    "sessionExpired": "Session expired. Please sign in again.",
+    "generic": "Something went wrong. Please try again.",
+    "limitReached": "You've reached your free limit this month.",
+    "analysisFailed": "We couldn't analyze this outfit. Try with a clearer photo.",
+    "imageCorrupted": "This image couldn't be processed. Please try another."
+  },
   "common": {
     "loading": "Loading…",
     "error": "Error",
@@ -371,5 +383,17 @@
     "save": "Save",
     "delete": "Delete",
     "confirm": "Confirm"
+  },
+  "errors": {
+    "timeout": "Analysis is taking longer than usual. Please try again.",
+    "quotaExceeded": "Our AI is busy right now. Please try again in a few minutes.",
+    "serviceUnavailable": "Service temporarily unavailable. Please try again later.",
+    "noConnection": "No internet connection. Check your connection and try again.",
+    "imageTooLarge": "Image is too large. Please choose a smaller photo.",
+    "sessionExpired": "Session expired. Please sign in again.",
+    "generic": "Something went wrong. Please try again.",
+    "limitReached": "You've reached your free limit this month.",
+    "analysisFailed": "We couldn't analyze this outfit. Try with a clearer photo.",
+    "imageCorrupted": "This image couldn't be processed. Please try another."
   }
 }

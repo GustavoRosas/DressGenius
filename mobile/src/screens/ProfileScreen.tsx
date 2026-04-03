@@ -27,6 +27,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
@@ -45,6 +46,7 @@ export function ProfileScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { user, signOut, signIn, token } = useAuth();
+  const { showToast } = useToast();
   const navigation = useNavigation<Nav>();
 
   // Profile data
@@ -103,9 +105,9 @@ export function ProfileScreen() {
       if (token) {
         await signIn(token, { id: u.id, email: u.email, name: u.name });
       }
-      Alert.alert('✓', t('screens.profile.saved'));
+      showToast(t('screens.profile.saved'), 'success');
     } catch {
-      Alert.alert(t('common.error'), t('screens.profile.saveError'));
+      showToast(t('screens.profile.saveError'), 'error');
     } finally {
       setSavingProfile(false);
     }
@@ -134,9 +136,9 @@ export function ProfileScreen() {
       setNewPassword('');
       setConfirmPassword('');
       setPasswordErrors({});
-      Alert.alert('✓', t('screens.profile.passwordChanged'));
+      showToast(t('screens.profile.passwordChanged'), 'success');
     } catch {
-      Alert.alert(t('common.error'), t('screens.profile.passwordError'));
+      showToast(t('screens.profile.passwordError'), 'error');
     } finally {
       setSavingPassword(false);
     }
@@ -300,9 +302,9 @@ export function ProfileScreen() {
           style={styles.card}
           onPress={() => setShowPasswordSection((v) => !v)}
         >
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={styles.sectionTitle}>{t('screens.profile.changePassword')}</Text>
-            <Text style={{ fontSize: 18, color: colors.textTertiary }}>{showPasswordSection ? '▲' : '▼'}</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 0 }}>
+            <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>{t('screens.profile.changePassword')}</Text>
+            <Text style={{ fontSize: 14, color: colors.textTertiary, lineHeight: 20 }}>{showPasswordSection ? '▲' : '▼'}</Text>
           </View>
         </Pressable>
         {showPasswordSection && (

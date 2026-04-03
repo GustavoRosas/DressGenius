@@ -1,6 +1,6 @@
 import './src/i18n'; // i18n must be imported before any component
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
-import { AuthProvider, PremiumProvider, ThemeProvider, NotificationProvider, useTheme } from './src/context';
+import { AuthProvider, PremiumProvider, ThemeProvider, NotificationProvider, ToastProvider, useTheme } from './src/context';
 import { RootNavigator } from './src/navigation';
 
 function AppInner() {
@@ -45,7 +45,9 @@ export default function App() {
       <AuthProvider>
         <NotificationProvider>
           <PremiumProvider>
-            <AppInner />
+            <ToastProvider>
+              <AppInner />
+            </ToastProvider>
           </PremiumProvider>
         </NotificationProvider>
       </AuthProvider>

@@ -6,3 +6,5 @@ export { ThemeProvider, useTheme } from './ThemeContext';
 export type { ThemeContextValue } from './ThemeContext';
 export { NotificationProvider, useNotifications } from './NotificationContext';
 export type { NotificationContextValue } from './NotificationContext';
+export { ToastProvider, useToast } from './ToastContext';
+export type { ToastContextValue } from './ToastContext';

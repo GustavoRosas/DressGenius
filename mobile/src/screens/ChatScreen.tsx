@@ -27,6 +27,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { api } from '../api/client';
 import { useTheme } from '../context/ThemeContext';
+import { useToast } from '../context/ToastContext';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
@@ -142,6 +143,7 @@ function StarRating({
 export function ChatScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const { showToast } = useToast();
   const route = useRoute<ChatRouteProp>();
   const navigation = useNavigation<ChatNavProp>();
   const { chatId } = route.params;
@@ -280,7 +282,7 @@ export function ChatScreen() {
         comment: feedbackComment.trim() || undefined,
       });
       setFeedbackVisible(false);
-      Alert.alert('', t('screens.chat.feedbackThanks'));
+      showToast(t('screens.chat.feedbackThanks'), 'success');
     } catch {
       Alert.alert(t('common.error'), t('screens.chat.errorFeedback'));
     } finally {

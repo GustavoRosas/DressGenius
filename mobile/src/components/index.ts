@@ -13,3 +13,6 @@ export { LanguageSwitcher } from './LanguageSwitcher';
 export { ThemeToggle } from './ThemeToggle';
 
 export { PremiumBanner } from './PremiumBanner';
+
+export { Toast } from './Toast';
+export type { ToastType, ToastConfig } from './Toast';

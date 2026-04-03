@@ -16,7 +16,7 @@ export function ThemeToggle() {
       onPress={toggleTheme}
       style={[
         styles.container,
-        { borderColor: colors.border, backgroundColor: colors.surface },
+        { backgroundColor: 'transparent' },
       ]}
       accessibilityRole="switch"
       accessibilityState={{ checked: isDark }}

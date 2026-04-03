@@ -1,8 +1,17 @@
-feat: sprint 2 - weather detect, premium banner, enriched results
+feat: error handling, logging system, toast, ui polish
 
-- Weather auto-detect via expo-location + Open-Meteo API (WMO code mapping)
-- Manual weather override chips (sunny/rainy/cold/mild/hot) + temp input
-- Smart premium banner on Analyze (gradient, 1x/week, dismissable)
-- Enriched analysis results: score card, color swatches, palette/season badges,
-  harmony score, occasion tips, structured suggestions
-- expo-location plugin added to app.json
+Mobile:
+- Toast component (success/error/info/warning, animated, dark mode)
+- ToastContext + useToast() hook with queue system
+- ErrorLogger service (buffer, AsyncStorage fallback, backend flush)
+- errorHelper.ts: getErrorKey() maps 13 HTTP scenarios to i18n messages
+- i18n: 10 error messages in EN + PT-BR
+- Profile: collapsible password section, name/email pre-fill fix
+- ThemeToggle: removed black border
+- Password header: aligned text + chevron on same line
+- @react-native-async-storage/async-storage installed
+
+Backend:
+- ErrorLogController: POST /error-logs endpoint
+- Migration: create_error_logs_table
+- Route added
