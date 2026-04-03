@@ -8,12 +8,14 @@ export type RootStackParamList = {
   AIPreferences: undefined;
   NotificationPrefs: undefined;
   MonthlyReport: { year: number; month: number };
+  History: undefined;
+  Analytics: undefined;
 };
 
 export type TabParamList = {
-  Analyze: undefined;
-  History: undefined;
-  Analytics: undefined;
+  Home: undefined;
   Closet: undefined;
+  Analyze: undefined;
+  Settings: undefined;
   Profile: undefined;
 };

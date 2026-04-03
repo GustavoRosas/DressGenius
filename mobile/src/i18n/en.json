@@ -51,10 +51,12 @@
     }
   },
   "tabs": {
+    "home": "Home",
     "analyze": "Analyze",
     "history": "History",
     "analytics": "Analytics",
     "closet": "Closet",
+    "settings": "Settings",
     "profile": "Profile"
   },
   "screens": {
@@ -383,8 +385,48 @@
     "comingSoon": "Subscriptions coming soon! Stay tuned."
   },
   "settings": {
+    "title": "Settings",
     "darkMode": "Dark Mode",
-    "lightMode": "Light Mode"
+    "lightMode": "Light Mode",
+    "notifications": "Notifications",
+    "aiPreferences": "AI Preferences",
+    "language": "Language",
+    "subscription": "Subscription"
+  },
+  "home": {
+    "greeting": {
+      "morning": "Good morning, {{name}} ☀️",
+      "afternoon": "Good afternoon, {{name}} 🌤️",
+      "evening": "Good evening, {{name}} 🌙"
+    },
+    "weather": {
+      "placeholder": "🌤️ 24°C — Perfect for a light outfit",
+      "seeSuggestion": "See Suggestion →"
+    },
+    "stats": {
+      "title": "This Month",
+      "analyses": "Analyses",
+      "avgScore": "Avg Score",
+      "streak": "Streak"
+    },
+    "lastAnalysis": {
+      "title": "Last Analysis",
+      "viewDetails": "View Details →",
+      "noAnalysis": "Start your first analysis!"
+    },
+    "quickActions": {
+      "analyze": "Analyze",
+      "closet": "Closet",
+      "stats": "Stats"
+    },
+    "styleDna": {
+      "title": "Style DNA",
+      "viewFull": "View Full →"
+    }
+  },
+  "profile": {
+    "outfitHistory": "Outfit History",
+    "viewAllHistory": "View All History →"
   },
   "notifications": {
     "title": "Notifications",

@@ -1,8 +1,9 @@
 /**
- * DressGenius — Profile Screen (#16)
+ * DressGenius — Profile Screen
  *
- * Header com foto, seções Info/Password/Settings/Account.
- * Todas as strings via i18n. Integra com API /me, /profile, /profile/password, /profile/photo.
+ * Focused profile: Avatar, name, email, edit info, password,
+ * inline outfit history (last 3), sign out.
+ * Settings moved to SettingsScreen.
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -30,8 +31,6 @@ import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
-import { LanguageSwitcher } from '../components/LanguageSwitcher';
-import { ThemeToggle } from '../components/ThemeToggle';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
@@ -41,6 +40,26 @@ import type { ColorScheme } from '../theme/colors';
 const APP_VERSION = '1.0.0';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
+
+interface OutfitChat {
+  id: number;
+  status: string;
+  created_at: string;
+  preview_image_url?: string | null;
+  overall_score?: number | null;
+}
+
+function formatRelative(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(diff / 3600000);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(diff / 86400000);
+  if (days === 1) return 'Yesterday';
+  return `${days}d ago`;
+}
 
 export function ProfileScreen() {
   const { t } = useTranslation();
@@ -70,6 +89,10 @@ export function ProfileScreen() {
   // Photo
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
+  // History
+  const [recentChats, setRecentChats] = useState<OutfitChat[]>([]);
+  const [loadingHistory, setLoadingHistory] = useState(true);
+
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   // Fetch user data on mount
@@ -81,7 +104,6 @@ export function ProfileScreen() {
       setName(u.name ?? '');
       setEmail(u.email ?? '');
       setPhotoUrl(u.profile_photo_url ?? u.photo_url ?? u.avatar_url ?? null);
-      // Sync auth context
       if (token) {
         await signIn(token, { id: u.id, email: u.email, name: u.name });
       }
@@ -92,9 +114,27 @@ export function ProfileScreen() {
     }
   }, [token, signIn, t]);
 
+  const fetchRecentHistory = useCallback(async () => {
+    try {
+      setLoadingHistory(true);
+      const { data } = await api.get<OutfitChat[]>('/outfit-chats');
+      if (Array.isArray(data)) {
+        const sorted = [...data]
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, 3);
+        setRecentChats(sorted);
+      }
+    } catch {
+      // silent
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchProfile();
-  }, [fetchProfile]);
+    fetchRecentHistory();
+  }, [fetchProfile, fetchRecentHistory]);
 
   // Save profile
   const handleSaveProfile = async () => {
@@ -344,43 +384,57 @@ export function ProfileScreen() {
           </View>
         )}
 
-        {/* ── Settings Card ── */}
+        {/* ── Outfit History ── */}
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>{t('screens.profile.settings')}</Text>
-
-          <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>{t('screens.profile.language')}</Text>
-            <LanguageSwitcher />
-          </View>
-
-          <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>{t('settings.darkMode')}</Text>
-            <ThemeToggle />
-          </View>
-
-          <Pressable
-            style={styles.settingRow}
-            onPress={() => navigation.navigate('AIPreferences')}
-          >
-            <Text style={styles.settingLabel}>{t('screens.profile.aiPreferences')}</Text>
-            <Text style={styles.chevron}>›</Text>
-          </Pressable>
-
-          <Pressable
-            style={styles.settingRow}
-            onPress={() => navigation.navigate('NotificationPrefs' as any)}
-          >
-            <Text style={styles.settingLabel}>{t('screens.profile.notifications')}</Text>
-            <Text style={styles.chevron}>›</Text>
-          </Pressable>
-
-          <Pressable
-            style={styles.settingRow}
-            onPress={() => navigation.navigate('Paywall')}
-          >
-            <Text style={styles.settingLabel}>{t('screens.profile.subscription')}</Text>
-            <Text style={styles.chevron}>›</Text>
-          </Pressable>
+          <Text style={styles.sectionTitle}>{t('profile.outfitHistory')}</Text>
+          {loadingHistory ? (
+            <ActivityIndicator color={colors.primary} style={{ marginVertical: spacing.md }} />
+          ) : recentChats.length > 0 ? (
+            <>
+              {recentChats.map((chat) => (
+                <Pressable
+                  key={chat.id}
+                  style={styles.historyRow}
+                  onPress={() => navigation.navigate('Chat', { chatId: chat.id })}
+                >
+                  {chat.preview_image_url ? (
+                    <Image
+                      source={{ uri: chat.preview_image_url }}
+                      style={styles.historyThumb}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <View style={[styles.historyThumb, styles.historyThumbPlaceholder]}>
+                      <Text style={{ fontSize: 20 }}>👗</Text>
+                    </View>
+                  )}
+                  <View style={styles.historyInfo}>
+                    {chat.overall_score != null && (
+                      <View style={styles.historyBadge}>
+                        <Text style={styles.historyBadgeText}>
+                          {chat.overall_score}/10
+                        </Text>
+                      </View>
+                    )}
+                    <Text style={styles.historyDate}>
+                      {formatRelative(chat.created_at)}
+                    </Text>
+                  </View>
+                  <Text style={styles.chevron}>›</Text>
+                </Pressable>
+              ))}
+              <Pressable
+                style={styles.viewAllButton}
+                onPress={() => navigation.navigate('History' as any)}
+              >
+                <Text style={styles.viewAllText}>{t('profile.viewAllHistory')}</Text>
+              </Pressable>
+            </>
+          ) : (
+            <Text style={styles.emptyHistory}>
+              {t('screens.history.empty')}
+            </Text>
+          )}
         </View>
 
         {/* ── Account Card ── */}
@@ -480,22 +534,65 @@ const createStyles = (colors: ColorScheme) =>
       color: colors.text,
       marginBottom: spacing.lg,
     },
-    // Settings
-    settingRow: {
+    // Chevron
+    chevron: {
+      fontSize: 22,
+      color: colors.textTertiary,
+      fontWeight: '300',
+    },
+    // History
+    historyRow: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: spacing.md,
+      paddingVertical: spacing.sm,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: colors.divider,
     },
-    settingLabel: {
-      ...typography.body1,
-      color: colors.text,
+    historyThumb: {
+      width: 48,
+      height: 48,
+      borderRadius: borderRadius.sm,
+      backgroundColor: colors.background,
     },
-    chevron: {
-      ...typography.h3,
+    historyThumbPlaceholder: {
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: colors.primaryLight,
+    },
+    historyInfo: {
+      flex: 1,
+      marginLeft: spacing.md,
+    },
+    historyBadge: {
+      alignSelf: 'flex-start',
+      backgroundColor: colors.primaryLight,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xxs,
+      borderRadius: borderRadius.xs,
+      marginBottom: spacing.xxs,
+    },
+    historyBadgeText: {
+      ...typography.caption,
+      color: colors.primary,
+      fontWeight: '700',
+    },
+    historyDate: {
+      ...typography.caption,
       color: colors.textTertiary,
+    },
+    viewAllButton: {
+      marginTop: spacing.md,
+      alignItems: 'center',
+    },
+    viewAllText: {
+      ...typography.subtitle2,
+      color: colors.primary,
+      fontSize: 14,
+    },
+    emptyHistory: {
+      ...typography.body2,
+      color: colors.textSecondary,
+      textAlign: 'center',
     },
     // Version
     version: {

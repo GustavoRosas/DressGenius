@@ -12,3 +12,4 @@ export { ChatScreen } from './ChatScreen';
 export { AIPreferencesScreen } from './AIPreferencesScreen';
 export { NotificationPrefsScreen } from './NotificationPrefsScreen';
 export { MonthlyReportScreen } from './MonthlyReportScreen';
+export { SettingsScreen } from './SettingsScreen';

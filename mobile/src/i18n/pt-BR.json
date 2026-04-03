@@ -51,10 +51,12 @@
     }
   },
   "tabs": {
+    "home": "Início",
     "analyze": "Analisar",
     "history": "Histórico",
     "analytics": "Analytics",
     "closet": "Closet",
+    "settings": "Ajustes",
     "profile": "Perfil"
   },
   "screens": {
@@ -220,7 +222,7 @@
         "subtitle": "Alguma marca que você ama? (opcional)",
         "placeholder": "ex: Zara, Nike, Gucci…"
       },
-      "save": "Salvar Preferências",
+      "save": "Salvar",
       "saving": "Salvando…",
       "saved": "Preferências salvas!"
     },
@@ -383,8 +385,48 @@
     "comingSoon": "Assinaturas em breve! Fique ligado."
   },
   "settings": {
+    "title": "Ajustes",
     "darkMode": "Modo Escuro",
-    "lightMode": "Modo Claro"
+    "lightMode": "Modo Claro",
+    "notifications": "Notificações",
+    "aiPreferences": "Preferências de IA",
+    "language": "Idioma",
+    "subscription": "Assinatura"
+  },
+  "home": {
+    "greeting": {
+      "morning": "Bom dia, {{name}} ☀️",
+      "afternoon": "Boa tarde, {{name}} 🌤️",
+      "evening": "Boa noite, {{name}} 🌙"
+    },
+    "weather": {
+      "placeholder": "🌤️ 24°C — Perfeito para um look leve",
+      "seeSuggestion": "Ver Sugestão →"
+    },
+    "stats": {
+      "title": "Este Mês",
+      "analyses": "Análises",
+      "avgScore": "Nota Média",
+      "streak": "Sequência"
+    },
+    "lastAnalysis": {
+      "title": "Última Análise",
+      "viewDetails": "Ver Detalhes →",
+      "noAnalysis": "Comece sua primeira análise!"
+    },
+    "quickActions": {
+      "analyze": "Analisar",
+      "closet": "Closet",
+      "stats": "Estatísticas"
+    },
+    "styleDna": {
+      "title": "Style DNA",
+      "viewFull": "Ver Completo →"
+    }
+  },
+  "profile": {
+    "outfitHistory": "Histórico de Outfits",
+    "viewAllHistory": "Ver Todo o Histórico →"
   },
   "notifications": {
     "title": "Notificações",

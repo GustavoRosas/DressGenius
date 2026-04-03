@@ -1,18 +1,40 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from '../context/AuthContext';
-import { LoginScreen, RegisterScreen, OnboardingScreen, ChatScreen, PaywallScreen, AIPreferencesScreen, NotificationPrefsScreen, MonthlyReportScreen } from '../screens';
+import { useTheme } from '../context/ThemeContext';
+import {
+  LoginScreen,
+  RegisterScreen,
+  OnboardingScreen,
+  ChatScreen,
+  PaywallScreen,
+  AIPreferencesScreen,
+  NotificationPrefsScreen,
+  MonthlyReportScreen,
+  HistoryScreen,
+  AnalyticsScreen,
+} from '../screens';
 import { TabNavigator } from './TabNavigator';
 import { ONBOARDING_KEY } from '../screens/OnboardingScreen';
-import { colors } from '../theme/colors';
+import { colors as defaultColors } from '../theme/colors';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+/** Universal ← back button for stack screens */
+function BackButton({ onPress, tintColor }: { onPress: () => void; tintColor: string }) {
+  return (
+    <Pressable onPress={onPress} hitSlop={12} style={{ padding: 4 }}>
+      <Text style={{ fontSize: 24, color: tintColor, lineHeight: 28 }}>←</Text>
+    </Pressable>
+  );
+}
+
 export function RootNavigator() {
   const { isAuthenticated, isLoading } = useAuth();
+  const { colors } = useTheme();
   const [onboardingDone, setOnboardingDone] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -29,10 +51,23 @@ export function RootNavigator() {
   if (isLoading || onboardingDone === null) {
     return (
       <View style={styles.loader}>
-        <ActivityIndicator size="large" color={colors.primary} />
+        <ActivityIndicator size="large" color={defaultColors.primary} />
       </View>
     );
   }
+
+  /** Shared options for stack screens with back button */
+  const stackScreenOptions = {
+    headerShown: true,
+    headerShadowVisible: false,
+    headerStyle: { backgroundColor: colors.background },
+    headerTintColor: colors.text,
+    headerTitle: '',
+    headerLeft: ({ canGoBack }: { canGoBack?: boolean }) =>
+      canGoBack ? (
+        <BackButton onPress={() => {}} tintColor={colors.text} />
+      ) : null,
+  };
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -45,27 +80,108 @@ export function RootNavigator() {
           <Stack.Screen
             name="Chat"
             component={ChatScreen}
-            options={{ animation: 'slide_from_right' }}
+            options={({ navigation }) => ({
+              animation: 'slide_from_right',
+              headerShown: true,
+              headerShadowVisible: false,
+              headerStyle: { backgroundColor: colors.background },
+              headerTintColor: colors.text,
+              headerTitle: '',
+              headerLeft: () => (
+                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
+              ),
+            })}
           />
           <Stack.Screen
             name="Paywall"
             component={PaywallScreen}
-            options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+            options={({ navigation }) => ({
+              animation: 'slide_from_bottom',
+              presentation: 'modal',
+              headerShown: true,
+              headerShadowVisible: false,
+              headerStyle: { backgroundColor: colors.background },
+              headerTintColor: colors.text,
+              headerTitle: '',
+              headerLeft: () => (
+                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
+              ),
+            })}
           />
           <Stack.Screen
             name="AIPreferences"
             component={AIPreferencesScreen}
-            options={{ animation: 'slide_from_right' }}
+            options={({ navigation }) => ({
+              animation: 'slide_from_right',
+              headerShown: true,
+              headerShadowVisible: false,
+              headerStyle: { backgroundColor: colors.background },
+              headerTintColor: colors.text,
+              headerTitle: '',
+              headerLeft: () => (
+                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
+              ),
+            })}
           />
           <Stack.Screen
             name="NotificationPrefs"
             component={NotificationPrefsScreen}
-            options={{ animation: 'slide_from_right' }}
+            options={({ navigation }) => ({
+              animation: 'slide_from_right',
+              headerShown: true,
+              headerShadowVisible: false,
+              headerStyle: { backgroundColor: colors.background },
+              headerTintColor: colors.text,
+              headerTitle: '',
+              headerLeft: () => (
+                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
+              ),
+            })}
           />
           <Stack.Screen
             name="MonthlyReport"
             component={MonthlyReportScreen}
-            options={{ animation: 'slide_from_right' }}
+            options={({ navigation }) => ({
+              animation: 'slide_from_right',
+              headerShown: true,
+              headerShadowVisible: false,
+              headerStyle: { backgroundColor: colors.background },
+              headerTintColor: colors.text,
+              headerTitle: '',
+              headerLeft: () => (
+                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
+              ),
+            })}
+          />
+          <Stack.Screen
+            name="History"
+            component={HistoryScreen}
+            options={({ navigation }) => ({
+              animation: 'slide_from_right',
+              headerShown: true,
+              headerShadowVisible: false,
+              headerStyle: { backgroundColor: colors.background },
+              headerTintColor: colors.text,
+              headerTitle: '',
+              headerLeft: () => (
+                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
+              ),
+            })}
+          />
+          <Stack.Screen
+            name="Analytics"
+            component={AnalyticsScreen}
+            options={({ navigation }) => ({
+              animation: 'slide_from_right',
+              headerShown: true,
+              headerShadowVisible: false,
+              headerStyle: { backgroundColor: colors.background },
+              headerTintColor: colors.text,
+              headerTitle: '',
+              headerLeft: () => (
+                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
+              ),
+            })}
           />
         </>
       ) : (
@@ -89,6 +205,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: colors.background,
+    backgroundColor: defaultColors.background,
   },
 });

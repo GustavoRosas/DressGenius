@@ -445,7 +445,7 @@ function BodyTypeCard({
       <Text style={[styles.bodyName, selected && styles.bodyNameSelected]}>
         {name}
       </Text>
-      <Text style={styles.bodyDesc} numberOfLines={2}>
+      <Text style={styles.bodyDesc}>
         {description}
       </Text>
     </Pressable>

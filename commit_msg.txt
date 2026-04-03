@@ -1,11 +1,12 @@
-feat: analytics sprint 3 - AI insights + monthly report
+feat: navigation restructure + HomeScreen + FAB + Settings
 
-Backend:
-- InsightEngineService: Gemini-powered personalized insights (cache 24h)
-- GET /analytics/insights endpoint with fallback
-- GET /analytics/monthly-report/{year}/{month} with highlights + comparison
-
-Mobile:
-- MonthlyReportScreen: full month report with nav arrows, score, stats, highlights
-- Route + navigation registered
-- Insights + monthly report endpoints in AnalyticsController
+- Tab Navigator: 5 tabs (Home, Closet, Analyze FAB center, Settings, Profile)
+- Analyze FAB: 64px violet circle, elevated, scale animation, no label
+- HomeScreen: greeting, weather, monthly stats, last analysis, quick actions, Style DNA
+- SettingsScreen: notifications, AI prefs, language, dark mode, subscription
+- History moved into Profile (inline last 3 + View All)
+- Back button universal on all stack screens
+- PremiumBanner clickable -> Paywall navigation
+- Analytics accessible via Home Quick Actions (stack screen)
+- AI Preferences save button text shortened (PT-BR)
+- Body type description numberOfLines removed

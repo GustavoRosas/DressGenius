@@ -15,6 +15,9 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as SecureStore from 'expo-secure-store';
 import { useTranslation } from 'react-i18next';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../navigation/types';
 
 import { usePremium } from '../context/PremiumContext';
 import { useTheme } from '../context/ThemeContext';
@@ -29,6 +32,7 @@ export function PremiumBanner() {
   const { t, i18n } = useTranslation();
   const { colors, isDark } = useTheme();
   const { isPremium } = usePremium();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -72,6 +76,7 @@ export function PremiumBanner() {
     : ['#7C3AED', '#E11D48'];
 
   return (
+    <Pressable onPress={() => navigation.navigate('Paywall')} accessibilityRole="button">
     <LinearGradient
       colors={gradientColors}
       start={{ x: 0, y: 0 }}
@@ -86,7 +91,7 @@ export function PremiumBanner() {
         <Pressable
           style={styles.ctaButton}
           onPress={() => {
-            // TODO: navigate to paywall
+            navigation.navigate('Paywall');
           }}
           accessibilityRole="button"
         >
@@ -104,6 +109,7 @@ export function PremiumBanner() {
         </Pressable>
       </View>
     </LinearGradient>
+    </Pressable>
   );
 }
 
