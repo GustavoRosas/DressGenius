@@ -29,6 +29,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
@@ -484,15 +485,17 @@ export function AnalyzeScreen() {
       <View style={styles.breakdownRow} key={label}>
         <View style={styles.breakdownLabelRow}>
           <Text style={[styles.breakdownLabel, { color: colors.textSecondary }]}>{label}</Text>
-          <Text style={[styles.breakdownValue, { color: colors.text }]}>{value.toFixed(1)}</Text>
         </View>
-        <View style={[styles.breakdownTrack, { backgroundColor: colors.border }]}>
-          <View
-            style={[
-              styles.breakdownFill,
-              { width: `${Math.min(100, (value / 10) * 100)}%`, backgroundColor: barColor },
-            ]}
-          />
+        <View style={styles.breakdownBarRow}>
+          <View style={[styles.breakdownTrack, { backgroundColor: colors.border }]}>
+            <View
+              style={[
+                styles.breakdownFill,
+                { width: `${Math.min(100, (value / 10) * 100)}%`, backgroundColor: barColor },
+              ]}
+            />
+          </View>
+          <Text style={[styles.breakdownValue, { color: colors.text }]}>{value.toFixed(1)}</Text>
         </View>
       </View>
     );
@@ -505,7 +508,15 @@ export function AnalyzeScreen() {
     return (
       <Pressable
         onPress={() => setExpandedStrengthIdx(expanded ? null : index)}
-        style={[styles.strengthCard, { backgroundColor: colors.card, width: expanded ? SCREEN_WIDTH - spacing.lg * 2 : STRENGTH_CARD_WIDTH }]}
+        style={[
+          styles.strengthCard,
+          {
+            backgroundColor: colors.card,
+            borderWidth: 1,
+            borderColor: colors.border,
+            width: expanded ? SCREEN_WIDTH - spacing.lg * 2 : STRENGTH_CARD_WIDTH,
+          },
+        ]}
       >
         <Text style={[styles.strengthIcon]}>✅</Text>
         <Text style={[styles.strengthTitle, { color: colors.text }]} numberOfLines={expanded ? undefined : 1}>
@@ -548,19 +559,26 @@ export function AnalyzeScreen() {
 
         {/* ═══ Section 1: Score Hero Card ═══ */}
         {displayScore != null && (
-          <View style={styles.resultCard}>
+          <LinearGradient
+            colors={[colors.primaryDark + '18', colors.primary + '10', 'transparent']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.scoreHeroCard}
+          >
             <View style={styles.scoreHeroRow}>
-              <Text style={[styles.scoreNumber, { color: scoreBadge?.text ?? colors.primary }]}>
+              <Text style={[styles.scoreNumber, { color: scoreBadge?.text ?? colors.primary, textShadowColor: (scoreBadge?.text ?? colors.primary) + '30', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 8 }]}>
                 {displayScore.toFixed ? displayScore.toFixed(1) : displayScore}
               </Text>
-              {scoreLabel !== '' && scoreBadge && (
-                <View style={[styles.scoreLabelBadge, { backgroundColor: scoreBadge.bg }]}>
-                  <Text style={[styles.scoreLabelText, { color: scoreBadge.text }]}>
-                    {scoreLabel}
-                  </Text>
-                </View>
-              )}
+              <Text style={[styles.scoreOutOf, { color: colors.textTertiary }]}>/10</Text>
             </View>
+
+            {scoreLabel !== '' && scoreBadge && (
+              <View style={[styles.scoreLabelBadge, { backgroundColor: scoreBadge.bg }]}>
+                <Text style={[styles.scoreLabelText, { color: scoreBadge.text }]}>
+                  {scoreLabel}
+                </Text>
+              </View>
+            )}
 
             {scoreSummary !== '' && (
               <Text style={[styles.scoreSummary, { color: colors.textSecondary }]}>
@@ -577,7 +595,7 @@ export function AnalyzeScreen() {
                 {renderBreakdownBar(t('analyze.result.breakdown.cohesion'), breakdown.overall_cohesion)}
               </View>
             )}
-          </View>
+          </LinearGradient>
         )}
 
         {/* ═══ Section 2: Strengths ═══ */}
@@ -601,7 +619,7 @@ export function AnalyzeScreen() {
 
         {/* ═══ Section 3: Color Analysis 🎨 ═══ */}
         {colorAnalysis && (
-          <View style={styles.resultCard}>
+          <View style={[styles.resultCard, { borderWidth: 1, borderColor: colors.border }]}>
             <Text style={styles.resultCardTitle}>{t('analyze.result.colorAnalysis')}</Text>
 
             {colorAnalysis.dominant_colors && colorAnalysis.dominant_colors.length > 0 && (
@@ -659,7 +677,7 @@ export function AnalyzeScreen() {
 
         {/* ═══ Section 4: Style Level ⚖️ ═══ */}
         {styleLevel && (
-          <View style={styles.resultCard}>
+          <View style={[styles.resultCard, { borderWidth: 1, borderColor: colors.border }]}>
             <Text style={styles.resultCardTitle}>{t('analyze.result.styleLevel.title')}</Text>
             <Text style={[styles.styleLevelDetected, { color: colors.primary }]}>
               {styleLevel.detected}
@@ -697,16 +715,18 @@ export function AnalyzeScreen() {
 
         {/* ═══ Section 5: Occasion Assessment 📍 ═══ */}
         {occasionAssessment && (
-          <View style={styles.resultCard}>
+          <View style={[styles.resultCard, { borderWidth: 1, borderColor: colors.border }]}>
             <Text style={styles.resultCardTitle}>{t('analyze.result.occasion.title')}</Text>
 
             <View style={styles.verdictRow}>
-              <Text style={styles.verdictEmoji}>{getScoreDot(occasionAssessment.fit_score)}</Text>
+              <View style={[styles.verdictBadge, { backgroundColor: getScoreColor(occasionAssessment.fit_score) + '20' }]}>
+                <Text style={styles.verdictEmoji}>{getScoreDot(occasionAssessment.fit_score)}</Text>
+                <Text style={[styles.verdictScore, { color: getScoreColor(occasionAssessment.fit_score) }]}>
+                  {occasionAssessment.fit_score.toFixed(1)}/10
+                </Text>
+              </View>
               <Text style={[styles.verdictText, { color: colors.text }]}>
                 {occasionAssessment.verdict}
-              </Text>
-              <Text style={[styles.verdictScore, { color: colors.textSecondary }]}>
-                {occasionAssessment.fit_score.toFixed(1)}/10
               </Text>
             </View>
 
@@ -724,7 +744,7 @@ export function AnalyzeScreen() {
                 </Text>
                 <View style={styles.chipsRow}>
                   {occasionAssessment.would_work_for.map((item, i) => (
-                    <View key={i} style={[styles.chip, { backgroundColor: colors.successBackground }]}>
+                    <View key={i} style={[styles.chip, { backgroundColor: colors.successBackground, borderWidth: 1, borderColor: colors.success + '30' }]}>
                       <Text style={[styles.chipText, { color: colors.success }]}>{item}</Text>
                     </View>
                   ))}
@@ -740,7 +760,7 @@ export function AnalyzeScreen() {
                 </Text>
                 <View style={styles.chipsRow}>
                   {occasionAssessment.would_not_work_for.map((item, i) => (
-                    <View key={i} style={[styles.chip, { backgroundColor: colors.errorBackground }]}>
+                    <View key={i} style={[styles.chip, { backgroundColor: colors.errorBackground, borderWidth: 1, borderColor: colors.error + '30' }]}>
                       <Text style={[styles.chipText, { color: colors.error }]}>{item}</Text>
                     </View>
                   ))}
@@ -752,12 +772,13 @@ export function AnalyzeScreen() {
 
         {/* ═══ Section 6: Improvements 💡 ═══ */}
         {improvements.length > 0 && (
-          <View style={styles.resultCard}>
+          <View style={[styles.resultCard, { borderWidth: 1, borderColor: colors.border }]}>
             <Text style={styles.resultCardTitle}>{t('analyze.result.improvements.title')}</Text>
             {improvements.map((imp, i) => {
               const badge = getPriorityBadge(imp.priority);
+              const priorityColor = imp.priority === 'high' ? colors.error : imp.priority === 'medium' ? colors.warning : colors.textTertiary;
               return (
-                <View key={i} style={[styles.improvementCard, { borderColor: colors.border }]}>
+                <View key={i} style={[styles.improvementCard, { borderColor: colors.border, borderLeftWidth: 4, borderLeftColor: priorityColor }]}>
                   <View style={styles.improvementHeader}>
                     <Text style={styles.improvementPriorityEmoji}>{badge.emoji}</Text>
                     <Text style={[styles.improvementPriorityLabel, { color: colors.textSecondary }]}>
@@ -771,7 +792,7 @@ export function AnalyzeScreen() {
                     {imp.suggestion}
                   </Text>
                   {imp.impact !== '' && (
-                    <Text style={[styles.improvementImpact, { color: colors.textTertiary }]}>
+                    <Text style={[styles.improvementImpact, { color: colors.accent }]}>
                       {t('analyze.result.improvements.impact')}: {imp.impact}
                     </Text>
                   )}
@@ -783,8 +804,11 @@ export function AnalyzeScreen() {
 
         {/* ═══ Section 7: Climate 🌤️ ═══ */}
         {climateAssessment && (
-          <View style={[styles.resultCard, styles.climateCard]}>
-            <Text style={styles.resultCardTitle}>{t('analyze.result.climate.title')}</Text>
+          <View style={[styles.resultCard, styles.climateCard, { borderWidth: 1, borderColor: colors.border }]}>
+            <View style={styles.climateHeaderRow}>
+              <Text style={styles.climateIcon}>🌤️</Text>
+              <Text style={styles.resultCardTitle}>{t('analyze.result.climate.title')}</Text>
+            </View>
             <View style={styles.climateRow}>
               <Text style={[styles.climateScore, { color: getScoreColor(climateAssessment.fit_score) }]}>
                 {getScoreDot(climateAssessment.fit_score)} {climateAssessment.fit_score.toFixed(1)}/10
@@ -949,11 +973,12 @@ const createStyles = (colors: ColorScheme) =>
 
     // — Result —
     thumbnailContainer: {
-      width: 120,
-      height: 160,
-      borderRadius: borderRadius.md,
+      width: '100%',
+      aspectRatio: 3 / 4,
+      maxHeight: 360,
+      borderRadius: borderRadius.lg,
       overflow: 'hidden',
-      marginBottom: spacing.xl,
+      marginBottom: spacing.xxl,
       ...shadows.md,
     },
     thumbnail: {
@@ -965,11 +990,12 @@ const createStyles = (colors: ColorScheme) =>
       backgroundColor: colors.card,
       borderRadius: borderRadius.lg,
       padding: spacing.xl,
-      marginBottom: spacing.md,
-      ...shadows.md,
+      marginBottom: spacing.xl,
+      ...shadows.sm,
     },
     resultCardTitle: {
       ...typography.subtitle1,
+      fontWeight: '700',
       color: colors.text,
       marginBottom: spacing.md,
     },
@@ -985,21 +1011,38 @@ const createStyles = (colors: ColorScheme) =>
     },
 
     // — Section 1: Score Hero —
+    scoreHeroCard: {
+      width: '100%',
+      borderRadius: borderRadius.lg,
+      padding: spacing.xl,
+      marginBottom: spacing.xl,
+      borderWidth: 1,
+      borderColor: colors.border,
+      ...shadows.md,
+      overflow: 'hidden',
+    },
     scoreHeroRow: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'baseline',
       justifyContent: 'center',
-      gap: spacing.md,
+      gap: spacing.xs,
       marginBottom: spacing.sm,
     },
     scoreNumber: {
       fontSize: 56,
       fontWeight: '800',
+      letterSpacing: -1,
+    },
+    scoreOutOf: {
+      ...typography.h3,
+      fontWeight: '400',
     },
     scoreLabelBadge: {
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.xl,
+      paddingVertical: spacing.sm,
       borderRadius: borderRadius.full,
+      alignSelf: 'center',
+      marginBottom: spacing.md,
     },
     scoreLabelText: {
       ...typography.subtitle2,
@@ -1008,34 +1051,44 @@ const createStyles = (colors: ColorScheme) =>
     scoreSummary: {
       ...typography.body1,
       textAlign: 'center',
-      marginBottom: spacing.lg,
+      fontStyle: 'italic',
+      marginBottom: spacing.xl,
     },
     breakdownContainer: {
-      gap: spacing.sm,
+      gap: spacing.md,
     },
     breakdownRow: {
-      marginBottom: spacing.xs,
+      marginBottom: spacing.xxs,
     },
     breakdownLabelRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: spacing.xxs,
+      marginBottom: spacing.xs,
     },
     breakdownLabel: {
       ...typography.caption,
+      fontWeight: '600',
+    },
+    breakdownBarRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
     },
     breakdownValue: {
       ...typography.caption,
       fontWeight: '700',
+      minWidth: 28,
+      textAlign: 'right',
     },
     breakdownTrack: {
-      height: 6,
-      borderRadius: 3,
+      flex: 1,
+      height: 8,
+      borderRadius: borderRadius.full,
       overflow: 'hidden',
     },
     breakdownFill: {
       height: '100%',
-      borderRadius: 3,
+      borderRadius: borderRadius.full,
     },
 
     // — Section 2: Strengths —
@@ -1045,7 +1098,8 @@ const createStyles = (colors: ColorScheme) =>
     },
     sectionTitle: {
       ...typography.subtitle1,
-      marginBottom: spacing.sm,
+      fontWeight: '700',
+      marginBottom: spacing.md,
       paddingHorizontal: spacing.xs,
     },
     strengthListContent: {
@@ -1054,8 +1108,9 @@ const createStyles = (colors: ColorScheme) =>
     strengthCard: {
       width: STRENGTH_CARD_WIDTH,
       borderRadius: borderRadius.lg,
-      padding: spacing.lg,
+      padding: spacing.xl,
       marginRight: spacing.md,
+      minHeight: 130,
       ...shadows.sm,
     },
     strengthIcon: {
@@ -1078,11 +1133,12 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: spacing.md,
     },
     swatch: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       borderWidth: 2,
-      borderColor: colors.border,
+      borderColor: colors.surface,
+      ...shadows.sm,
     },
     badgeRow: {
       flexDirection: 'row',
@@ -1091,8 +1147,8 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: spacing.sm,
     },
     badge: {
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
       borderRadius: borderRadius.full,
     },
     badgeText: {
@@ -1139,17 +1195,18 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: spacing.xs,
     },
     formalityTrack: {
-      height: 8,
-      borderRadius: 4,
+      height: 10,
+      borderRadius: borderRadius.full,
       position: 'relative',
     },
     formalityMarker: {
       position: 'absolute',
-      top: -4,
+      top: -3,
       width: 16,
       height: 16,
       borderRadius: 8,
       marginLeft: -8,
+      ...shadows.sm,
     },
     formalityLabelsRow: {
       flexDirection: 'row',
@@ -1158,6 +1215,7 @@ const createStyles = (colors: ColorScheme) =>
     },
     formalityEndLabel: {
       ...typography.caption,
+      fontWeight: '600',
     },
     balanceNote: {
       ...typography.body2,
@@ -1168,19 +1226,28 @@ const createStyles = (colors: ColorScheme) =>
     verdictRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: spacing.sm,
-      marginBottom: spacing.sm,
+      gap: spacing.md,
+      marginBottom: spacing.md,
+    },
+    verdictBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderRadius: borderRadius.full,
     },
     verdictEmoji: {
-      fontSize: 24,
+      fontSize: 18,
     },
     verdictText: {
       ...typography.subtitle1,
       fontWeight: '700',
+      flex: 1,
     },
     verdictScore: {
-      ...typography.body2,
-      marginLeft: 'auto',
+      ...typography.subtitle2,
+      fontWeight: '800',
     },
     verdictNote: {
       ...typography.body2,
@@ -1200,8 +1267,8 @@ const createStyles = (colors: ColorScheme) =>
       gap: spacing.sm,
     },
     chip: {
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
       borderRadius: borderRadius.full,
     },
     chipText: {
@@ -1214,7 +1281,8 @@ const createStyles = (colors: ColorScheme) =>
       borderWidth: 1,
       borderRadius: borderRadius.md,
       padding: spacing.lg,
-      marginBottom: spacing.sm,
+      marginBottom: spacing.md,
+      backgroundColor: colors.surface,
     },
     improvementHeader: {
       flexDirection: 'row',
@@ -1245,7 +1313,16 @@ const createStyles = (colors: ColorScheme) =>
 
     // — Section 7: Climate —
     climateCard: {
-      // extra subtle styling
+      backgroundColor: colors.surface,
+    },
+    climateHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      marginBottom: spacing.md,
+    },
+    climateIcon: {
+      fontSize: 22,
     },
     climateRow: {
       flexDirection: 'row',

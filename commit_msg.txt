@@ -1,1 +1,11 @@
-fix: priority label i18n key path was missing improvements segment
+feat: UI polish - analysis result screen visual overhaul
+
+- Score hero: LinearGradient, 56px bold number, badge with full radius
+- Breakdown bars: 8px height, visible track, value label beside bar
+- Outfit photo: full-width 3:4, borderRadius 16px, shadow md
+- All cards: borderWidth 1 + borderColor + shadow sm
+- Color swatches: 40px with white border + shadow
+- Style slider: 10px track, marker with shadow
+- Improvements: 4px left border colored by priority, accent impact
+- Strength cards: min height 130, padding xl, border
+- Section spacing xl, titles bold, consistent hierarchy
