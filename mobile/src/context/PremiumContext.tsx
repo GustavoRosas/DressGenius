@@ -40,12 +40,30 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
 
   const checkEntitlement = useCallback(async () => {
     try {
-      const stored = await SecureStore.getItemAsync(PREMIUM_KEY);
-      const storedDate = await SecureStore.getItemAsync(ACTIVATED_AT_KEY);
-      setIsPremium(stored === 'true');
-      setActivatedAt(storedDate);
+      // Try syncing from backend first
+      const { data } = await api.get<{ user: any }>('/me');
+      const plan = data?.user?.plan ?? 'free';
+      const backendPremium = plan === 'premium';
+      const dateStr = data?.user?.premium_activated_at ?? null;
+
+      await SecureStore.setItemAsync(PREMIUM_KEY, backendPremium ? 'true' : 'false');
+      if (dateStr) {
+        await SecureStore.setItemAsync(ACTIVATED_AT_KEY, dateStr);
+      } else {
+        await SecureStore.deleteItemAsync(ACTIVATED_AT_KEY);
+      }
+      setIsPremium(backendPremium);
+      setActivatedAt(dateStr);
     } catch {
-      setIsPremium(false);
+      // Fallback to local SecureStore if offline
+      try {
+        const stored = await SecureStore.getItemAsync(PREMIUM_KEY);
+        const storedDate = await SecureStore.getItemAsync(ACTIVATED_AT_KEY);
+        setIsPremium(stored === 'true');
+        setActivatedAt(storedDate);
+      } catch {
+        setIsPremium(false);
+      }
     }
   }, []);
 
