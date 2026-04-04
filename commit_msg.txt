@@ -1,7 +1,6 @@
-fix: occasion i18n, image URLs, back button, usage null limit
+fix: back button double render, refactor navigator options
 
-- History + Home: occasion keys translated via i18n (wedding -> Casamento)
-- APP_URL changed to 192.168.100.4:8000 (fixes image URLs for mobile)
-- BackButton: bold chevron instead of thin arrow, all screens
-- useUsage: analyses_limit can be null (premium), paywall check handles it
-- UsageChip: null-safe limit check
+- Added headerBackVisible: false to prevent native + custom back button
+- Extracted screenWithBack shared options (DRY: 9 screens)
+- Paywall keeps slide_from_bottom + modal presentation
+- Fixes: tap back caused slide animation showing second back button

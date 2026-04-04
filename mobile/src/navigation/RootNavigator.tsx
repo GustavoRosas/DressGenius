@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import * as SecureStore from 'expo-secure-store';
@@ -63,6 +63,22 @@ export function RootNavigator() {
   }
 
 
+  const screenWithBack = useCallback(
+    ({ navigation }: any) => ({
+      animation: 'slide_from_right' as const,
+      headerShown: true,
+      headerShadowVisible: false,
+      headerBackVisible: false,
+      headerStyle: { backgroundColor: colors.background },
+      headerTintColor: colors.text,
+      headerTitle: '',
+      headerLeft: () => (
+        <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
+      ),
+    }),
+    [colors],
+  );
+
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {!onboardingDone && (
@@ -71,142 +87,23 @@ export function RootNavigator() {
       {isAuthenticated ? (
         <>
           <Stack.Screen name="MainTabs" component={TabNavigator} />
-          <Stack.Screen
-            name="Chat"
-            component={ChatScreen}
-            options={({ navigation }) => ({
-              animation: 'slide_from_right',
-              headerShown: true,
-              headerShadowVisible: false,
-              headerStyle: { backgroundColor: colors.background },
-              headerTintColor: colors.text,
-              headerTitle: '',
-              headerLeft: () => (
-                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
-              ),
-            })}
-          />
+          <Stack.Screen name="Chat" component={ChatScreen} options={screenWithBack} />
           <Stack.Screen
             name="Paywall"
             component={PaywallScreen}
             options={({ navigation }) => ({
-              animation: 'slide_from_bottom',
-              presentation: 'modal',
-              headerShown: true,
-              headerShadowVisible: false,
-              headerStyle: { backgroundColor: colors.background },
-              headerTintColor: colors.text,
-              headerTitle: '',
-              headerLeft: () => (
-                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
-              ),
+              ...screenWithBack({ navigation }),
+              animation: 'slide_from_bottom' as const,
+              presentation: 'modal' as const,
             })}
           />
-          <Stack.Screen
-            name="AIPreferences"
-            component={AIPreferencesScreen}
-            options={({ navigation }) => ({
-              animation: 'slide_from_right',
-              headerShown: true,
-              headerShadowVisible: false,
-              headerStyle: { backgroundColor: colors.background },
-              headerTintColor: colors.text,
-              headerTitle: '',
-              headerLeft: () => (
-                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
-              ),
-            })}
-          />
-          <Stack.Screen
-            name="NotificationPrefs"
-            component={NotificationPrefsScreen}
-            options={({ navigation }) => ({
-              animation: 'slide_from_right',
-              headerShown: true,
-              headerShadowVisible: false,
-              headerStyle: { backgroundColor: colors.background },
-              headerTintColor: colors.text,
-              headerTitle: '',
-              headerLeft: () => (
-                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
-              ),
-            })}
-          />
-          <Stack.Screen
-            name="MonthlyReport"
-            component={MonthlyReportScreen}
-            options={({ navigation }) => ({
-              animation: 'slide_from_right',
-              headerShown: true,
-              headerShadowVisible: false,
-              headerStyle: { backgroundColor: colors.background },
-              headerTintColor: colors.text,
-              headerTitle: '',
-              headerLeft: () => (
-                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
-              ),
-            })}
-          />
-          <Stack.Screen
-            name="ScanDetail"
-            component={ScanDetailScreen}
-            options={({ navigation }) => ({
-              animation: 'slide_from_right',
-              headerShown: true,
-              headerShadowVisible: false,
-              headerStyle: { backgroundColor: colors.background },
-              headerTintColor: colors.text,
-              headerTitle: '',
-              headerLeft: () => (
-                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
-              ),
-            })}
-          />
-          <Stack.Screen
-            name="History"
-            component={HistoryScreen}
-            options={({ navigation }) => ({
-              animation: 'slide_from_right',
-              headerShown: true,
-              headerShadowVisible: false,
-              headerStyle: { backgroundColor: colors.background },
-              headerTintColor: colors.text,
-              headerTitle: '',
-              headerLeft: () => (
-                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
-              ),
-            })}
-          />
-          <Stack.Screen
-            name="Analytics"
-            component={AnalyticsScreen}
-            options={({ navigation }) => ({
-              animation: 'slide_from_right',
-              headerShown: true,
-              headerShadowVisible: false,
-              headerStyle: { backgroundColor: colors.background },
-              headerTintColor: colors.text,
-              headerTitle: '',
-              headerLeft: () => (
-                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
-              ),
-            })}
-          />
-          <Stack.Screen
-            name="MyPlan"
-            component={MyPlanScreen}
-            options={({ navigation }) => ({
-              animation: 'slide_from_right',
-              headerShown: true,
-              headerShadowVisible: false,
-              headerStyle: { backgroundColor: colors.background },
-              headerTintColor: colors.text,
-              headerTitle: '',
-              headerLeft: () => (
-                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
-              ),
-            })}
-          />
+          <Stack.Screen name="AIPreferences" component={AIPreferencesScreen} options={screenWithBack} />
+          <Stack.Screen name="NotificationPrefs" component={NotificationPrefsScreen} options={screenWithBack} />
+          <Stack.Screen name="MonthlyReport" component={MonthlyReportScreen} options={screenWithBack} />
+          <Stack.Screen name="ScanDetail" component={ScanDetailScreen} options={screenWithBack} />
+          <Stack.Screen name="History" component={HistoryScreen} options={screenWithBack} />
+          <Stack.Screen name="Analytics" component={AnalyticsScreen} options={screenWithBack} />
+          <Stack.Screen name="MyPlan" component={MyPlanScreen} options={screenWithBack} />
         </>
       ) : (
         <>
