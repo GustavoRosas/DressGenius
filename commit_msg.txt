@@ -1,12 +1,7 @@
-feat: R2 storage integration (backend infra)
+chore: R2 migration complete, secrets deployed to Fly.io
 
-- Install league/flysystem-aws-s3-v3 (S3/R2 driver)
-- Add 'r2' disk to config/filesystems.php
-- Create StorageHelper (centralized disk access, env-aware)
-- Refactor all controllers to use StorageHelper::disk() instead of
-  hardcoded Storage::disk('public'):
-  - AuthController, OutfitScanController, OutfitChatController,
-    WardrobeItemController, ProfileController
-- FILESYSTEM_DISK=public (dev) | r2 (prod)
-- Add R2_* env placeholders (.env + .env.example)
-- All file operations: putFile() instead of ->store(..., 'public')
+- 28 files migrated to Cloudflare R2 (27 scans + 1 profile photo)
+- Fly.io secrets set: R2_*, FILESYSTEM_DISK=r2
+- Production now serves images from R2 CDN
+- Dev continues using local public disk
+- Removed temp migration scripts
