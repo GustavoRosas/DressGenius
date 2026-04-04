@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\StorageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Hash;
@@ -60,10 +61,10 @@ class ProfileController extends Controller
         ]);
 
         if ($user->profile_photo_path) {
-            Storage::disk('public')->delete($user->profile_photo_path);
+            StorageHelper::disk()->delete($user->profile_photo_path);
         }
 
-        $path = $validated['photo']->store('profile-photos', 'public');
+        $path = StorageHelper::disk()->putFile('profile-photos', $validated['photo']);
         $user->profile_photo_path = $path;
         $user->save();
 
@@ -77,7 +78,7 @@ class ProfileController extends Controller
         $data = $user->toArray();
 
         /** @var FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        $disk = StorageHelper::disk();
         $data['profile_photo_url'] = $user->profile_photo_path ? $disk->url($user->profile_photo_path) : null;
         return $data;
     }

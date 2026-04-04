@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\OutfitDetectedItem;
 use App\Models\WardrobeItem;
 use App\Services\BackgroundRemovalService;
+use App\Helpers\StorageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -21,7 +22,7 @@ class WardrobeItemController extends Controller
             ->get();
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        $disk = StorageHelper::disk();
 
         return response()->json([
             'items' => $items->map(fn ($i) => [
@@ -232,7 +233,7 @@ class WardrobeItemController extends Controller
         $wardrobeItem->save();
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        $disk = StorageHelper::disk();
 
         return response()->json([
             'item' => [

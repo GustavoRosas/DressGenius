@@ -11,6 +11,7 @@ use App\Services\ColorAnalysisService;
 use App\Services\GeminiChatService;
 use App\Services\GeminiVisionService;
 use App\Services\OutfitAnalysisService;
+use App\Helpers\StorageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -24,7 +25,7 @@ class OutfitScanController extends Controller
         $user = $request->user();
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        $disk = StorageHelper::disk();
 
         $scans = OutfitScan::query()
             ->where('user_id', $user->id)
@@ -75,7 +76,7 @@ class OutfitScanController extends Controller
         }
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        $disk = StorageHelper::disk();
 
         $process = OutfitAnalysisProcess::query()
             ->where('scan_id', $outfitScan->id)
@@ -134,7 +135,7 @@ class OutfitScanController extends Controller
         $image = $request->file('image');
         $intake = $request->input('intake') ?? [];
 
-        $path = $image->store('outfit-scans/'.$user->id, 'public');
+        $path = StorageHelper::disk()->putFile('outfit-scans/'.$user->id, $image);
 
         $process = OutfitAnalysisProcess::create([
             'user_id' => $user->id,
@@ -238,7 +239,7 @@ class OutfitScanController extends Controller
         $process->save();
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        $disk = StorageHelper::disk();
 
         // Fire analytics aggregation (non-blocking)
         try {

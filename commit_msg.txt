@@ -1,6 +1,12 @@
-fix: back button double render, refactor navigator options
+feat: R2 storage integration (backend infra)
 
-- Added headerBackVisible: false to prevent native + custom back button
-- Extracted screenWithBack shared options (DRY: 9 screens)
-- Paywall keeps slide_from_bottom + modal presentation
-- Fixes: tap back caused slide animation showing second back button
+- Install league/flysystem-aws-s3-v3 (S3/R2 driver)
+- Add 'r2' disk to config/filesystems.php
+- Create StorageHelper (centralized disk access, env-aware)
+- Refactor all controllers to use StorageHelper::disk() instead of
+  hardcoded Storage::disk('public'):
+  - AuthController, OutfitScanController, OutfitChatController,
+    WardrobeItemController, ProfileController
+- FILESYSTEM_DISK=public (dev) | r2 (prod)
+- Add R2_* env placeholders (.env + .env.example)
+- All file operations: putFile() instead of ->store(..., 'public')

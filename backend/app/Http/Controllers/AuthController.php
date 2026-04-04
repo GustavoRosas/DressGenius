@@ -9,6 +9,7 @@ use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\PersonalAccessToken;
+use App\Helpers\StorageHelper;
 
 class AuthController extends Controller
 {
@@ -69,7 +70,7 @@ class AuthController extends Controller
         $data = $user->toArray();
 
         /** @var FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        $disk = StorageHelper::disk();
         $data['profile_photo_url'] = $user->profile_photo_path ? $disk->url($user->profile_photo_path) : null;
 
         // Usage counter (#49)

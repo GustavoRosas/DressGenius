@@ -14,6 +14,7 @@ use App\Models\OutfitScan;
 use App\Services\GeminiChatService;
 use App\Services\GeminiVisionService;
 use App\Services\OutfitAnalysisService;
+use App\Helpers\StorageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -32,7 +33,7 @@ class OutfitChatController extends Controller
             ->get();
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        $disk = StorageHelper::disk();
 
         return response()->json([
             'sessions' => $sessions->map(fn ($s) => [
@@ -58,7 +59,7 @@ class OutfitChatController extends Controller
         $session->load(['messages' => fn ($q) => $q->orderBy('id'), 'attachments']);
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        $disk = StorageHelper::disk();
 
         return response()->json([
             'session' => $this->serializeSession($session, $disk),
@@ -73,7 +74,7 @@ class OutfitChatController extends Controller
         $image = $request->file('image');
         $intake = $request->input('intake') ?? [];
 
-        $path = $image->store('outfit-chats/'.$user->id, 'public');
+        $path = StorageHelper::disk()->putFile('outfit-chats/'.$user->id, $image);
 
         $process = OutfitAnalysisProcess::create([
             'user_id' => $user->id,
@@ -223,7 +224,7 @@ class OutfitChatController extends Controller
         $session->load(['messages' => fn ($q) => $q->orderBy('id'), 'attachments']);
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        $disk = StorageHelper::disk();
 
         return response()->json([
             'session' => $this->serializeSession($session, $disk),
@@ -332,7 +333,7 @@ class OutfitChatController extends Controller
         $session->load(['messages' => fn ($q) => $q->orderBy('id'), 'attachments']);
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        $disk = StorageHelper::disk();
 
         return response()->json([
             'session' => $this->serializeSession($session, $disk),
@@ -352,7 +353,7 @@ class OutfitChatController extends Controller
         }
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        $disk = StorageHelper::disk();
 
         return response()->json([
             'session' => $this->serializeSession($session->fresh(['messages' => fn ($q) => $q->orderBy('id'), 'attachments']), $disk),
@@ -374,7 +375,7 @@ class OutfitChatController extends Controller
         $session->save();
 
         /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
-        $disk = Storage::disk('public');
+        $disk = StorageHelper::disk();
 
         return response()->json([
             'session' => $this->serializeSession($session->fresh(['messages' => fn ($q) => $q->orderBy('id'), 'attachments']), $disk),
