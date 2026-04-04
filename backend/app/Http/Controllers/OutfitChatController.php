@@ -288,10 +288,16 @@ class OutfitChatController extends Controller
         }
         $contextMessage .= ' Help them refine their look based on this analysis. Start by briefly summarizing the analysis and asking what they would like to adjust.';
 
+        // Detect language from scan intake
+        $language = data_get($intake, 'language', 'en');
+        $langHint = ($language === 'pt-BR' || str_starts_with((string)$language, 'pt'))
+            ? ' Respond in Brazilian Portuguese (PT-BR).'
+            : '';
+
         $userMsg = OutfitChatMessage::create([
             'session_id' => $session->id,
-            'role' => 'user',
-            'content' => $contextMessage,
+            'role' => 'system',
+            'content' => $contextMessage . $langHint,
             'meta' => ['hidden' => true, 'type' => 'system_context'],
         ]);
 

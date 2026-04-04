@@ -213,7 +213,9 @@ export function ChatScreen() {
       setLoading(true);
       const { data } = await api.get<{ session: ChatDetail } | ChatDetail>(`/outfit-chats/${chatId}`);
       const session = (data as any).session ?? data;
-      setMessages(session.messages ?? []);
+      // Filter out hidden system context messages
+      const allMsgs = session.messages ?? [];
+      setMessages(allMsgs.filter((m: any) => m.role !== 'system' && !m.meta?.hidden));
       if (session.status === 'closed' || session.status === 'finished') {
         setChatFinished(true);
       }
@@ -372,7 +374,7 @@ export function ChatScreen() {
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         {/* Messages */}

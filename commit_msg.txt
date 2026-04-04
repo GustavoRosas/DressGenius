@@ -1,15 +1,8 @@
-feat: Sprint 1 P0 - scan history, add to closet, chat with context
+fix: chat system prompt hidden, keyboard overlap, history showing scans
 
-Backend:
-- GET /outfit-scans (index, paginated) + GET /outfit-scans/:id (show)
-- POST /wardrobe-items/from-scan (bulk add detected items to closet)
-- POST /outfit-chats/from-scan (create chat with scan context)
-- OutfitScan relationships, OutfitChatController fromScan with AI context
-
-Mobile:
-- HistoryScreen rewritten: scan cards with score badge, occasion, time
-- ScanDetailScreen: full analysis revisit (7 sections) + action buttons
-- DetectedItemsList component: per-item add to closet + bulk add
-- ChatScreen: quick reply chips when fromScan=true
-- AnalyzeScreen: integrated detected items + chat from scan
-- i18n: all new strings EN + PT-BR
+- Chat fromScan: system context message now role=system (was user), hidden from UI
+- Chat fromScan: added language hint (PT-BR) to system prompt
+- ChatScreen: filters out system/hidden messages from display
+- ChatScreen: keyboard behavior=height on Android (fixes overlap)
+- ProfileScreen: fetches /outfit-scans instead of /outfit-chats for history
+- ProfileScreen: handles wrapped response format { data: [...] }

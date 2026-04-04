@@ -118,13 +118,13 @@ export function ProfileScreen() {
   const fetchRecentHistory = useCallback(async () => {
     try {
       setLoadingHistory(true);
-      const { data } = await api.get<OutfitChat[]>('/outfit-chats');
-      if (Array.isArray(data)) {
-        const sorted = [...data]
-          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          .slice(0, 3);
-        setRecentChats(sorted);
-      }
+      const { data } = await api.get<any>('/outfit-scans');
+      // outfit-scans returns { data: [...], meta: {...} }
+      const items = Array.isArray(data) ? data : (data.data ?? []);
+      const sorted = [...items]
+        .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 3);
+      setRecentChats(sorted);
     } catch {
       // silent
     } finally {
