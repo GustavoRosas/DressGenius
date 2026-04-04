@@ -452,12 +452,20 @@ export function AnalyzeScreen() {
     [colors],
   );
 
-  // — Helper: verdict badge —
-  const getVerdictEmoji = (verdict: string) => {
-    const v = verdict.toLowerCase();
-    if (v.includes('great')) return '🟢';
-    if (v.includes('good')) return '🟡';
-    if (v.includes('fair')) return '🟠';
+  // — Helper: score to color dot (0-10 scale) —
+  const getScoreColor = (score: number): string => {
+    if (score >= 8) return '#22C55E'; // green
+    if (score >= 6) return '#84CC16'; // lime
+    if (score >= 4) return '#EAB308'; // yellow
+    if (score >= 2) return '#F97316'; // orange
+    return '#EF4444'; // red
+  };
+
+  const getScoreDot = (score: number): string => {
+    if (score >= 8) return '🟢';
+    if (score >= 6) return '🟡';
+    if (score >= 4) return '🟡';
+    if (score >= 2) return '🟠';
     return '🔴';
   };
 
@@ -471,7 +479,7 @@ export function AnalyzeScreen() {
 
   // — Render breakdown bar —
   const renderBreakdownBar = (label: string, value: number) => {
-    const barColor = value >= 7 ? colors.success : value >= 4 ? colors.warning : colors.error;
+    const barColor = getScoreColor(value);
     return (
       <View style={styles.breakdownRow} key={label}>
         <View style={styles.breakdownLabelRow}>
@@ -693,7 +701,7 @@ export function AnalyzeScreen() {
             <Text style={styles.resultCardTitle}>{t('analyze.result.occasion.title')}</Text>
 
             <View style={styles.verdictRow}>
-              <Text style={styles.verdictEmoji}>{getVerdictEmoji(occasionAssessment.verdict)}</Text>
+              <Text style={styles.verdictEmoji}>{getScoreDot(occasionAssessment.fit_score)}</Text>
               <Text style={[styles.verdictText, { color: colors.text }]}>
                 {occasionAssessment.verdict}
               </Text>
@@ -778,8 +786,8 @@ export function AnalyzeScreen() {
           <View style={[styles.resultCard, styles.climateCard]}>
             <Text style={styles.resultCardTitle}>{t('analyze.result.climate.title')}</Text>
             <View style={styles.climateRow}>
-              <Text style={[styles.climateScore, { color: colors.primary }]}>
-                {climateAssessment.fit_score.toFixed(1)}/10
+              <Text style={[styles.climateScore, { color: getScoreColor(climateAssessment.fit_score) }]}>
+                {getScoreDot(climateAssessment.fit_score)} {climateAssessment.fit_score.toFixed(1)}/10
               </Text>
               <Text style={[styles.climateNote, { color: colors.textSecondary }]}>
                 {climateAssessment.note}
