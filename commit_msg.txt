@@ -1,6 +1,8 @@
-feat: enforce free tier limit (5 analyses/month) on backend
+fix: localized AI response, strength card expand, priority fallback, error alerts
 
-- OutfitScanController: blocks with 429 when free user exceeds 5/month
-- AuthController: analyses_limit updated from 3 to 5
-- Mobile plans.ts: FREE_ANALYSES_PER_MONTH updated to 5
-- Returns limit_reached, analyses_used, analyses_limit in error response
+- AI prompt includes language instruction (PT-BR or EN based on user locale)
+- Strength cards tap to expand (see full text)
+- Priority badge handles typos (demium -> medium)
+- Analyze errors show Alert (sheet closes, message visible)
+- User 4 set to premium + plan column added
+- Gemini model fixed: gemini-2.5-flash (was gemini-2.5-flash-lts)

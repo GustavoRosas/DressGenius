@@ -128,7 +128,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const STRENGTH_CARD_WIDTH = 260;
 
 export function AnalyzeScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const { isPremium } = usePremium();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -276,6 +276,9 @@ export function AnalyzeScreen() {
           );
         }
 
+        // Send user language for localized AI response
+        formData.append('intake[language]', i18n.language || 'en');
+
         const response = await api.post<AnalysisResult>('/outfit-scans', formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         });
@@ -303,7 +306,25 @@ export function AnalyzeScreen() {
           setState('result');
         });
       } catch (_err) {
-        setError(t('screens.analyze.error'));
+        const err = _err as any;
+        // Close sheet and show error
+        setSheetVisible(false);
+        const status = err?.response?.status;
+        const serverMsg = err?.response?.data?.message;
+        if (status === 429 && err?.response?.data?.limit_reached) {
+          Alert.alert(
+            t('errors.limitReached'),
+            serverMsg || t('errors.limitReached'),
+            [{ text: 'OK' }],
+          );
+        } else {
+          Alert.alert(
+            t('common.error'),
+            serverMsg || t('screens.analyze.error'),
+            [{ text: 'OK' }],
+          );
+        }
+        setError(serverMsg || t('screens.analyze.error'));
       } finally {
         setLoading(false);
       }
@@ -442,11 +463,11 @@ export function AnalyzeScreen() {
 
   // — Helper: priority badge —
   const getPriorityBadge = (priority: string) => {
-    switch (priority.toLowerCase()) {
-      case 'high': return { emoji: '🔴', label: t('analyze.result.priority.high') };
-      case 'medium': return { emoji: '🟡', label: t('analyze.result.priority.medium') };
-      default: return { emoji: '⚪', label: t('analyze.result.priority.low') };
-    }
+    const p = (priority || '').toLowerCase().trim();
+    if (p === 'high') return { emoji: '🔴', label: t('analyze.result.priority.high') };
+    if (p === 'medium' || p === 'demium' || p === 'med') return { emoji: '🟡', label: t('analyze.result.priority.medium') };
+    return { emoji: '⚪', label: t('analyze.result.priority.low') };
+  }
   };
 
   // — Render breakdown bar —
@@ -470,18 +491,27 @@ export function AnalyzeScreen() {
     );
   };
 
-  // — Render strength card —
-  const renderStrengthCard = ({ item }: { item: Strength }) => (
-    <View style={[styles.strengthCard, { backgroundColor: colors.card }]}>
-      <Text style={[styles.strengthIcon]}>✅</Text>
-      <Text style={[styles.strengthTitle, { color: colors.text }]} numberOfLines={1}>
-        {item.title}
-      </Text>
-      <Text style={[styles.strengthDesc, { color: colors.textSecondary }]} numberOfLines={2}>
-        {item.description}
-      </Text>
-    </View>
-  );
+  // — Strength expansion state —
+  const [expandedStrength, setExpandedStrength] = useState<number | null>(null);
+
+  // — Render strength card (tap to expand) —
+  const renderStrengthCard = ({ item, index }: { item: Strength; index: number }) => {
+    const isExpanded = expandedStrength === index;
+    return (
+      <Pressable
+        onPress={() => setExpandedStrength(isExpanded ? null : index)}
+        style={[styles.strengthCard, { backgroundColor: colors.card }]}
+      >
+        <Text style={[styles.strengthIcon]}>✅</Text>
+        <Text style={[styles.strengthTitle, { color: colors.text }]} numberOfLines={isExpanded ? undefined : 1}>
+          {item.title}
+        </Text>
+        <Text style={[styles.strengthDesc, { color: colors.textSecondary }]} numberOfLines={isExpanded ? undefined : 2}>
+          {item.description}
+        </Text>
+      </Pressable>
+    );
+  };
 
   // — #56 — Enriched result with 7 sections —
   const renderResult = () => {

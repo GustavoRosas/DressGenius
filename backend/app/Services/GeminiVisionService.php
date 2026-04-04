@@ -76,8 +76,13 @@ class GeminiVisionService
             $comfortHint = "\nThe user's comfort preference is: \"{$context['comfort_level']}\". Factor this into score_breakdown (e.g., if comfort_first, weigh cohesion/balance higher than strict fashion rules).";
         }
 
+        $language = data_get($intake, 'language', 'en');
+        $langHint = ($language === 'pt-BR' || str_starts_with((string)$language, 'pt'))
+            ? "\nIMPORTANT: Write ALL text fields in Brazilian Portuguese (PT-BR)."
+            : '';
+
         $prompt = <<<PROMPT
-You are an expert fashion stylist analyzing an outfit photo.
+You are an expert fashion stylist analyzing an outfit photo.{$langHint}
 
 User context (may be partial): {$contextJson}
 {$occasionHint}{$weatherHint}{$comfortHint}
@@ -462,7 +467,12 @@ PROMPT;
         if (!empty($context['comfort_level'])) $hints .= "\nComfort: {$context['comfort_level']}.";
         if (!empty($context['extra_context'])) $hints .= "\nExtra: {$context['extra_context']}.";
 
-        $prompt = "You are an expert fashion stylist analyzing an outfit photo.\n\nUser context: {$contextJson}{$hints}\n\nReturn ONLY valid JSON with: score (0-10), score_label, score_summary, score_breakdown ({color_harmony, style_balance, occasion_fit, overall_cohesion} each 0-10), strengths (array of {title, description}), style_level ({detected, formality_score 0-10, balance_note}), occasion_assessment ({fit_score, verdict, verdict_note, would_work_for[], would_not_work_for[]}), improvements (array of {priority: high/medium/low, area, suggestion, impact}), climate_assessment ({fit_score, note, risk}).\n\nBe specific about colors, textures, and proportions. Score 0-10 not 0-100.";
+        $language = data_get($intake, 'language', 'en');
+        $langInstruction = $language === 'pt-BR' || str_starts_with((string)$language, 'pt')
+            ? 'IMPORTANT: Write ALL text fields (score_label, score_summary, strengths titles/descriptions, style_level balance_note, occasion_assessment verdicts/notes, improvements suggestions/impact, climate_assessment note) in Brazilian Portuguese (PT-BR).'
+            : 'Write all text fields in English.';
+
+        $prompt = "You are an expert fashion stylist analyzing an outfit photo.\n\n{$langInstruction}\n\nUser context: {$contextJson}{$hints}\n\nReturn ONLY valid JSON with: score (0-10), score_label, score_summary, score_breakdown ({color_harmony, style_balance, occasion_fit, overall_cohesion} each 0-10), strengths (array of {title, description}), style_level ({detected, formality_score 0-10, balance_note}), occasion_assessment ({fit_score, verdict, verdict_note, would_work_for[], would_not_work_for[]}), improvements (array of {priority: high/medium/low, area, suggestion, impact}), climate_assessment ({fit_score, note, risk}).\n\nBe specific about colors, textures, and proportions. Score 0-10 not 0-100.";
 
         $result = $anthropic->analyzeImage($base64, $mimeType, $prompt, 2048);
 
