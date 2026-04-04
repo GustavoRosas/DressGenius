@@ -16,6 +16,7 @@ import {
   ScanDetailScreen,
   HistoryScreen,
   AnalyticsScreen,
+  MyPlanScreen,
 } from '../screens';
 import { TabNavigator } from './TabNavigator';
 import { ONBOARDING_KEY } from '../screens/OnboardingScreen';
@@ -175,6 +176,21 @@ export function RootNavigator() {
           <Stack.Screen
             name="Analytics"
             component={AnalyticsScreen}
+            options={({ navigation }) => ({
+              animation: 'slide_from_right',
+              headerShown: true,
+              headerShadowVisible: false,
+              headerStyle: { backgroundColor: colors.background },
+              headerTintColor: colors.text,
+              headerTitle: '',
+              headerLeft: () => (
+                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
+              ),
+            })}
+          />
+          <Stack.Screen
+            name="MyPlan"
+            component={MyPlanScreen}
             options={({ navigation }) => ({
               animation: 'slide_from_right',
               headerShown: true,

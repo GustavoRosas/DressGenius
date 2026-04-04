@@ -470,7 +470,57 @@
     "notifications": "Notifications",
     "aiPreferences": "My Style",
     "language": "Language",
-    "subscription": "Subscription"
+    "subscription": "Subscription",
+    "myPlan": "My Plan",
+    "premiumBeta": "Premium (Beta)",
+    "upgradePremium": "Upgrade to Premium"
+  },
+  "premium": {
+    "beta": {
+      "title": "Beta Early Access",
+      "subtitle": "You're among the first! During beta, Premium is 100% free. No credit card.",
+      "activate": "\uD83C\uDF89 Activate Free Premium",
+      "afterBeta": "After beta: {{price}}/mo. You'll be notified.",
+      "activated": "\uD83C\uDF89 Premium activated!",
+      "error": "Error activating. Try again.",
+      "benefit": {
+        "unlimitedAnalyses": "Unlimited analyses",
+        "unlimitedChat": "Unlimited style chat",
+        "closetIntelligence": "Closet Intelligence",
+        "fullAnalytics": "Full Analytics"
+      }
+    },
+    "unlock": {
+      "colorAnalysis": "Discover your color palette →",
+      "styleLevel": "See your Style Level →",
+      "climate": "See climate suggestions →",
+      "improvements": "{{count}} more improvements locked",
+      "analytics": "Full Analytics is Premium",
+      "closetIntelligence": "Your closet AI is waiting"
+    }
+  },
+  "myPlan": {
+    "title": "My Plan",
+    "premiumBeta": "PREMIUM (Beta)",
+    "activeSince": "Active since: {{date}}",
+    "nextCharge": "Next charge: After beta",
+    "benefits": "Your benefits",
+    "benefit": {
+      "unlimitedAnalyses": "Unlimited analyses",
+      "unlimitedChat": "Unlimited chat",
+      "unlimitedCloset": "Closet without limits",
+      "allInsights": "All insights",
+      "fiveAnalyses": "5 analyses per month",
+      "fiveChats": "5 chats per month",
+      "fiftyPieces": "50 pieces in closet"
+    },
+    "downgrade": "Switch to Free plan",
+    "downgradeConfirm": "Are you sure? You'll lose Premium access immediately.",
+    "downgraded": "Back to Free plan. Reactivate anytime.",
+    "afterBeta": "After beta, continue for {{price}}/mo",
+    "freePlan": "Free Plan",
+    "freeIncludes": "Your plan includes",
+    "wantMore": "Want more?"
   },
   "home": {
     "greeting": {

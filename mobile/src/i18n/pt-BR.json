@@ -470,7 +470,57 @@
     "notifications": "Notificações",
     "aiPreferences": "Meu Estilo",
     "language": "Idioma",
-    "subscription": "Assinatura"
+    "subscription": "Assinatura",
+    "myPlan": "Meu Plano",
+    "premiumBeta": "Premium (Beta)",
+    "upgradePremium": "Upgrade para Premium"
+  },
+  "premium": {
+    "beta": {
+      "title": "Acesso Antecipado Beta",
+      "subtitle": "Voc\u00ea est\u00e1 entre os primeiros! Durante o beta, o Premium \u00e9 100% gratuito. Sem cart\u00e3o.",
+      "activate": "\uD83C\uDF89 Ativar Premium Gr\u00e1tis",
+      "afterBeta": "Depois do beta: {{price}}/m\u00eas. Voc\u00ea ser\u00e1 avisado.",
+      "activated": "\uD83C\uDF89 Premium ativado!",
+      "error": "Erro ao ativar. Tente novamente.",
+      "benefit": {
+        "unlimitedAnalyses": "An\u00e1lises ilimitadas",
+        "unlimitedChat": "Chat de estilo sem limites",
+        "closetIntelligence": "Closet Intelligence",
+        "fullAnalytics": "Analytics completo"
+      }
+    },
+    "unlock": {
+      "colorAnalysis": "Descubra sua paleta de cores \u2192",
+      "styleLevel": "Veja seu Style Level \u2192",
+      "climate": "Veja sugest\u00f5es por clima \u2192",
+      "improvements": "mais {{count}} melhorias bloqueadas",
+      "analytics": "Analytics completo \u00e9 Premium",
+      "closetIntelligence": "Sua IA de closet est\u00e1 esperando"
+    }
+  },
+  "myPlan": {
+    "title": "Meu Plano",
+    "premiumBeta": "PREMIUM (Beta)",
+    "activeSince": "Ativo desde: {{date}}",
+    "nextCharge": "Pr\u00f3xima cobran\u00e7a: Ap\u00f3s o beta",
+    "benefits": "Seus benef\u00edcios",
+    "benefit": {
+      "unlimitedAnalyses": "An\u00e1lises ilimitadas",
+      "unlimitedChat": "Chat ilimitado",
+      "unlimitedCloset": "Closet sem limites",
+      "allInsights": "Todos os insights",
+      "fiveAnalyses": "5 an\u00e1lises por m\u00eas",
+      "fiveChats": "5 chats por m\u00eas",
+      "fiftyPieces": "50 pe\u00e7as no closet"
+    },
+    "downgrade": "Voltar ao plano Free",
+    "downgradeConfirm": "Tem certeza? Voc\u00ea perder\u00e1 o acesso Premium imediatamente.",
+    "downgraded": "Voltou ao plano Free. Reative quando quiser.",
+    "afterBeta": "Ap\u00f3s o beta, continue por {{price}}/m\u00eas",
+    "freePlan": "Plano Gratuito",
+    "freeIncludes": "Seu plano inclui",
+    "wantMore": "Quer mais?"
   },
   "home": {
     "greeting": {

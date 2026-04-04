@@ -40,6 +40,8 @@ import { api } from '../api/client';
 import type { RootStackParamList } from '../navigation/types';
 import { Button } from '../components/Button';
 import { DetectedItemsList, type DetectedItem } from '../components/DetectedItemsList';
+import { LockedSection } from '../components/LockedSection';
+import { BetaPremiumSheet } from '../components/BetaPremiumSheet';
 import { UsageChip } from '../components/UsageChip';
 import { SoftPaywallModal } from '../components/SoftPaywallModal';
 import { PremiumBanner } from '../components/PremiumBanner';
@@ -132,7 +134,9 @@ const STRENGTH_CARD_WIDTH = 260;
 export function AnalyzeScreen() {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
-  const { isPremium } = usePremium();
+  const { isPremium, activateBetaPremium, setShowBetaSheet } = usePremium();
+  const [betaSheetVisible, setBetaSheetVisible] = useState(false);
+  const openUpgrade = useCallback(() => setBetaSheetVisible(true), []);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { usage, refetch: refetchUsage } = useUsage();
 
@@ -634,6 +638,7 @@ export function AnalyzeScreen() {
 
         {/* ═══ Section 3: Color Analysis 🎨 ═══ */}
         {colorAnalysis && (
+        <LockedSection locked={!isPremium} title={t('premium.unlock.colorAnalysis')} onUpgrade={openUpgrade}>
           <View style={[styles.resultCard, { borderWidth: 1, borderColor: colors.border }]}>
             <Text style={styles.resultCardTitle}>{t('analyze.result.colorAnalysis')}</Text>
 
@@ -688,10 +693,12 @@ export function AnalyzeScreen() {
               </View>
             )}
           </View>
+        </LockedSection>
         )}
 
         {/* ═══ Section 4: Style Level ⚖️ ═══ */}
         {styleLevel && (
+        <LockedSection locked={!isPremium} title={t('premium.unlock.styleLevel')} onUpgrade={openUpgrade}>
           <View style={[styles.resultCard, { borderWidth: 1, borderColor: colors.border }]}>
             <Text style={styles.resultCardTitle}>{t('analyze.result.styleLevel.title')}</Text>
             <Text style={[styles.styleLevelDetected, { color: colors.primary }]}>
@@ -726,6 +733,7 @@ export function AnalyzeScreen() {
               </Text>
             )}
           </View>
+        </LockedSection>
         )}
 
         {/* ═══ Section 5: Occasion Assessment 📍 ═══ */}
@@ -824,6 +832,7 @@ export function AnalyzeScreen() {
 
         {/* ═══ Section 7: Climate 🌤️ ═══ */}
         {climateAssessment && (
+        <LockedSection locked={!isPremium} title={t('premium.unlock.climate')} onUpgrade={openUpgrade}>
           <View style={[styles.resultCard, styles.climateCard, { borderWidth: 1, borderColor: colors.border }]}>
             <View style={styles.climateHeaderRow}>
               <Text style={styles.climateIcon}>🌤️</Text>
@@ -845,6 +854,7 @@ export function AnalyzeScreen() {
               </View>
             )}
           </View>
+        </LockedSection>
         )}
 
         {/* Fallback: raw analysis text */}
@@ -909,6 +919,13 @@ export function AnalyzeScreen() {
       <SoftPaywallModal
         visible={paywallVisible}
         onClose={() => setPaywallVisible(false)}
+      />
+
+      {/* Beta Premium Sheet */}
+      <BetaPremiumSheet
+        visible={betaSheetVisible}
+        onClose={() => setBetaSheetVisible(false)}
+        onActivate={activateBetaPremium}
       />
     </SafeAreaView>
   );

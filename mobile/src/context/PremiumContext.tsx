@@ -1,8 +1,8 @@
 /**
  * DressGenius — Premium / Subscription Context
  *
- * Mock implementation — no RevenueCat yet.
- * Persists premium state in SecureStore for dev/testing.
+ * Beta phase: activates premium via PATCH /user/plan.
+ * Persists in SecureStore + backend.
  */
 
 import React, {
@@ -13,32 +13,37 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import { Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import { useTranslation } from 'react-i18next';
+import { api } from '../api/client';
 
 const PREMIUM_KEY = 'dressgenius_is_premium';
+const ACTIVATED_AT_KEY = 'dressgenius_premium_activated_at';
 
 export interface PremiumContextValue {
   isPremium: boolean;
   isLoading: boolean;
+  activatedAt: string | null;
+  showBetaSheet: boolean;
+  setShowBetaSheet: (v: boolean) => void;
   checkEntitlement: () => Promise<void>;
-  purchaseMonthly: () => Promise<void>;
-  purchaseYearly: () => Promise<void>;
-  restorePurchases: () => Promise<void>;
+  activateBetaPremium: () => Promise<void>;
+  downgradeToFree: () => Promise<void>;
 }
 
 const PremiumContext = createContext<PremiumContextValue | null>(null);
 
 export function PremiumProvider({ children }: { children: React.ReactNode }) {
-  const { t } = useTranslation();
   const [isPremium, setIsPremium] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [activatedAt, setActivatedAt] = useState<string | null>(null);
+  const [showBetaSheet, setShowBetaSheet] = useState(false);
 
   const checkEntitlement = useCallback(async () => {
     try {
       const stored = await SecureStore.getItemAsync(PREMIUM_KEY);
+      const storedDate = await SecureStore.getItemAsync(ACTIVATED_AT_KEY);
       setIsPremium(stored === 'true');
+      setActivatedAt(storedDate);
     } catch {
       setIsPremium(false);
     }
@@ -55,28 +60,37 @@ export function PremiumProvider({ children }: { children: React.ReactNode }) {
     };
   }, [checkEntitlement]);
 
-  const purchaseMonthly = useCallback(async () => {
-    Alert.alert('DressGenius', t('paywall.comingSoon'));
-  }, [t]);
+  const activateBetaPremium = useCallback(async () => {
+    const { data } = await api.patch<{ plan: string; premium_activated_at: string }>('/user/plan', {
+      plan: 'premium',
+    });
+    await SecureStore.setItemAsync(PREMIUM_KEY, 'true');
+    const dateStr = data.premium_activated_at || new Date().toISOString();
+    await SecureStore.setItemAsync(ACTIVATED_AT_KEY, dateStr);
+    setIsPremium(true);
+    setActivatedAt(dateStr);
+  }, []);
 
-  const purchaseYearly = useCallback(async () => {
-    Alert.alert('DressGenius', t('paywall.comingSoon'));
-  }, [t]);
-
-  const restorePurchases = useCallback(async () => {
-    Alert.alert('DressGenius', t('paywall.comingSoon'));
-  }, [t]);
+  const downgradeToFree = useCallback(async () => {
+    await api.patch('/user/plan', { plan: 'free' });
+    await SecureStore.setItemAsync(PREMIUM_KEY, 'false');
+    await SecureStore.deleteItemAsync(ACTIVATED_AT_KEY);
+    setIsPremium(false);
+    setActivatedAt(null);
+  }, []);
 
   const value = useMemo<PremiumContextValue>(
     () => ({
       isPremium,
       isLoading,
+      activatedAt,
+      showBetaSheet,
+      setShowBetaSheet,
       checkEntitlement,
-      purchaseMonthly,
-      purchaseYearly,
-      restorePurchases,
+      activateBetaPremium,
+      downgradeToFree,
     }),
-    [isPremium, isLoading, checkEntitlement, purchaseMonthly, purchaseYearly, restorePurchases],
+    [isPremium, isLoading, activatedAt, showBetaSheet, checkEntitlement, activateBetaPremium, downgradeToFree],
   );
 
   return (

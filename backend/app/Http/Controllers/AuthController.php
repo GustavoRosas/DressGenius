@@ -73,7 +73,7 @@ class AuthController extends Controller
         $data['profile_photo_url'] = $user->profile_photo_path ? $disk->url($user->profile_photo_path) : null;
 
         // Usage counter (#49)
-        $isPremium = !empty($user->is_premium); // future-proof
+        $isPremium = ($user->plan ?? 'free') === 'premium';
         $data['usage'] = [
             'analyses_used' => OutfitScan::where('user_id', $user->id)
                 ->where('created_at', '>=', now()->startOfMonth())
@@ -81,7 +81,35 @@ class AuthController extends Controller
             'analyses_limit' => $isPremium ? null : 5,
         ];
 
+        $data['plan'] = $user->plan ?? 'free';
+        $data['premium_activated_at'] = $user->premium_activated_at;
+
         return $data;
+    }
+
+    public function updatePlan(Request $request)
+    {
+        $request->validate([
+            'plan' => ['required', 'string', 'in:free,premium'],
+        ]);
+
+        $user = $request->user();
+        $user->plan = $request->input('plan');
+
+        if ($request->input('plan') === 'premium' && !$user->premium_activated_at) {
+            $user->premium_activated_at = now();
+        }
+
+        if ($request->input('plan') === 'free') {
+            $user->premium_activated_at = null;
+        }
+
+        $user->save();
+
+        return response()->json([
+            'plan' => $user->plan,
+            'premium_activated_at' => $user->premium_activated_at,
+        ]);
     }
 
     public function logout(Request $request)

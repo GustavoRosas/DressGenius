@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { useTheme } from '../context/ThemeContext';
+import { usePremium } from '../context/PremiumContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { typography } from '../theme/typography';
@@ -27,6 +28,7 @@ export function SettingsScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const navigation = useNavigation<Nav>();
+  const { isPremium } = usePremium();
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
@@ -38,6 +40,19 @@ export function SettingsScreen() {
         <Text style={styles.title}>{t('settings.title')}</Text>
 
         <View style={styles.card}>
+          {/* My Plan — top item */}
+          <Pressable
+            style={styles.row}
+            onPress={() => navigation.navigate('MyPlan')}
+          >
+            <Text style={styles.rowIcon}>👑</Text>
+            <Text style={styles.rowLabel}>
+              {isPremium ? t('settings.premiumBeta') : t('settings.upgradePremium')}
+            </Text>
+            {isPremium && <Text style={{ color: '#C9A84C', fontWeight: '700', fontSize: 12, marginRight: 8 }}>Premium</Text>}
+            <Text style={styles.chevron}>›</Text>
+          </Pressable>
+
           <Pressable
             style={styles.row}
             onPress={() => navigation.navigate('NotificationPrefs')}

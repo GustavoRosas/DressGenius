@@ -11,6 +11,7 @@ export type RootStackParamList = {
   MonthlyReport: { year: number; month: number };
   History: undefined;
   Analytics: undefined;
+  MyPlan: undefined;
 };
 
 export type TabParamList = {

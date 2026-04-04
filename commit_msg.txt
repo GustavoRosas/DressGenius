@@ -1,13 +1,16 @@
-feat: premium Home screen redesign with 9 sections
+feat: premium system - beta sheet, locked sections, my plan screen
 
-- Header with avatar (initials + violet gradient) + notification bell
-- Hero card: usage counter with progress bar + gold CTA button
-- Last analysis card from /outfit-scans (score colors, stars, occasion)
-- 4 quick action buttons with scale animation
-- Style DNA mini with colored horizontal bars
-- Monthly stats row (analyses, avg score, streak)
-- Closet peek with horizontal thumbnail scroll from /wardrobe-items
-- Tip of the Day (15 rotating tips EN + PT-BR)
-- Premium banner for free users
-- Pull-to-refresh, loading skeleton, fade-in animations
-- Full dark mode + i18n support
+Backend:
+- Migration: premium_activated_at column on users
+- PATCH /user/plan already existed, migration ensures column
+
+Mobile:
+- BetaPremiumSheet: beta early access activation (no payment)
+- LockedSection: blur overlay + lock icon + CTA for premium content
+- MyPlanScreen: plan management (premium benefits/downgrade, free upgrade)
+- PremiumContext: activateBetaPremium/downgradeToFree via API
+- AnalyzeScreen: Color Analysis, Style Level, Climate locked for free
+- SettingsScreen: "My Plan" item at top with crown icon
+- ProfileScreen: premium badge next to name
+- PaywallScreen: uses activateBetaPremium (was mock)
+- i18n: 50+ new strings EN + PT-BR (premium, myPlan, unlock)

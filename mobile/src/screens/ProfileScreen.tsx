@@ -27,6 +27,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { api } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { usePremium } from '../context/PremiumContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { Button } from '../components/Button';
@@ -70,6 +71,7 @@ export function ProfileScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { user, signOut, signIn, token } = useAuth();
+  const { isPremium } = usePremium();
   const { showToast } = useToast();
   const navigation = useNavigation<Nav>();
 
@@ -307,7 +309,14 @@ export function ProfileScreen() {
               <Text style={styles.cameraIcon}>📷</Text>
             </View>
           </Pressable>
-          <Text style={styles.headerName}>{name || '—'}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Text style={styles.headerName}>{name || '—'}</Text>
+            {isPremium && (
+              <View style={{ backgroundColor: '#C9A84C20', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
+                <Text style={{ color: '#C9A84C', fontSize: 12, fontWeight: '700' }}>👑 Premium</Text>
+              </View>
+            )}
+          </View>
           <Text style={styles.headerEmail}>{email}</Text>
         </View>
 

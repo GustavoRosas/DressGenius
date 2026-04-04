@@ -40,7 +40,7 @@ export function PaywallScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { colors } = useTheme();
-  const { purchaseMonthly, purchaseYearly, restorePurchases } = usePremium();
+  const { activateBetaPremium } = usePremium();
   const isBR = i18n.language.startsWith('pt');
 
   const [selectedPlan, setSelectedPlan] = useState<PlanInterval>('yearly');
@@ -49,11 +49,8 @@ export function PaywallScreen() {
   const handlePurchase = async () => {
     setLoading(true);
     try {
-      if (selectedPlan === 'monthly') {
-        await purchaseMonthly();
-      } else {
-        await purchaseYearly();
-      }
+      await activateBetaPremium();
+      navigation.goBack();
     } finally {
       setLoading(false);
     }
@@ -62,7 +59,8 @@ export function PaywallScreen() {
   const handleRestore = async () => {
     setLoading(true);
     try {
-      await restorePurchases();
+      await activateBetaPremium();
+      navigation.goBack();
     } finally {
       setLoading(false);
     }

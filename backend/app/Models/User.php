@@ -24,6 +24,8 @@ class User extends Authenticatable
         'password',
         'profile_photo_path',
         'ai_preferences',
+        'plan',
+        'premium_activated_at',
     ];
 
     /**
@@ -47,6 +49,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'ai_preferences' => 'array',
+            'premium_activated_at' => 'datetime',
         ];
     }
 }

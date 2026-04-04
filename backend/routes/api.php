@@ -19,6 +19,7 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
+    Route::patch('/user/plan', [AuthController::class, 'updatePlan']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/ai-preferences', [AIPreferencesController::class, 'show']);
