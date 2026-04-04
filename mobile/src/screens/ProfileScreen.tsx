@@ -44,10 +44,14 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 interface OutfitChat {
   id: number;
-  status: string;
+  status?: string;
   created_at: string;
   preview_image_url?: string | null;
+  image_url?: string | null;
   overall_score?: number | null;
+  score?: number | null;
+  score_label?: string | null;
+  occasion?: string | null;
 }
 
 function formatRelative(dateStr: string): string {
@@ -388,11 +392,11 @@ export function ProfileScreen() {
                 <Pressable
                   key={chat.id}
                   style={styles.historyRow}
-                  onPress={() => navigation.navigate('Chat', { chatId: chat.id })}
+                  onPress={() => navigation.navigate('ScanDetail' as any, { scanId: chat.id })}
                 >
-                  {chat.preview_image_url ? (
+                  {(chat.image_url || chat.preview_image_url) ? (
                     <Image
-                      source={{ uri: chat.preview_image_url }}
+                      source={{ uri: (chat.image_url || chat.preview_image_url) ?? undefined }}
                       style={styles.historyThumb}
                       resizeMode="cover"
                     />
@@ -402,10 +406,10 @@ export function ProfileScreen() {
                     </View>
                   )}
                   <View style={styles.historyInfo}>
-                    {chat.overall_score != null && (
+                    {(chat.score ?? chat.overall_score) != null && (
                       <View style={styles.historyBadge}>
                         <Text style={styles.historyBadgeText}>
-                          {chat.overall_score}/10
+                          {chat.score ?? chat.overall_score}/10
                         </Text>
                       </View>
                     )}

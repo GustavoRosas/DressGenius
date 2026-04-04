@@ -1,8 +1,7 @@
-fix: chat system prompt hidden, keyboard overlap, history showing scans
+fix: history navigation, intake context prefix, profile scan fields
 
-- Chat fromScan: system context message now role=system (was user), hidden from UI
-- Chat fromScan: added language hint (PT-BR) to system prompt
-- ChatScreen: filters out system/hidden messages from display
-- ChatScreen: keyboard behavior=height on Android (fixes overlap)
-- ProfileScreen: fetches /outfit-scans instead of /outfit-chats for history
-- ProfileScreen: handles wrapped response format { data: [...] }
+- ProfileScreen: history cards navigate to ScanDetail (was Chat)
+- ProfileScreen: uses image_url + score fields from scan response
+- AnalyzeScreen: occasion/comfort/context sent as intake[...] prefix
+  (was top-level, backend expects intake[] nesting)
+- This fixes occasion not being considered in AI analysis

@@ -263,13 +263,13 @@ export function AnalyzeScreen() {
           type: 'image/jpeg',
         } as any);
 
-        // #52 — Append intake data
+        // #52 — Append intake data (all under intake[] prefix for backend)
         if (intake.occasion) {
-          formData.append('occasion', intake.occasion);
+          formData.append('intake[occasion]', intake.occasion);
         }
-        formData.append('comfort_level', intake.comfort_level);
+        formData.append('intake[comfort_level]', intake.comfort_level);
         if (intake.extra_context) {
-          formData.append('extra_context', intake.extra_context);
+          formData.append('intake[extra_context]', intake.extra_context);
         }
 
         // #53 — Append weather data
