@@ -467,7 +467,6 @@ export function AnalyzeScreen() {
     if (p === 'high') return { emoji: '🔴', label: t('analyze.result.priority.high') };
     if (p === 'medium' || p === 'demium' || p === 'med') return { emoji: '🟡', label: t('analyze.result.priority.medium') };
     return { emoji: '⚪', label: t('analyze.result.priority.low') };
-  }
   };
 
   // — Render breakdown bar —
@@ -491,27 +490,21 @@ export function AnalyzeScreen() {
     );
   };
 
-  // — Strength expansion state —
-  const [expandedStrength, setExpandedStrength] = useState<number | null>(null);
-
-  // — Render strength card (tap to expand) —
-  const renderStrengthCard = ({ item, index }: { item: Strength; index: number }) => {
-    const isExpanded = expandedStrength === index;
-    return (
-      <Pressable
-        onPress={() => setExpandedStrength(isExpanded ? null : index)}
-        style={[styles.strengthCard, { backgroundColor: colors.card }]}
-      >
-        <Text style={[styles.strengthIcon]}>✅</Text>
-        <Text style={[styles.strengthTitle, { color: colors.text }]} numberOfLines={isExpanded ? undefined : 1}>
-          {item.title}
-        </Text>
-        <Text style={[styles.strengthDesc, { color: colors.textSecondary }]} numberOfLines={isExpanded ? undefined : 2}>
-          {item.description}
-        </Text>
-      </Pressable>
-    );
-  };
+  // — Render strength card (tap to show full text via Alert) —
+  const renderStrengthCard = ({ item }: { item: Strength }) => (
+    <Pressable
+      onPress={() => Alert.alert(item.title, item.description)}
+      style={[styles.strengthCard, { backgroundColor: colors.card }]}
+    >
+      <Text style={[styles.strengthIcon]}>✅</Text>
+      <Text style={[styles.strengthTitle, { color: colors.text }]} numberOfLines={1}>
+        {item.title}
+      </Text>
+      <Text style={[styles.strengthDesc, { color: colors.textSecondary }]} numberOfLines={2}>
+        {item.description}
+      </Text>
+    </Pressable>
+  );
 
   // — #56 — Enriched result with 7 sections —
   const renderResult = () => {
