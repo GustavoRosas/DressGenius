@@ -1,7 +1,1 @@
-fix: score-based color system for all evaluations
-
-- Score dots now reflect score value (green 8+, lime 6+, yellow 4+, orange 2+, red)
-- Occasion verdict dot uses fit_score instead of text matching
-- Breakdown bars use getScoreColor gradient
-- Climate score shows colored dot + score-based color
-- Works correctly with PT-BR responses (no more text-based matching)
+fix: priority label i18n key path was missing improvements segment

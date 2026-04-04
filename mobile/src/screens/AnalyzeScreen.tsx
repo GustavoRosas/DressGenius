@@ -472,9 +472,9 @@ export function AnalyzeScreen() {
   // — Helper: priority badge —
   const getPriorityBadge = (priority: string) => {
     const p = (priority || '').toLowerCase().trim();
-    if (p === 'high') return { emoji: '🔴', label: t('analyze.result.priority.high') };
-    if (p === 'medium' || p === 'demium' || p === 'med') return { emoji: '🟡', label: t('analyze.result.priority.medium') };
-    return { emoji: '⚪', label: t('analyze.result.priority.low') };
+    if (p === 'high') return { emoji: '🔴', label: t('analyze.result.improvements.priority.high') };
+    if (p === 'medium' || p === 'demium' || p === 'med') return { emoji: '🟡', label: t('analyze.result.improvements.priority.medium') };
+    return { emoji: '⚪', label: t('analyze.result.improvements.priority.low') };
   };
 
   // — Render breakdown bar —
