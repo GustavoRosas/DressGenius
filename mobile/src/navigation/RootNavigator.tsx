@@ -13,6 +13,7 @@ import {
   AIPreferencesScreen,
   NotificationPrefsScreen,
   MonthlyReportScreen,
+  ScanDetailScreen,
   HistoryScreen,
   AnalyticsScreen,
 } from '../screens';
@@ -129,6 +130,21 @@ export function RootNavigator() {
           <Stack.Screen
             name="MonthlyReport"
             component={MonthlyReportScreen}
+            options={({ navigation }) => ({
+              animation: 'slide_from_right',
+              headerShown: true,
+              headerShadowVisible: false,
+              headerStyle: { backgroundColor: colors.background },
+              headerTintColor: colors.text,
+              headerTitle: '',
+              headerLeft: () => (
+                <BackButton onPress={() => navigation.goBack()} tintColor={colors.text} />
+              ),
+            })}
+          />
+          <Stack.Screen
+            name="ScanDetail"
+            component={ScanDetailScreen}
             options={({ navigation }) => ({
               animation: 'slide_from_right',
               headerShown: true,

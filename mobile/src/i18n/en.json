@@ -80,16 +80,18 @@
     },
     "history": {
       "title": "History",
-      "empty": "No outfit chats yet",
-      "emptySubtitle": "Analyze your first outfit to start a conversation!",
-      "statusActive": "Active",
-      "statusFinished": "Finished",
+      "empty": "No analyses yet",
+      "emptySubtitle": "Analyze your first outfit to see it here!",
       "loadError": "Failed to load history",
       "justNow": "Just now",
       "minutesAgo": "{{count}}m ago",
       "hoursAgo": "{{count}}h ago",
       "yesterday": "Yesterday",
-      "daysAgo": "{{count}}d ago"
+      "daysAgo": "{{count}}d ago",
+      "scanCard": {
+        "score": "Score",
+        "noOccasion": "No occasion"
+      }
     },
     "closet": {
       "title": "My Closet",
@@ -251,7 +253,19 @@
       "errorFinish": "Failed to finish chat",
       "errorFeedback": "Failed to submit feedback",
       "today": "Today",
-      "yesterday": "Yesterday"
+      "yesterday": "Yesterday",
+      "fromScan": "Chat from analysis",
+      "quickReplies": {
+        "changeShoes": "What if I change the shoes?",
+        "worksAtNight": "Does this work at night?",
+        "alternatives": "Give me alternatives"
+      }
+    },
+    "scanDetail": {
+      "title": "Analysis Detail",
+      "chatAbout": "💬 Chat about this look",
+      "addToCloset": "👕 Add items to closet",
+      "loadError": "Failed to load analysis"
     }
   },
   "onboarding": {
@@ -488,6 +502,15 @@
       "title": "Style DNA",
       "viewFull": "View Full →"
     }
+  },
+  "detectedItems": {
+    "title": "Detected Items 👗",
+    "addItem": "Add",
+    "addAll": "Add All ({{count}})",
+    "alreadyInCloset": "In Closet",
+    "added": "Added!",
+    "addError": "Failed to add items",
+    "addSuccess": "Items added to closet!"
   },
   "profile": {
     "outfitHistory": "Outfit History",

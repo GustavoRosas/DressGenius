@@ -10,6 +10,7 @@ use App\Models\OutfitChatAttachment;
 use App\Models\OutfitChatMessage;
 use App\Models\OutfitChatSession;
 use App\Models\OutfitDetectedItem;
+use App\Models\OutfitScan;
 use App\Services\GeminiChatService;
 use App\Services\GeminiVisionService;
 use App\Services\OutfitAnalysisService;
@@ -228,6 +229,107 @@ class OutfitChatController extends Controller
             'session' => $this->serializeSession($session, $disk),
             'detected_items' => $detectedItems,
             'process_id' => $process->id,
+        ], 201);
+    }
+
+    /**
+     * POST /outfit-chats/from-scan — create a chat session from an existing scan.
+     */
+    public function fromScan(Request $request, GeminiChatService $chat)
+    {
+        $user = $request->user();
+        $scanId = (int) $request->input('scan_id');
+
+        $scan = OutfitScan::query()
+            ->where('id', $scanId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$scan) {
+            return response()->json(['message' => 'Scan not found.'], 404);
+        }
+
+        $process = OutfitAnalysisProcess::query()
+            ->where('scan_id', $scan->id)
+            ->first();
+
+        $intake = $process?->intake ?? [];
+        $visionResult = is_array($scan->vision) ? $scan->vision : [];
+        $analysisResult = is_array($scan->analysis) ? $scan->analysis : [];
+        $aiPreferences = (array) ($user->ai_preferences ?? []);
+
+        $session = OutfitChatSession::create([
+            'user_id' => $user->id,
+            'title' => data_get($intake, 'occasion', 'Scan #' . $scan->id),
+            'image_path' => $scan->image_path,
+            'intake' => $intake,
+            'vision' => $visionResult,
+            'analysis' => $analysisResult,
+            'score' => $scan->score,
+            'turns_used' => 1,
+            'status' => 'active',
+        ]);
+
+        // Build context-rich system prompt for the AI
+        $score = data_get($analysisResult, 'score', $scan->score);
+        $strengths = collect(data_get($analysisResult, 'strengths', []))
+            ->pluck('title')
+            ->implode(', ');
+        $improvements = collect(data_get($analysisResult, 'improvements', []))
+            ->pluck('suggestion')
+            ->implode(', ');
+
+        $contextMessage = "The user just analyzed an outfit. Score: {$score}/10.";
+        if ($strengths) {
+            $contextMessage .= " Strengths: {$strengths}.";
+        }
+        if ($improvements) {
+            $contextMessage .= " Improvements: {$improvements}.";
+        }
+        $contextMessage .= ' Help them refine their look based on this analysis. Start by briefly summarizing the analysis and asking what they would like to adjust.';
+
+        $userMsg = OutfitChatMessage::create([
+            'session_id' => $session->id,
+            'role' => 'user',
+            'content' => $contextMessage,
+            'meta' => ['hidden' => true, 'type' => 'system_context'],
+        ]);
+
+        try {
+            $assistantText = $chat->reply([
+                'intake' => $intake,
+                'ai_preferences' => $aiPreferences,
+                'vision' => $visionResult,
+                'analysis' => $analysisResult,
+                'recent_messages' => [
+                    ['role' => 'user', 'content' => $contextMessage],
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            // Fallback: build a structured summary
+            $assistantText = "Your outfit scored {$score}/10.";
+            if ($strengths) {
+                $assistantText .= "\n\n✅ Strengths: {$strengths}";
+            }
+            if ($improvements) {
+                $assistantText .= "\n\n💡 Improvements: {$improvements}";
+            }
+            $assistantText .= "\n\nWhat would you like to adjust?";
+        }
+
+        OutfitChatMessage::create([
+            'session_id' => $session->id,
+            'role' => 'assistant',
+            'content' => $assistantText,
+        ]);
+
+        $session->load(['messages' => fn ($q) => $q->orderBy('id'), 'attachments']);
+
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+
+        return response()->json([
+            'session' => $this->serializeSession($session, $disk),
         ], 201);
     }
 

@@ -52,6 +52,11 @@ interface ChatDetail {
 type ChatRouteProp = RouteProp<RootStackParamList, 'Chat'>;
 type ChatNavProp = NativeStackNavigationProp<RootStackParamList, 'Chat'>;
 
+interface QuickReply {
+  key: string;
+  label: string;
+}
+
 // ─── Typing Indicator ─────────────────────────────────────────────────────────
 
 function TypingIndicator({ label, colors }: { label: string; colors: ColorScheme }) {
@@ -146,7 +151,7 @@ export function ChatScreen() {
   const { showToast } = useToast();
   const route = useRoute<ChatRouteProp>();
   const navigation = useNavigation<ChatNavProp>();
-  const { chatId } = route.params;
+  const { chatId, fromScan } = route.params;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -154,6 +159,16 @@ export function ChatScreen() {
   const [aiTyping, setAiTyping] = useState(false);
   const [inputText, setInputText] = useState('');
   const [chatFinished, setChatFinished] = useState(false);
+  const [quickRepliesUsed, setQuickRepliesUsed] = useState(false);
+
+  const quickReplies: QuickReply[] = useMemo(() => {
+    if (!fromScan) return [];
+    return [
+      { key: 'changeShoes', label: t('screens.chat.quickReplies.changeShoes') },
+      { key: 'worksAtNight', label: t('screens.chat.quickReplies.worksAtNight') },
+      { key: 'alternatives', label: t('screens.chat.quickReplies.alternatives') },
+    ];
+  }, [fromScan, t]);
 
   // Feedback modal
   const [feedbackVisible, setFeedbackVisible] = useState(false);
@@ -184,14 +199,22 @@ export function ChatScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chatFinished, t, colors]);
 
+  // ─── Quick reply handler ─────────────────────────────────────────────
+
+  const handleQuickReply = useCallback((text: string) => {
+    setInputText(text);
+    setQuickRepliesUsed(true);
+  }, []);
+
   // ─── Fetch messages ───────────────────────────────────────────────────
 
   const fetchMessages = useCallback(async () => {
     try {
       setLoading(true);
-      const { data } = await api.get<ChatDetail>(`/outfit-chats/${chatId}`);
-      setMessages(data.messages ?? []);
-      if (data.status === 'finished') {
+      const { data } = await api.get<{ session: ChatDetail } | ChatDetail>(`/outfit-chats/${chatId}`);
+      const session = (data as any).session ?? data;
+      setMessages(session.messages ?? []);
+      if (session.status === 'closed' || session.status === 'finished') {
         setChatFinished(true);
       }
     } catch {
@@ -224,21 +247,18 @@ export function ChatScreen() {
     setInputText('');
     setSending(true);
     setAiTyping(true);
+    setQuickRepliesUsed(true);
 
     try {
-      const { data } = await api.post<{ user_message: ChatMessage; ai_message: ChatMessage }>(
+      const { data } = await api.post<{ messages: ChatMessage[]; turns_used: number; turns_max: number }>(
         `/outfit-chats/${chatId}/messages`,
         { content },
       );
 
       setMessages((prev) => {
-        // Replace temp user msg + append AI response
+        // Replace temp user msg + append server response messages
         const withoutTemp = prev.filter((m) => m.id !== tempId);
-        const updated = [...withoutTemp, data.user_message];
-        if (data.ai_message) {
-          updated.push(data.ai_message);
-        }
-        return updated;
+        return [...withoutTemp, ...(data.messages ?? [])];
       });
     } catch {
       // Remove optimistic msg on error
@@ -366,6 +386,21 @@ export function ChatScreen() {
           showsVerticalScrollIndicator={false}
           ListHeaderComponent={aiTyping ? <TypingIndicator label={t('screens.chat.aiTyping')} colors={colors} /> : null}
         />
+
+        {/* Quick reply chips (from scan context) */}
+        {!chatFinished && !quickRepliesUsed && quickReplies.length > 0 && messages.length <= 3 && (
+          <View style={styles.quickRepliesContainer}>
+            {quickReplies.map((qr) => (
+              <Pressable
+                key={qr.key}
+                style={styles.quickReplyChip}
+                onPress={() => handleQuickReply(qr.label)}
+              >
+                <Text style={styles.quickReplyText}>{qr.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+        )}
 
         {/* Input bar */}
         {!chatFinished && (
@@ -601,6 +636,31 @@ const createStyles = (colors: ColorScheme) =>
     // ─ Header ─
     headerAction: {
       ...typography.subtitle2,
+    },
+
+    // ─ Quick replies ─
+    quickRepliesContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+      borderTopWidth: 1,
+      borderTopColor: colors.divider,
+      backgroundColor: colors.surface,
+    },
+    quickReplyChip: {
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.sm,
+      borderRadius: borderRadius.full,
+      borderWidth: 1.5,
+      borderColor: colors.primary,
+      backgroundColor: colors.primaryLight,
+    },
+    quickReplyText: {
+      ...typography.caption,
+      color: colors.primary,
+      fontWeight: '600',
     },
 
     // ─ Feedback modal ─

@@ -80,16 +80,18 @@
     },
     "history": {
       "title": "Histórico",
-      "empty": "Nenhum chat de outfit ainda",
-      "emptySubtitle": "Analise seu primeiro outfit para iniciar uma conversa!",
-      "statusActive": "Ativo",
-      "statusFinished": "Finalizado",
+      "empty": "Nenhuma análise ainda",
+      "emptySubtitle": "Analise seu primeiro outfit para vê-lo aqui!",
       "loadError": "Falha ao carregar histórico",
       "justNow": "Agora",
       "minutesAgo": "{{count}}min atrás",
       "hoursAgo": "{{count}}h atrás",
       "yesterday": "Ontem",
-      "daysAgo": "{{count}}d atrás"
+      "daysAgo": "{{count}}d atrás",
+      "scanCard": {
+        "score": "Nota",
+        "noOccasion": "Sem ocasião"
+      }
     },
     "closet": {
       "title": "Meu Closet",
@@ -251,7 +253,19 @@
       "errorFinish": "Falha ao finalizar chat",
       "errorFeedback": "Falha ao enviar feedback",
       "today": "Hoje",
-      "yesterday": "Ontem"
+      "yesterday": "Ontem",
+      "fromScan": "Chat a partir da análise",
+      "quickReplies": {
+        "changeShoes": "E se eu trocar o sapato?",
+        "worksAtNight": "Isso funciona à noite?",
+        "alternatives": "Me dê alternativas"
+      }
+    },
+    "scanDetail": {
+      "title": "Detalhe da Análise",
+      "chatAbout": "💬 Chat sobre este look",
+      "addToCloset": "👕 Adicionar peças ao closet",
+      "loadError": "Falha ao carregar análise"
     }
   },
   "onboarding": {
@@ -488,6 +502,15 @@
       "title": "Style DNA",
       "viewFull": "Ver Completo →"
     }
+  },
+  "detectedItems": {
+    "title": "Itens Detectados 👗",
+    "addItem": "Adicionar",
+    "addAll": "Adicionar Todas ({{count}})",
+    "alreadyInCloset": "No Closet",
+    "added": "Adicionado!",
+    "addError": "Falha ao adicionar itens",
+    "addSuccess": "Itens adicionados ao closet!"
   },
   "profile": {
     "outfitHistory": "Histórico de Outfits",

@@ -31,10 +31,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/outfit-chats', [OutfitChatController::class, 'index']);
     Route::get('/outfit-chats/{session}', [OutfitChatController::class, 'show']);
     Route::post('/outfit-chats/analyze', [OutfitChatController::class, 'analyze']);
+    Route::post('/outfit-chats/from-scan', [OutfitChatController::class, 'fromScan']);
     Route::post('/outfit-chats/{session}/messages', [OutfitChatController::class, 'storeMessage']);
     Route::post('/outfit-chats/{session}/finish', [OutfitChatController::class, 'finish']);
     Route::post('/outfit-chats/{session}/feedback', [OutfitChatController::class, 'storeFeedback']);
 
+    Route::get('/outfit-scans', [OutfitScanController::class, 'index']);
+    Route::get('/outfit-scans/{outfitScan}', [OutfitScanController::class, 'show']);
     Route::post('/outfit-scans', [OutfitScanController::class, 'store']);
 
     Route::post('/occasion-styling', [OccasionStylingController::class, 'suggest']);
@@ -43,6 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/wardrobe-items', [WardrobeItemController::class, 'index']);
     Route::post('/wardrobe-items', [WardrobeItemController::class, 'store']);
+    Route::post('/wardrobe-items/from-scan', [WardrobeItemController::class, 'fromScan']);
     Route::patch('/wardrobe-items/{wardrobeItem}', [WardrobeItemController::class, 'update']);
     Route::patch('/wardrobe-items/{wardrobeItem}/worn', [WardrobeItemController::class, 'markWorn']);
     Route::delete('/wardrobe-items/{wardrobeItem}', [WardrobeItemController::class, 'destroy']);

@@ -129,6 +129,76 @@ class WardrobeItemController extends Controller
         ], $item->wasRecentlyCreated ? 201 : 200);
     }
 
+    /**
+     * POST /wardrobe-items/from-scan — bulk add detected items to closet.
+     */
+    public function fromScan(Request $request)
+    {
+        $userId = $request->user()->id;
+
+        $ids = (array) $request->input('detected_item_ids', []);
+        if (count($ids) === 0) {
+            return response()->json(['message' => 'detected_item_ids is required.'], 422);
+        }
+
+        $detectedItems = OutfitDetectedItem::query()
+            ->where('user_id', $userId)
+            ->whereIn('id', $ids)
+            ->get();
+
+        if ($detectedItems->isEmpty()) {
+            return response()->json(['message' => 'No valid detected items found.'], 404);
+        }
+
+        $created = [];
+        foreach ($detectedItems as $detected) {
+            $label = trim((string) $detected->label);
+            if ($label === '') continue;
+
+            $category = $detected->category ? (string) $detected->category : null;
+            $colors = is_array($detected->colors) ? $detected->colors : null;
+            $coverImagePath = (string) data_get($detected->meta, 'cover_image_path', '');
+            if ($coverImagePath === '') {
+                $coverImagePath = null;
+            }
+
+            $canonicalKey = $this->canonicalKey($label, $category);
+
+            $item = WardrobeItem::firstOrCreate(
+                [
+                    'user_id' => $userId,
+                    'canonical_key' => $canonicalKey,
+                ],
+                [
+                    'label' => $label,
+                    'category' => $category,
+                    'colors' => $colors,
+                    'cover_image_path' => $coverImagePath,
+                ]
+            );
+
+            // Background removal for new items
+            if ($item->wasRecentlyCreated && $item->cover_image_path) {
+                try {
+                    $bgService = app(BackgroundRemovalService::class);
+                    $processed = $bgService->removeBackground($item->cover_image_path);
+                    $item->processed_image_path = $processed;
+                    $item->save();
+                } catch (\Throwable $ignored) {}
+            }
+
+            $created[] = [
+                'id' => $item->id,
+                'label' => $item->label,
+                'category' => $item->category,
+                'colors' => $item->colors,
+                'was_created' => $item->wasRecentlyCreated,
+            ];
+        }
+
+        return response()->json(['items' => $created], 201);
+    }
+
     public function update(Request $request, WardrobeItem $wardrobeItem)
     {
         $userId = $request->user()->id;

@@ -1,9 +1,9 @@
 /**
- * DressGenius — History Screen
+ * DressGenius — History Screen (Scan History)
  *
- * Lists previous outfit chat sessions with pull-to-refresh,
+ * Lists previous outfit scans (not chats) with pull-to-refresh,
  * loading/error/empty states, and relative time formatting.
- * Tap navigates to Chat screen with chatId.
+ * Tap navigates to ScanDetail screen.
  */
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -25,31 +25,26 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { api } from '../api/client';
 import { Button } from '../components/Button';
 import { useTheme } from '../context/ThemeContext';
-import { palette, type ColorScheme } from '../theme/colors';
+import type { ColorScheme } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
 import type { RootStackParamList } from '../navigation/types';
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-type ChatStatus = 'active' | 'finished';
-
-interface OutfitChat {
+interface ScanListItem {
   id: number;
-  status: ChatStatus;
+  image_url: string;
+  score: number | null;
+  score_label: string | null;
+  occasion: string | null;
   created_at: string;
-  preview_image_url?: string | null;
-  last_message?: string | null;
 }
 
 type NavProp = NativeStackNavigationProp<RootStackParamList>;
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatRelativeTime(
   dateStr: string,
@@ -69,37 +64,40 @@ function formatRelativeTime(
   return t('screens.history.daysAgo', { count: diffDays });
 }
 
-// ---------------------------------------------------------------------------
-// Sub-components
-// ---------------------------------------------------------------------------
+function getScoreColor(score: number | null): string {
+  if (score == null) return '#9CA3AF';
+  if (score >= 8) return '#22C55E';
+  if (score >= 6) return '#84CC16';
+  if (score >= 4) return '#EAB308';
+  if (score >= 2) return '#F97316';
+  return '#EF4444';
+}
 
-const THUMBNAIL_SIZE = 60;
+// ─── Card Component ───────────────────────────────────────────────────────────
 
-interface ChatCardProps {
-  item: OutfitChat;
+const THUMBNAIL_SIZE = 80;
+
+interface ScanCardProps {
+  item: ScanListItem;
   onPress: (id: number) => void;
   t: (key: string, opts?: Record<string, unknown>) => string;
   colors: ColorScheme;
 }
 
-const ChatCard = React.memo(({ item, onPress, t, colors }: ChatCardProps) => {
-  const isActive = item.status === 'active';
+const ScanCard = React.memo(({ item, onPress, t, colors }: ScanCardProps) => {
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const scoreColor = getScoreColor(item.score);
 
   return (
     <Pressable
       onPress={() => onPress(item.id)}
       style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
       accessibilityRole="button"
-      accessibilityLabel={`Outfit chat ${item.id}`}
+      accessibilityLabel={`Outfit scan ${item.id}`}
     >
       {/* Thumbnail */}
-      {item.preview_image_url ? (
-        <Image
-          source={{ uri: item.preview_image_url }}
-          style={styles.thumbnail}
-          resizeMode="cover"
-        />
+      {item.image_url ? (
+        <Image source={{ uri: item.image_url }} style={styles.thumbnail} resizeMode="cover" />
       ) : (
         <View style={[styles.thumbnail, styles.thumbnailPlaceholder]}>
           <Text style={styles.thumbnailIcon}>👗</Text>
@@ -109,33 +107,38 @@ const ChatCard = React.memo(({ item, onPress, t, colors }: ChatCardProps) => {
       {/* Info */}
       <View style={styles.cardInfo}>
         <View style={styles.cardTopRow}>
-          <View
-            style={[
-              styles.badge,
-              isActive ? styles.badgeActive : styles.badgeFinished,
-            ]}
-          >
-            <Text
-              style={[
-                styles.badgeText,
-                isActive ? styles.badgeTextActive : styles.badgeTextFinished,
-              ]}
-            >
-              {isActive
-                ? t('screens.history.statusActive')
-                : t('screens.history.statusFinished')}
+          {/* Score badge */}
+          {item.score != null ? (
+            <View style={[styles.scoreBadge, { backgroundColor: scoreColor + '20' }]}>
+              <Text style={[styles.scoreBadgeText, { color: scoreColor }]}>
+                {item.score.toFixed ? item.score.toFixed(1) : item.score}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.scoreBadge}>
+              <Text style={styles.scoreBadgeText}>—</Text>
+            </View>
+          )}
+
+          {/* Score label */}
+          {item.score_label && (
+            <Text style={[styles.scoreLabel, { color: scoreColor }]} numberOfLines={1}>
+              {item.score_label}
             </Text>
-          </View>
-          <Text style={styles.time}>
-            {formatRelativeTime(item.created_at, t)}
-          </Text>
+          )}
         </View>
 
-        {item.last_message ? (
-          <Text style={styles.lastMessage} numberOfLines={2}>
-            {item.last_message}
-          </Text>
-        ) : null}
+        {/* Occasion chip */}
+        <View style={styles.metaRow}>
+          <View style={[styles.occasionChip, { backgroundColor: colors.primaryLight }]}>
+            <Text style={[styles.occasionText, { color: colors.primary }]} numberOfLines={1}>
+              {item.occasion || t('screens.history.scanCard.noOccasion')}
+            </Text>
+          </View>
+        </View>
+
+        {/* Time */}
+        <Text style={styles.time}>{formatRelativeTime(item.created_at, t)}</Text>
       </View>
 
       {/* Chevron */}
@@ -144,23 +147,21 @@ const ChatCard = React.memo(({ item, onPress, t, colors }: ChatCardProps) => {
   );
 });
 
-// ---------------------------------------------------------------------------
-// Main Component
-// ---------------------------------------------------------------------------
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export function HistoryScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const navigation = useNavigation<NavProp>();
 
-  const [chats, setChats] = useState<OutfitChat[]>([]);
+  const [scans, setScans] = useState<ScanListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(false);
 
   const styles = useMemo(() => createStyles(colors), [colors]);
 
-  const fetchChats = useCallback(async (isRefresh = false) => {
+  const fetchScans = useCallback(async (isRefresh = false) => {
     try {
       if (isRefresh) {
         setRefreshing(true);
@@ -169,14 +170,8 @@ export function HistoryScreen() {
       }
       setError(false);
 
-      const { data } = await api.get<OutfitChat[]>('/outfit-chats');
-
-      // Sort by created_at descending (most recent first)
-      const sorted = [...data].sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-      );
-      setChats(sorted);
+      const { data } = await api.get<{ data: ScanListItem[] }>('/outfit-scans');
+      setScans(data.data ?? []);
     } catch {
       setError(true);
     } finally {
@@ -186,31 +181,26 @@ export function HistoryScreen() {
   }, []);
 
   useEffect(() => {
-    fetchChats();
-  }, [fetchChats]);
+    fetchScans();
+  }, [fetchScans]);
 
   const handlePress = useCallback(
-    (chatId: number) => {
-      navigation.navigate('Chat', { chatId });
+    (scanId: number) => {
+      navigation.navigate('ScanDetail', { scanId });
     },
     [navigation],
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: OutfitChat }) => (
-      <ChatCard item={item} onPress={handlePress} t={t} colors={colors} />
+    ({ item }: { item: ScanListItem }) => (
+      <ScanCard item={item} onPress={handlePress} t={t} colors={colors} />
     ),
     [handlePress, t, colors],
   );
 
-  const keyExtractor = useCallback(
-    (item: OutfitChat) => String(item.id),
-    [],
-  );
+  const keyExtractor = useCallback((item: ScanListItem) => String(item.id), []);
 
-  // ---- Render states ----
-
-  // Loading (first load)
+  // Loading
   if (loading && !refreshing) {
     return (
       <SafeAreaView style={styles.container}>
@@ -224,21 +214,14 @@ export function HistoryScreen() {
   }
 
   // Error
-  if (error && chats.length === 0) {
+  if (error && scans.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.headerTitle}>{t('screens.history.title')}</Text>
         <View style={styles.centered}>
           <Text style={styles.errorIcon}>⚠️</Text>
-          <Text style={styles.errorText}>
-            {t('screens.history.loadError')}
-          </Text>
-          <Button
-            title={t('common.retry')}
-            variant="outline"
-            onPress={() => fetchChats()}
-            style={styles.retryButton}
-          />
+          <Text style={styles.errorText}>{t('screens.history.loadError')}</Text>
+          <Button title={t('common.retry')} variant="outline" onPress={() => fetchScans()} style={styles.retryButton} />
         </View>
       </SafeAreaView>
     );
@@ -249,29 +232,23 @@ export function HistoryScreen() {
       <Text style={styles.headerTitle}>{t('screens.history.title')}</Text>
 
       <FlatList
-        data={chats}
+        data={scans}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
-        contentContainerStyle={
-          chats.length === 0 ? styles.emptyContainer : styles.listContent
-        }
+        contentContainerStyle={scans.length === 0 ? styles.emptyContainer : styles.listContent}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => fetchChats(true)}
+            onRefresh={() => fetchScans(true)}
             tintColor={colors.primary}
             colors={[colors.primary]}
           />
         }
         ListEmptyComponent={
           <View style={styles.centered}>
-            <Text style={styles.emptyIcon}>💬</Text>
-            <Text style={styles.emptyTitle}>
-              {t('screens.history.empty')}
-            </Text>
-            <Text style={styles.emptySubtitle}>
-              {t('screens.history.emptySubtitle')}
-            </Text>
+            <Text style={styles.emptyIcon}>📊</Text>
+            <Text style={styles.emptyTitle}>{t('screens.history.empty')}</Text>
+            <Text style={styles.emptySubtitle}>{t('screens.history.emptySubtitle')}</Text>
           </View>
         }
         showsVerticalScrollIndicator={false}
@@ -280,75 +257,25 @@ export function HistoryScreen() {
   );
 }
 
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const createStyles = (colors: ColorScheme) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    headerTitle: {
-      ...typography.h2,
-      color: colors.text,
-      paddingHorizontal: spacing.lg,
-      paddingTop: spacing.lg,
-      paddingBottom: spacing.md,
-    },
-    centered: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingHorizontal: spacing.xl,
-    },
-    listContent: {
-      paddingHorizontal: spacing.lg,
-      paddingBottom: spacing.xxxl,
-    },
-    emptyContainer: {
-      flexGrow: 1,
-    },
+    container: { flex: 1, backgroundColor: colors.background },
+    headerTitle: { ...typography.h2, color: colors.text, paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: spacing.md },
+    centered: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: spacing.xl },
+    listContent: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xxxl },
+    emptyContainer: { flexGrow: 1 },
 
-    // Loading
-    loadingText: {
-      ...typography.body2,
-      color: colors.textSecondary,
-      marginTop: spacing.md,
-    },
+    loadingText: { ...typography.body2, color: colors.textSecondary, marginTop: spacing.md },
 
-    // Error
-    errorIcon: {
-      fontSize: 48,
-      marginBottom: spacing.lg,
-    },
-    errorText: {
-      ...typography.body1,
-      color: colors.textSecondary,
-      textAlign: 'center',
-      marginBottom: spacing.xl,
-    },
-    retryButton: {
-      minWidth: 140,
-    },
+    errorIcon: { fontSize: 48, marginBottom: spacing.lg },
+    errorText: { ...typography.body1, color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xl },
+    retryButton: { minWidth: 140 },
 
-    // Empty
-    emptyIcon: {
-      fontSize: 64,
-      marginBottom: spacing.xl,
-    },
-    emptyTitle: {
-      ...typography.h3,
-      color: colors.text,
-      textAlign: 'center',
-      marginBottom: spacing.sm,
-    },
-    emptySubtitle: {
-      ...typography.body1,
-      color: colors.textSecondary,
-      textAlign: 'center',
-    },
+    emptyIcon: { fontSize: 64, marginBottom: spacing.xl },
+    emptyTitle: { ...typography.h3, color: colors.text, textAlign: 'center', marginBottom: spacing.sm },
+    emptySubtitle: { ...typography.body1, color: colors.textSecondary, textAlign: 'center' },
 
     // Card
     card: {
@@ -360,75 +287,40 @@ const createStyles = (colors: ColorScheme) =>
       marginBottom: spacing.md,
       ...shadows.sm,
     },
-    cardPressed: {
-      opacity: 0.85,
-    },
+    cardPressed: { opacity: 0.85 },
     thumbnail: {
       width: THUMBNAIL_SIZE,
       height: THUMBNAIL_SIZE,
       borderRadius: borderRadius.md,
       backgroundColor: colors.background,
     },
-    thumbnailPlaceholder: {
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: colors.primaryLight,
-    },
-    thumbnailIcon: {
-      fontSize: 28,
-    },
-    cardInfo: {
-      flex: 1,
-      marginLeft: spacing.md,
-      marginRight: spacing.sm,
-    },
-    cardTopRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      marginBottom: spacing.xs,
-    },
+    thumbnailPlaceholder: { justifyContent: 'center', alignItems: 'center', backgroundColor: colors.primaryLight },
+    thumbnailIcon: { fontSize: 32 },
+    cardInfo: { flex: 1, marginLeft: spacing.md, marginRight: spacing.sm },
+    cardTopRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs },
 
-    // Badge
-    badge: {
+    // Score badge
+    scoreBadge: {
       paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xxs,
-      borderRadius: borderRadius.xs,
+      borderRadius: borderRadius.sm,
+      backgroundColor: colors.surface,
     },
-    badgeActive: {
-      backgroundColor: colors.primaryLight,
+    scoreBadgeText: { ...typography.subtitle2, fontWeight: '800' },
+    scoreLabel: { ...typography.caption, fontWeight: '600', flex: 1 },
+
+    // Occasion
+    metaRow: { flexDirection: 'row', marginBottom: spacing.xs },
+    occasionChip: {
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xxs,
+      borderRadius: borderRadius.full,
     },
-    badgeFinished: {
-      backgroundColor: colors.successBackground,
-    },
-    badgeText: {
-      ...typography.caption,
-      fontWeight: '600',
-    },
-    badgeTextActive: {
-      color: colors.primary,
-    },
-    badgeTextFinished: {
-      color: colors.success,
-    },
+    occasionText: { ...typography.caption, fontWeight: '600' },
 
     // Time
-    time: {
-      ...typography.caption,
-      color: colors.textTertiary,
-    },
-
-    // Last message
-    lastMessage: {
-      ...typography.body2,
-      color: colors.textSecondary,
-      marginTop: spacing.xxs,
-    },
+    time: { ...typography.caption, color: colors.textTertiary },
 
     // Chevron
-    chevron: {
-      fontSize: 22,
-      color: colors.textTertiary,
-      fontWeight: '300',
-    },
+    chevron: { fontSize: 22, color: colors.textTertiary, fontWeight: '300' },
   });

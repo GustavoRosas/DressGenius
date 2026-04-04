@@ -11,10 +11,103 @@ use App\Services\ColorAnalysisService;
 use App\Services\GeminiChatService;
 use App\Services\GeminiVisionService;
 use App\Services\OutfitAnalysisService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class OutfitScanController extends Controller
 {
+    /**
+     * GET /outfit-scans — paginated list of user's scans (newest first).
+     */
+    public function index(Request $request)
+    {
+        $user = $request->user();
+
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+
+        $scans = OutfitScan::query()
+            ->where('user_id', $user->id)
+            ->orderByDesc('created_at')
+            ->paginate(20);
+
+        // Attach the process intake for each scan (occasion lives there)
+        $scanIds = $scans->pluck('id');
+        $processes = OutfitAnalysisProcess::query()
+            ->whereIn('scan_id', $scanIds)
+            ->get()
+            ->keyBy('scan_id');
+
+        $items = $scans->getCollection()->map(function (OutfitScan $scan) use ($disk, $processes) {
+            $process = $processes->get($scan->id);
+            $analysis = is_array($scan->analysis) ? $scan->analysis : [];
+
+            return [
+                'id' => $scan->id,
+                'image_url' => $disk->url($scan->image_path),
+                'score' => $scan->score,
+                'score_label' => data_get($analysis, 'score_label'),
+                'occasion' => data_get($process?->intake ?? [], 'occasion'),
+                'created_at' => $scan->created_at,
+            ];
+        });
+
+        return response()->json([
+            'data' => $items,
+            'meta' => [
+                'current_page' => $scans->currentPage(),
+                'last_page' => $scans->lastPage(),
+                'per_page' => $scans->perPage(),
+                'total' => $scans->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * GET /outfit-scans/{outfitScan} — full detail of a single scan (owner only).
+     */
+    public function show(Request $request, OutfitScan $outfitScan)
+    {
+        $user = $request->user();
+
+        if ($outfitScan->user_id !== $user->id) {
+            return response()->json(['message' => 'Not found.'], 404);
+        }
+
+        /** @var \Illuminate\Filesystem\FilesystemAdapter $disk */
+        $disk = Storage::disk('public');
+
+        $process = OutfitAnalysisProcess::query()
+            ->where('scan_id', $outfitScan->id)
+            ->first();
+
+        $detectedItems = OutfitDetectedItem::query()
+            ->where('source_type', 'scan')
+            ->where('source_id', $outfitScan->id)
+            ->orderBy('id')
+            ->get()
+            ->map(fn ($row) => [
+                'id' => $row->id,
+                'label' => $row->label,
+                'category' => $row->category,
+                'colors' => $row->colors,
+            ])
+            ->all();
+
+        return response()->json([
+            'scan' => [
+                'id' => $outfitScan->id,
+                'image_url' => $disk->url($outfitScan->image_path),
+                'vision' => $outfitScan->vision,
+                'analysis' => $outfitScan->analysis,
+                'score' => $outfitScan->score,
+                'intake' => $process?->intake,
+                'created_at' => $outfitScan->created_at,
+            ],
+            'detected_items' => $detectedItems,
+        ]);
+    }
+
     public function store(StoreOutfitScanRequest $request, GeminiVisionService $vision, OutfitAnalysisService $analysis, GeminiChatService $chat)
     {
         $user = $request->user();

@@ -39,6 +39,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { api } from '../api/client';
 import type { RootStackParamList } from '../navigation/types';
 import { Button } from '../components/Button';
+import { DetectedItemsList, type DetectedItem } from '../components/DetectedItemsList';
 import { UsageChip } from '../components/UsageChip';
 import { SoftPaywallModal } from '../components/SoftPaywallModal';
 import { PremiumBanner } from '../components/PremiumBanner';
@@ -140,6 +141,8 @@ export function AnalyzeScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [detectedItems, setDetectedItems] = useState<DetectedItem[]>([]);
+  const [chatLoading, setChatLoading] = useState(false);
 
   // Bottom sheet & paywall state
   const [sheetVisible, setSheetVisible] = useState(false);
@@ -304,6 +307,7 @@ export function AnalyzeScreen() {
                   .map((f: any) => f.message)
               : [],
           });
+          setDetectedItems(raw.detected_items ?? []);
           setState('result');
         });
       } catch (_err) {
@@ -339,6 +343,7 @@ export function AnalyzeScreen() {
       setState('initial');
       setImageUri(null);
       setResult(null);
+      setDetectedItems([]);
       setError(null);
       setSheetVisible(false);
     });
@@ -812,6 +817,11 @@ export function AnalyzeScreen() {
           </View>
         )}
 
+        {/* ═══ Detected Items (from scan) ═══ */}
+        {detectedItems.length > 0 && (
+          <DetectedItemsList detectedItems={detectedItems} />
+        )}
+
         {/* ═══ Section 7: Climate 🌤️ ═══ */}
         {climateAssessment && (
           <View style={[styles.resultCard, styles.climateCard, { borderWidth: 1, borderColor: colors.border }]}>
@@ -855,9 +865,20 @@ export function AnalyzeScreen() {
           <Button
             title={t('screens.analyze.startChat')}
             variant="outline"
-            onPress={() => {
-              if (result?.id) {
-                navigation.navigate('Chat', { chatId: result.id });
+            loading={chatLoading}
+            disabled={chatLoading}
+            onPress={async () => {
+              if (!result?.id) return;
+              setChatLoading(true);
+              try {
+                const { data: res } = await api.post<{ session: { id: number } }>('/outfit-chats/from-scan', {
+                  scan_id: result.id,
+                });
+                navigation.navigate('Chat', { chatId: res.session.id, fromScan: true });
+              } catch {
+                Alert.alert(t('common.error'), t('screens.chat.errorLoad'));
+              } finally {
+                setChatLoading(false);
               }
             }}
             style={styles.actionButton}

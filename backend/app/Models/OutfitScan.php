@@ -22,4 +22,20 @@ class OutfitScan extends Model
         'analysis' => 'array',
         'score' => 'integer',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function process()
+    {
+        return $this->hasOne(OutfitAnalysisProcess::class, 'scan_id');
+    }
+
+    public function detectedItems()
+    {
+        return $this->hasMany(OutfitDetectedItem::class, 'source_id')
+            ->where('source_type', 'scan');
+    }
 }

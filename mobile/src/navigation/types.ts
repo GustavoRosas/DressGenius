@@ -3,7 +3,8 @@ export type RootStackParamList = {
   Login: undefined;
   Register: undefined;
   MainTabs: undefined;
-  Chat: { chatId: number };
+  Chat: { chatId: number; fromScan?: boolean };
+  ScanDetail: { scanId: number };
   Paywall: undefined;
   AIPreferences: undefined;
   NotificationPrefs: undefined;
