@@ -8,14 +8,17 @@ use Illuminate\Support\Facades\Storage;
 
 class ColorAnalysisService
 {
+    private string $language = 'en';
     /**
      * Analyze colors from a stored outfit image.
      *
      * @param string $imagePath  Storage path (relative to 'public' disk), e.g. "outfit-scans/1/abc.jpg"
      * @return array  Color analysis payload
      */
-    public function analyzeColors(string $imagePath): array
+    public function analyzeColors(string $imagePath, string $language = 'en'): array
     {
+        $this->language = $language;
+
         // Check if we should use Anthropic
         $provider = config('services.ai.vision_provider', 'gemini');
         if ($provider === 'anthropic') {
@@ -126,8 +129,12 @@ class ColorAnalysisService
 
     private function buildPrompt(): string
     {
-        return <<<'PROMPT'
-You are an expert color theory analyst specializing in fashion and outfit styling.
+        $langInstruction = ($this->language === 'pt-BR' || str_starts_with($this->language, 'pt'))
+            ? "\nIMPORTANT: Write ALL text fields (color_names, harmony.feedback, suggestions) in Brazilian Portuguese (PT-BR).\n"
+            : '';
+
+        return <<<PROMPT
+You are an expert color theory analyst specializing in fashion and outfit styling.{$langInstruction}
 
 Analyze the outfit in this image and return ONLY valid JSON (no markdown, no code fences) with this exact structure:
 

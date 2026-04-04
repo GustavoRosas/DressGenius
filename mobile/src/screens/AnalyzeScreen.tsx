@@ -490,21 +490,25 @@ export function AnalyzeScreen() {
     );
   };
 
-  // — Render strength card (tap to show full text via Alert) —
-  const renderStrengthCard = ({ item }: { item: Strength }) => (
-    <Pressable
-      onPress={() => Alert.alert(item.title, item.description)}
-      style={[styles.strengthCard, { backgroundColor: colors.card }]}
-    >
-      <Text style={[styles.strengthIcon]}>✅</Text>
-      <Text style={[styles.strengthTitle, { color: colors.text }]} numberOfLines={1}>
-        {item.title}
-      </Text>
-      <Text style={[styles.strengthDesc, { color: colors.textSecondary }]} numberOfLines={2}>
-        {item.description}
-      </Text>
-    </Pressable>
-  );
+  // — Strength card expand state + renderer —
+  const [expandedStrengthIdx, setExpandedStrengthIdx] = useState<number | null>(null);
+  const renderStrengthCard = ({ item, index }: { item: Strength; index: number }) => {
+    const expanded = expandedStrengthIdx === index;
+    return (
+      <Pressable
+        onPress={() => setExpandedStrengthIdx(expanded ? null : index)}
+        style={[styles.strengthCard, { backgroundColor: colors.card, width: expanded ? SCREEN_WIDTH - spacing.lg * 2 : STRENGTH_CARD_WIDTH }]}
+      >
+        <Text style={[styles.strengthIcon]}>✅</Text>
+        <Text style={[styles.strengthTitle, { color: colors.text }]} numberOfLines={expanded ? undefined : 1}>
+          {item.title}
+        </Text>
+        <Text style={[styles.strengthDesc, { color: colors.textSecondary }]} numberOfLines={expanded ? undefined : 2}>
+          {item.description}
+        </Text>
+      </Pressable>
+    );
+  };
 
   // — #56 — Enriched result with 7 sections —
   const renderResult = () => {

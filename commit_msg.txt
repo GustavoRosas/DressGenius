@@ -1,8 +1,6 @@
-fix: localized AI response, strength card expand, priority fallback, error alerts
+fix: color analysis in user language, strength card inline expand
 
-- AI prompt includes language instruction (PT-BR or EN based on user locale)
-- Strength cards tap to expand (see full text)
-- Priority badge handles typos (demium -> medium)
-- Analyze errors show Alert (sheet closes, message visible)
-- User 4 set to premium + plan column added
-- Gemini model fixed: gemini-2.5-flash (was gemini-2.5-flash-lts)
+- ColorAnalysisService accepts language param, adds PT-BR instruction to prompt
+- OutfitScanController passes intake.language to color analysis
+- Strength cards expand inline on tap (no more ugly Alert)
+- Removed extra closing brace in getPriorityBadge (was crashing app)

@@ -109,7 +109,8 @@ class OutfitScanController extends Controller
         // Color Theory Analysis (graceful — non-blocking)
         try {
             $colorService = app(ColorAnalysisService::class);
-            $colorAnalysis = $colorService->analyzeColors($path);
+            $language = data_get($intake, 'language', 'en');
+            $colorAnalysis = $colorService->analyzeColors($path, $language);
             $analysisResult['color_analysis'] = $colorAnalysis;
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning('Color analysis failed (non-blocking): ' . $e->getMessage());
