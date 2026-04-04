@@ -24,7 +24,7 @@ class StoreOutfitScanRequest extends FormRequest
             'intake.dress_code' => ['nullable', 'string', 'max:120'],
             'intake.budget' => ['nullable', 'string', 'max:120'],
             'intake.desired_vibe' => ['nullable', 'string', 'max:120'],
-            'intake.comfort_level' => ['nullable', 'string', 'in:comfort_first,balanced,style_first'],
+            'intake.comfort_level' => ['nullable', 'string', 'in:comfort_first,balanced,style_first,comfort,style'],
             'intake.extra_context' => ['nullable', 'string', 'max:500'],
         ];
     }
