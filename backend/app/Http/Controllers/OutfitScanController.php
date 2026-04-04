@@ -18,6 +18,24 @@ class OutfitScanController extends Controller
     public function store(StoreOutfitScanRequest $request, GeminiVisionService $vision, OutfitAnalysisService $analysis, GeminiChatService $chat)
     {
         $user = $request->user();
+
+        // Enforce free tier limit (5 analyses/month)
+        $isPremium = !empty($user->plan) && $user->plan !== 'free';
+        if (!$isPremium) {
+            $monthlyCount = OutfitScan::where('user_id', $user->id)
+                ->where('created_at', '>=', now()->startOfMonth())
+                ->count();
+            $freeLimit = 5;
+            if ($monthlyCount >= $freeLimit) {
+                return response()->json([
+                    'message' => 'You have reached your free limit of ' . $freeLimit . ' analyses this month. Upgrade to Premium for unlimited analyses.',
+                    'limit_reached' => true,
+                    'analyses_used' => $monthlyCount,
+                    'analyses_limit' => $freeLimit,
+                ], 429);
+            }
+        }
+
         $aiPreferences = (array) ($user->ai_preferences ?? []);
 
         $image = $request->file('image');

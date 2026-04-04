@@ -1,8 +1,6 @@
-fix: Anthropic key, Gemini model fallback, SafeAreaProvider, buildRichPrompt
+feat: enforce free tier limit (5 analyses/month) on backend
 
-- Fixed Anthropic API key (was OAuth token, now API key)
-- Added fallback: if Claude fails, falls through to Gemini
-- Fixed buildRichPrompt undefined method (inline prompt in analyzeViaAnthropic)
-- Fixed Gemini model name: gemini-2.5-flash-lts -> gemini-2.5-flash
-- Added SafeAreaProvider wrapping entire App (fixes Toast crash)
-- Reverted .env.development to local IP for dev testing
+- OutfitScanController: blocks with 429 when free user exceeds 5/month
+- AuthController: analyses_limit updated from 3 to 5
+- Mobile plans.ts: FREE_ANALYSES_PER_MONTH updated to 5
+- Returns limit_reached, analyses_used, analyses_limit in error response

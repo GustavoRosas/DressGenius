@@ -3,7 +3,7 @@
  */
 
 export const FREE_WARDROBE_LIMIT = 50;
-export const FREE_ANALYSES_PER_MONTH = 3;
+export const FREE_ANALYSES_PER_MONTH = 5;
 export const FREE_CHATS_PER_MONTH = 5;
 
 export const MONTHLY_PRICE = 4.99;

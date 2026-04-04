@@ -78,7 +78,7 @@ class AuthController extends Controller
             'analyses_used' => OutfitScan::where('user_id', $user->id)
                 ->where('created_at', '>=', now()->startOfMonth())
                 ->count(),
-            'analyses_limit' => $isPremium ? null : 3,
+            'analyses_limit' => $isPremium ? null : 5,
         ];
 
         return $data;
