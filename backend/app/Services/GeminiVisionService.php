@@ -14,7 +14,12 @@ class GeminiVisionService
         // Check if we should use Anthropic instead
         $provider = config('services.ai.vision_provider', 'gemini');
         if ($provider === 'anthropic') {
-            return $this->analyzeViaAnthropic($image, $intake);
+            try {
+                return $this->analyzeViaAnthropic($image, $intake);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Anthropic failed, falling back to Gemini: ' . $e->getMessage());
+                // Fall through to Gemini
+            }
         }
 
         $apiKey = config('services.gemini.api_key');
@@ -429,7 +434,35 @@ PROMPT;
 
         $base64 = base64_encode(file_get_contents($image->getRealPath()));
         $mimeType = $image->getMimeType() ?: 'image/jpeg';
-        $prompt = $this->buildRichPrompt($intake);
+
+        // Build the same prompt as Gemini path
+        $rawWeather = data_get($intake, 'weather');
+        if (is_array($rawWeather)) {
+            $weatherParts = array_filter([
+                data_get($rawWeather, 'condition'),
+                data_get($rawWeather, 'temperature_c') !== null ? data_get($rawWeather, 'temperature_c') . '°C' : null,
+            ]);
+            $weatherStr = implode(', ', $weatherParts);
+        } else {
+            $weatherStr = (string) ($rawWeather ?? '');
+        }
+
+        $context = [
+            'occasion' => (string) data_get($intake, 'occasion', ''),
+            'weather' => $weatherStr,
+            'comfort_level' => (string) data_get($intake, 'comfort_level', ''),
+            'extra_context' => (string) data_get($intake, 'extra_context', ''),
+        ];
+        $context = array_map(fn ($v) => is_string($v) && trim($v) === '' ? null : $v, $context);
+        $contextJson = json_encode($context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?: '{}';
+
+        $hints = '';
+        if (!empty($context['occasion'])) $hints .= "\nOccasion: {$context['occasion']}. Provide occasion_assessment.";
+        if (!empty($context['weather'])) $hints .= "\nWeather: {$context['weather']}. Provide climate_assessment.";
+        if (!empty($context['comfort_level'])) $hints .= "\nComfort: {$context['comfort_level']}.";
+        if (!empty($context['extra_context'])) $hints .= "\nExtra: {$context['extra_context']}.";
+
+        $prompt = "You are an expert fashion stylist analyzing an outfit photo.\n\nUser context: {$contextJson}{$hints}\n\nReturn ONLY valid JSON with: score (0-10), score_label, score_summary, score_breakdown ({color_harmony, style_balance, occasion_fit, overall_cohesion} each 0-10), strengths (array of {title, description}), style_level ({detected, formality_score 0-10, balance_note}), occasion_assessment ({fit_score, verdict, verdict_note, would_work_for[], would_not_work_for[]}), improvements (array of {priority: high/medium/low, area, suggestion, impact}), climate_assessment ({fit_score, note, risk}).\n\nBe specific about colors, textures, and proportions. Score 0-10 not 0-100.";
 
         $result = $anthropic->analyzeImage($base64, $mimeType, $prompt, 2048);
 

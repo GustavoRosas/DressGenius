@@ -1,11 +1,8 @@
-feat: migrate AI provider from Gemini to Claude Haiku 3.5
+fix: Anthropic key, Gemini model fallback, SafeAreaProvider, buildRichPrompt
 
-- AnthropicService: unified HTTP client for Claude vision + text
-- GeminiVisionService: routes to Claude when AI_VISION_PROVIDER=anthropic
-- ColorAnalysisService: same provider routing
-- InsightEngineService: Claude text fallback
-- OccasionStylingService: Claude text fallback
-- WeatherStylingService: Claude text fallback
-- Config: services.ai.vision_provider, services.anthropic.*
-- Gemini kept as fallback (not deleted)
-- Claude JSON parsing simpler (no repair needed)
+- Fixed Anthropic API key (was OAuth token, now API key)
+- Added fallback: if Claude fails, falls through to Gemini
+- Fixed buildRichPrompt undefined method (inline prompt in analyzeViaAnthropic)
+- Fixed Gemini model name: gemini-2.5-flash-lts -> gemini-2.5-flash
+- Added SafeAreaProvider wrapping entire App (fixes Toast crash)
+- Reverted .env.development to local IP for dev testing

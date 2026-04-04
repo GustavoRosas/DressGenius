@@ -1,4 +1,5 @@
 import './src/i18n'; // i18n must be imported before any component
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { AuthProvider, PremiumProvider, ThemeProvider, NotificationProvider, ToastProvider, useTheme } from './src/context';
 import { RootNavigator } from './src/navigation';
@@ -41,16 +42,18 @@ function AppInner() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <NotificationProvider>
-          <PremiumProvider>
-            <ToastProvider>
-              <AppInner />
-            </ToastProvider>
-          </PremiumProvider>
-        </NotificationProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            <PremiumProvider>
+              <ToastProvider>
+                <AppInner />
+              </ToastProvider>
+            </PremiumProvider>
+          </NotificationProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
