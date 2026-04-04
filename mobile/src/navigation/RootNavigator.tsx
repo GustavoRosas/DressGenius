@@ -64,7 +64,7 @@ export function RootNavigator() {
       )}
       {isAuthenticated ? (
         <>
-          <Stack.Screen name="Home" component={TabNavigator} />
+          <Stack.Screen name="MainTabs" component={TabNavigator} />
           <Stack.Screen
             name="Chat"
             component={ChatScreen}

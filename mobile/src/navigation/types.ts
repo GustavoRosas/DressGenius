@@ -2,7 +2,7 @@ export type RootStackParamList = {
   Onboarding: undefined;
   Login: undefined;
   Register: undefined;
-  Home: undefined;
+  MainTabs: undefined;
   Chat: { chatId: number };
   Paywall: undefined;
   AIPreferences: undefined;

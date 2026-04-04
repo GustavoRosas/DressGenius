@@ -453,6 +453,16 @@ export function AnalyzeScreen() {
     [colors],
   );
 
+  // — Helper: translate palette/season values —
+  const translatePalette = (v: string) => {
+    const map: Record<string, string> = { warm: t('analyze.result.paletteWarm'), cool: t('analyze.result.paletteCool'), neutral: t('analyze.result.paletteNeutral') };
+    return map[v.toLowerCase()] ?? v;
+  };
+  const translateSeason = (v: string) => {
+    const map: Record<string, string> = { spring: t('analyze.result.seasonSpring'), summer: t('analyze.result.seasonSummer'), autumn: t('analyze.result.seasonAutumn'), winter: t('analyze.result.seasonWinter') };
+    return map[v.toLowerCase()] ?? v;
+  };
+
   // — Helper: score to color dot (0-10 scale) —
   const getScoreColor = (score: number): string => {
     if (score >= 8) return '#22C55E'; // green
@@ -635,14 +645,14 @@ export function AnalyzeScreen() {
                 <View style={[styles.badge, { backgroundColor: colors.primaryLight }]}>
                   <Text style={[styles.badgeText, { color: colors.primary }]}>
                     {colorAnalysis.palette_type === 'warm' ? '🔴 ' : colorAnalysis.palette_type === 'cool' ? '🔵 ' : ''}
-                    {t('analyze.result.palette')}: {colorAnalysis.palette_type}
+                    {t('analyze.result.palette')}: {translatePalette(colorAnalysis.palette_type)}
                   </Text>
                 </View>
               )}
               {colorAnalysis.season && (
                 <View style={[styles.badge, { backgroundColor: colors.secondaryLight }]}>
                   <Text style={[styles.badgeText, { color: colors.text }]}>
-                    {t('analyze.result.season')}: {colorAnalysis.season}
+                    {t('analyze.result.season')}: {translateSeason(colorAnalysis.season)}
                   </Text>
                 </View>
               )}
@@ -979,6 +989,8 @@ const createStyles = (colors: ColorScheme) =>
       borderRadius: borderRadius.lg,
       overflow: 'hidden',
       marginBottom: spacing.xxl,
+      borderWidth: 2,
+      borderColor: colors.border,
       ...shadows.md,
     },
     thumbnail: {

@@ -1,5 +1,8 @@
-fix: score column smallint to decimal(5,1) - supports values like 7.5
+fix: photo border, palette/season i18n, expo warnings
 
-- Migration: outfit_scans.score changed from smallint to decimal(5,1)
-- OutfitScanController: score now stored as float rounded to 1 decimal
-- Fixes SQLSTATE[22P02] error when AI returns decimal scores
+- Thumbnail: added 2px border (colors.border) for framing
+- Palette type translated: warm->Quente, cool->Fria, neutral->Neutra
+- Season translated: spring->Primavera, summer->Verao, autumn->Outono, winter->Inverno
+- Fixed require cycle: ErrorLogger uses lazy import for api client
+- Fixed duplicate Home screen name: RootStack uses MainTabs
+- i18n: added palette/season translation keys in en.json + pt-BR.json

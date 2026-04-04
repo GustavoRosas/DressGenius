@@ -6,7 +6,12 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { api } from '../api/client';
+// Lazy import to avoid require cycle (client → ErrorLogger → client)
+let _api: typeof import('../api/client').api | null = null;
+const getApi = () => {
+  if (!_api) _api = require('../api/client').api;
+  return _api;
+};
 
 const STORAGE_KEY = 'dressgenius_error_logs';
 const MAX_LOGS = 50;
@@ -65,7 +70,7 @@ class ErrorLoggerService {
     if (allLogs.length === 0) return;
 
     try {
-      await api.post('/error-logs', { logs: allLogs });
+      await getApi()!.post('/error-logs', { logs: allLogs });
       // Success — clear everything
       this.buffer = [];
       await AsyncStorage.removeItem(STORAGE_KEY);
