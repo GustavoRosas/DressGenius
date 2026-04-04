@@ -118,7 +118,9 @@ class OutfitScanController extends Controller
         }
 
         // Use the rich Gemini score (0-10) if available
-        $finalScore = data_get($analysisResult, 'score');
+        // Score stored as decimal(5,1)
+        $rawScore = data_get($analysisResult, 'score');
+        $finalScore = $rawScore !== null ? round((float) $rawScore, 1) : null;
 
         $scan = OutfitScan::create([
             'user_id' => $user->id,
