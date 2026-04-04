@@ -30,7 +30,7 @@ export function UsageChip({ usage }: UsageChipProps) {
   const { colors } = useTheme();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
-  if (isPremium || !usage) return null;
+  if (isPremium || !usage || usage.analyses_limit == null) return null;
 
   const remaining = Math.max(0, usage.analyses_limit - usage.analyses_used);
 

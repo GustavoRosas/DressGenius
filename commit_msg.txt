@@ -1,6 +1,7 @@
-fix: PremiumContext syncs from backend /me on startup
+fix: occasion i18n, image URLs, back button, usage null limit
 
-- checkEntitlement now fetches GET /me and reads plan from backend
-- Syncs isPremium + activatedAt to SecureStore
-- Falls back to local SecureStore if offline
-- Fixes: user was premium on backend but app showed free
+- History + Home: occasion keys translated via i18n (wedding -> Casamento)
+- APP_URL changed to 192.168.100.4:8000 (fixes image URLs for mobile)
+- BackButton: bold chevron instead of thin arrow, all screens
+- useUsage: analyses_limit can be null (premium), paywall check handles it
+- UsageChip: null-safe limit check

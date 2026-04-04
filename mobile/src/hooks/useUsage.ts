@@ -10,7 +10,7 @@ import { api } from '../api/client';
 
 export interface UsageData {
   analyses_used: number;
-  analyses_limit: number;
+  analyses_limit: number | null;
 }
 
 interface UseUsageReturn {
@@ -30,8 +30,11 @@ export function useUsage(): UseUsageReturn {
       setError(false);
       const response = await api.get<{ usage: UsageData }>('/me');
       const u = response.data?.usage;
-      if (u && typeof u.analyses_used === 'number' && typeof u.analyses_limit === 'number') {
-        setUsage(u);
+      if (u && typeof u.analyses_used === 'number') {
+        setUsage({
+          analyses_used: u.analyses_used,
+          analyses_limit: typeof u.analyses_limit === 'number' ? u.analyses_limit : null,
+        });
       }
     } catch {
       setError(true);

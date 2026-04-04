@@ -132,7 +132,7 @@ const ScanCard = React.memo(({ item, onPress, t, colors }: ScanCardProps) => {
         <View style={styles.metaRow}>
           <View style={[styles.occasionChip, { backgroundColor: colors.primaryLight }]}>
             <Text style={[styles.occasionText, { color: colors.primary }]} numberOfLines={1}>
-              {item.occasion || t('screens.history.scanCard.noOccasion')}
+              {item.occasion ? (t(`analyze.occasion.${item.occasion}`, { defaultValue: item.occasion })) : t('screens.history.scanCard.noOccasion')}
             </Text>
           </View>
         </View>

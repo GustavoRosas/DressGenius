@@ -407,7 +407,7 @@ export function HomeScreen() {
                 </View>
               )}
               <Text style={styles.lastAnalysisMeta}>
-                {lastScan.occasion ? `${lastScan.occasion} • ` : ''}
+                {lastScan.occasion ? `${t(`analyze.occasion.${lastScan.occasion}`, { defaultValue: lastScan.occasion })} • ` : ''}
                 {formatRelative(lastScan.created_at, t)}
               </Text>
               <Text style={styles.viewDetails}>{t('home.lastAnalysis.viewDetails')}</Text>

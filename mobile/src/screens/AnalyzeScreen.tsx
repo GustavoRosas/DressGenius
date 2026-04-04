@@ -250,7 +250,7 @@ export function AnalyzeScreen() {
       if (!imageUri) return;
 
       // #51 — Soft paywall: check usage before analyzing
-      if (!isPremium && usage && usage.analyses_used >= usage.analyses_limit) {
+      if (!isPremium && usage && usage.analyses_limit != null && usage.analyses_used >= usage.analyses_limit) {
         setSheetVisible(false);
         setPaywallVisible(true);
         return;

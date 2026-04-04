@@ -28,8 +28,12 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 /** Universal ← back button for stack screens */
 function BackButton({ onPress, tintColor }: { onPress: () => void; tintColor: string }) {
   return (
-    <Pressable onPress={onPress} hitSlop={12} style={{ padding: 4 }}>
-      <Text style={{ fontSize: 24, color: tintColor, lineHeight: 28 }}>←</Text>
+    <Pressable
+      onPress={onPress}
+      hitSlop={12}
+      style={{ padding: 6, paddingRight: 12 }}
+    >
+      <Text style={{ fontSize: 22, color: tintColor, fontWeight: '700' }}>❮</Text>
     </Pressable>
   );
 }
