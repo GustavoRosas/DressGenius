@@ -1,8 +1,13 @@
-fix: keyboard resize, confirm modals, feedback payload, rename prefs
+feat: premium Home screen redesign with 9 sections
 
-- app.json: softwareKeyboardLayoutMode "resize" (was "pan")
-- ChatScreen: KeyboardAvoidingView behavior="padding" on both platforms
-- ChatScreen: feedback sends ratings object (helpfulness/clarity/relevance/tone)
-- ChatScreen: finish chat uses ConfirmModal instead of raw Alert
-- ClosetScreen: delete item uses ConfirmModal instead of raw Alert
-- i18n: "AI Preferences" renamed to "My Style" / "Meu Estilo"
+- Header with avatar (initials + violet gradient) + notification bell
+- Hero card: usage counter with progress bar + gold CTA button
+- Last analysis card from /outfit-scans (score colors, stars, occasion)
+- 4 quick action buttons with scale animation
+- Style DNA mini with colored horizontal bars
+- Monthly stats row (analyses, avg score, streak)
+- Closet peek with horizontal thumbnail scroll from /wardrobe-items
+- Tip of the Day (15 rotating tips EN + PT-BR)
+- Premium banner for free users
+- Pull-to-refresh, loading skeleton, fade-in animations
+- Full dark mode + i18n support

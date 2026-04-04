@@ -478,9 +478,10 @@
       "afternoon": "Good afternoon, {{name}} 🌤️",
       "evening": "Good evening, {{name}} 🌙"
     },
-    "weather": {
-      "placeholder": "🌤️ 24°C — Perfect for a light outfit",
-      "seeSuggestion": "See Suggestion →"
+    "hero": {
+      "remaining": "{{used}} of {{limit}} analyses remaining",
+      "unlimited": "Unlimited analyses ✨",
+      "cta": "Analyze New Look"
     },
     "stats": {
       "title": "This Month",
@@ -491,16 +492,34 @@
     "lastAnalysis": {
       "title": "Last Analysis",
       "viewDetails": "View Details →",
-      "noAnalysis": "Start your first analysis!"
+      "noAnalysis": "Start your first analysis!",
+      "motivational": "Ready for your first analysis? 📸"
     },
     "quickActions": {
       "analyze": "Analyze",
       "closet": "Closet",
-      "stats": "Stats"
+      "stats": "Stats",
+      "chat": "Chat"
     },
     "styleDna": {
       "title": "Style DNA",
       "viewFull": "View Full →"
+    },
+    "closetPeek": {
+      "title": "Your Closet",
+      "pieces": "{{count}} pieces",
+      "manage": "Manage →",
+      "empty": "Add your first piece!"
+    },
+    "tip": {
+      "title": "Tip of the Day"
+    },
+    "formatRelative": {
+      "justNow": "Just now",
+      "minsAgo": "{{count}}m ago",
+      "hoursAgo": "{{count}}h ago",
+      "yesterday": "Yesterday",
+      "daysAgo": "{{count}}d ago"
     }
   },
   "detectedItems": {
