@@ -32,6 +32,8 @@ import { palette, type ColorScheme } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
+import { ConfirmModal } from '../components/ConfirmModal';
+import { useToast } from '../context/ToastContext';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -276,23 +278,12 @@ export function ClosetScreen() {
   // Delete
   // -------------------------------------------------------------------------
 
+  const { showToast } = useToast();
+  const [deleteTarget, setDeleteTarget] = useState<WardrobeItem | null>(null);
+
   const confirmDelete = useCallback(
     (item: WardrobeItem) => {
-      Alert.alert(t('screens.closet.deleteTitle'), t('screens.closet.deleteConfirm'), [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('screens.closet.delete'),
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await api.delete(`/wardrobe-items/${item.id}`);
-              setItems((prev) => prev.filter((i) => i.id !== item.id));
-            } catch {
-              Alert.alert(t('common.error'), t('screens.closet.deleteError'));
-            }
-          },
-        },
-      ]);
+      setDeleteTarget(item);
     },
     [t],
   );
@@ -526,6 +517,29 @@ export function ClosetScreen() {
       </Modal>
 
       {renderCategoryPicker()}
+
+      {/* Delete Confirm */}
+      <ConfirmModal
+        visible={!!deleteTarget}
+        emoji="🗑️"
+        title={t('screens.closet.deleteTitle')}
+        message={t('screens.closet.deleteConfirm')}
+        confirmLabel={t('screens.closet.delete')}
+        cancelLabel={t('common.cancel')}
+        variant="danger"
+        onConfirm={async () => {
+          if (!deleteTarget) return;
+          try {
+            await api.delete(`/wardrobe-items/${deleteTarget.id}`);
+            setItems((prev) => prev.filter((i) => i.id !== deleteTarget.id));
+          } catch {
+            showToast(t('screens.closet.deleteError'), 'error');
+          } finally {
+            setDeleteTarget(null);
+          }
+        }}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </SafeAreaView>
   );
 }

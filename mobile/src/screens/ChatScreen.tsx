@@ -33,6 +33,7 @@ import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
 import type { RootStackParamList } from '../navigation/types';
 import type { ColorScheme } from '../theme/colors';
+import { ConfirmModal } from '../components/ConfirmModal';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -274,23 +275,21 @@ export function ChatScreen() {
 
   // ─── Finish chat ──────────────────────────────────────────────────────
 
+  const [finishModalVisible, setFinishModalVisible] = useState(false);
+
   const handleFinish = useCallback(() => {
-    Alert.alert(t('screens.chat.finishConfirm'), t('screens.chat.finishConfirmMessage'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.confirm'),
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await api.post(`/outfit-chats/${chatId}/finish`);
-            setChatFinished(true);
-            setFeedbackVisible(true);
-          } catch {
-            Alert.alert(t('common.error'), t('screens.chat.errorFinish'));
-          }
-        },
-      },
-    ]);
+    setFinishModalVisible(true);
+  }, []);
+
+  const confirmFinish = useCallback(async () => {
+    setFinishModalVisible(false);
+    try {
+      await api.post(`/outfit-chats/${chatId}/finish`);
+      setChatFinished(true);
+      setFeedbackVisible(true);
+    } catch {
+      showToast(t('screens.chat.errorFinish'), 'error');
+    }
   }, [chatId, t]);
 
   // ─── Submit feedback ──────────────────────────────────────────────────
@@ -300,7 +299,12 @@ export function ChatScreen() {
     setFeedbackSubmitting(true);
     try {
       await api.post(`/outfit-chats/${chatId}/feedback`, {
-        rating: feedbackRating,
+        ratings: {
+          helpfulness: feedbackRating,
+          clarity: feedbackRating,
+          relevance: feedbackRating,
+          tone: feedbackRating,
+        },
         comment: feedbackComment.trim() || undefined,
       });
       setFeedbackVisible(false);
@@ -374,8 +378,8 @@ export function ChatScreen() {
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        behavior="padding"
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 30}
       >
         {/* Messages */}
         <FlatList
@@ -485,6 +489,19 @@ export function ChatScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Finish Chat Confirm */}
+      <ConfirmModal
+        visible={finishModalVisible}
+        emoji="💬"
+        title={t('screens.chat.finishConfirm')}
+        message={t('screens.chat.finishConfirmMessage')}
+        confirmLabel={t('screens.chat.finishButton')}
+        cancelLabel={t('common.cancel')}
+        variant="danger"
+        onConfirm={confirmFinish}
+        onCancel={() => setFinishModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }

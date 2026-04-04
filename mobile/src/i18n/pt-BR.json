@@ -140,7 +140,7 @@
       "changePassword": "Alterar Senha",
       "passwordChanged": "Senha alterada com sucesso!",
       "settings": "Configurações",
-      "aiPreferences": "Preferências de IA",
+      "aiPreferences": "Meu Estilo",
       "subscription": "Assinatura",
       "language": "Idioma",
       "notifications": "Notificações",
@@ -468,7 +468,7 @@
     "darkMode": "Modo Escuro",
     "lightMode": "Modo Claro",
     "notifications": "Notificações",
-    "aiPreferences": "Preferências de IA",
+    "aiPreferences": "Meu Estilo",
     "language": "Idioma",
     "subscription": "Assinatura"
   },

@@ -1,7 +1,8 @@
-fix: history navigation, intake context prefix, profile scan fields
+fix: keyboard resize, confirm modals, feedback payload, rename prefs
 
-- ProfileScreen: history cards navigate to ScanDetail (was Chat)
-- ProfileScreen: uses image_url + score fields from scan response
-- AnalyzeScreen: occasion/comfort/context sent as intake[...] prefix
-  (was top-level, backend expects intake[] nesting)
-- This fixes occasion not being considered in AI analysis
+- app.json: softwareKeyboardLayoutMode "resize" (was "pan")
+- ChatScreen: KeyboardAvoidingView behavior="padding" on both platforms
+- ChatScreen: feedback sends ratings object (helpfulness/clarity/relevance/tone)
+- ChatScreen: finish chat uses ConfirmModal instead of raw Alert
+- ClosetScreen: delete item uses ConfirmModal instead of raw Alert
+- i18n: "AI Preferences" renamed to "My Style" / "Meu Estilo"

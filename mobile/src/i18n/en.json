@@ -140,7 +140,7 @@
       "changePassword": "Change Password",
       "passwordChanged": "Password changed successfully!",
       "settings": "Settings",
-      "aiPreferences": "AI Preferences",
+      "aiPreferences": "My Style",
       "subscription": "Subscription",
       "language": "Language",
       "notifications": "Notifications",
@@ -468,7 +468,7 @@
     "darkMode": "Dark Mode",
     "lightMode": "Light Mode",
     "notifications": "Notifications",
-    "aiPreferences": "AI Preferences",
+    "aiPreferences": "My Style",
     "language": "Language",
     "subscription": "Subscription"
   },
