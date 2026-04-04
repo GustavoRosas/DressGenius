@@ -1,7 +1,6 @@
-chore: R2 migration complete, secrets deployed to Fly.io
+chore: EAS config, Fly deploy with anti-sleep, app.json prod ready
 
-- 28 files migrated to Cloudflare R2 (27 scans + 1 profile photo)
-- Fly.io secrets set: R2_*, FILESYSTEM_DISK=r2
-- Production now serves images from R2 CDN
-- Dev continues using local public disk
-- Removed temp migration scripts
+- eas.json: preview profile (APK build) + production profile
+- app.json: name=DressGenius, package=com.gustavrosas.dressgenius
+- fly.toml: auto_stop=off, min_machines=1 (no sleep for demo)
+- Deployed to Fly.io with R2 storage + all recent code
