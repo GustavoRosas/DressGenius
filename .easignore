@@ -1,7 +1,5 @@
 backend/public/storage
-backend/storage/app/public/outfit-scans
-backend/storage/app/public/profile-photos
+backend/storage
 backend/vendor
-backend/node_modules
 frontend/node_modules
 .git
