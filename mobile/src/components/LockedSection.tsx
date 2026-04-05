@@ -51,6 +51,7 @@ const createStyles = (colors: ColorScheme) =>
       position: 'relative',
       overflow: 'hidden',
       borderRadius: borderRadius.lg,
+      marginBottom: spacing.xl,
     },
     content: {
       opacity: 0.2,
