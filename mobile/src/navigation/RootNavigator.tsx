@@ -81,7 +81,9 @@ export function RootNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {!onboardingDone && (
-        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+        <Stack.Screen name="Onboarding">
+          {() => <OnboardingScreen onComplete={() => setOnboardingDone(true)} />}
+        </Stack.Screen>
       )}
       {isAuthenticated ? (
         <>

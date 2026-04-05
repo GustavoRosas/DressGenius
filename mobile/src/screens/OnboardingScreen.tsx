@@ -69,7 +69,11 @@ const SLIDES: SlideData[] = [
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, 'Onboarding'>;
 
-export function OnboardingScreen() {
+interface OnboardingProps {
+  onComplete?: () => void;
+}
+
+export function OnboardingScreen({ onComplete }: OnboardingProps = {}) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
@@ -85,8 +89,12 @@ export function OnboardingScreen() {
 
   const completeOnboarding = useCallback(async () => {
     await SecureStore.setItemAsync(ONBOARDING_KEY, 'true');
-    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-  }, [navigation]);
+    if (onComplete) {
+      onComplete();
+    } else {
+      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+    }
+  }, [navigation, onComplete]);
 
   const goToSlide = useCallback(
     (index: number) => {

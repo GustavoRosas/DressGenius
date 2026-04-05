@@ -1,5 +1,6 @@
-fix: move useCallback before early return - hooks order rule
+fix: onboarding loop after register - state not updating navigator
 
-- screenWithBack useCallback was after conditional return
-- React requires all hooks to run in same order every render
-- Moved hook before the isLoading/onboardingDone early return
+- OnboardingScreen now accepts onComplete callback
+- RootNavigator passes setOnboardingDone(true) as onComplete
+- Fixes: register -> redirected to onboarding -> stuck in loop
+- completeOnboarding updates React state instead of just SecureStore
