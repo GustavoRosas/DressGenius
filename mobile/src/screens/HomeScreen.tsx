@@ -8,7 +8,6 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Alert,
   ActivityIndicator,
   Animated,
   Image,
@@ -33,6 +32,7 @@ import { useTheme } from '../context/ThemeContext';
 import { usePremium } from '../context/PremiumContext';
 import { useAnalytics } from '../hooks/useAnalytics';
 import { PremiumBanner } from '../components/PremiumBanner';
+import { ConfirmModal } from '../components/ConfirmModal';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
@@ -223,6 +223,7 @@ export function HomeScreen() {
   const [wardrobeTotal, setWardrobeTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [notifModal, setNotifModal] = useState(false);
 
   // Hero card fade-in
   const heroOpacity = useRef(new Animated.Value(0)).current;
@@ -347,7 +348,7 @@ export function HomeScreen() {
 
           <Pressable
             style={styles.bellContainer}
-            onPress={() => Alert.alert('🔔 ' + t('home.notifications.comingSoonTitle'), t('home.notifications.comingSoonMessage'))}
+            onPress={() => setNotifModal(true)}
           >
             <Text style={styles.bellIcon}>🔔</Text>
             <View style={styles.notifDot} />
@@ -454,7 +455,6 @@ export function HomeScreen() {
             { icon: '📸', label: t('home.quickActions.analyze'), action: () => navigation.navigate('Analyze') },
             { icon: '👗', label: t('home.quickActions.closet'), action: () => navigation.navigate('Closet') },
             { icon: '📊', label: t('home.quickActions.stats'), action: () => navigation.navigate('Analytics') },
-            { icon: '💬', label: t('home.quickActions.chat'), action: () => navigation.navigate('History') },
           ].map((item, idx) => (
             <Pressable
               key={idx}
@@ -515,7 +515,7 @@ export function HomeScreen() {
             <Text style={styles.statLabel}>{t('home.stats.avgScore')}</Text>
           </View>
           <View style={styles.statBox}>
-            <Text style={styles.statValue}>🔥 —</Text>
+            <Text style={styles.statValue}>🔥 {summary?.totalAnalyses ?? usageCount}</Text>
             <Text style={styles.statLabel}>{t('home.stats.streak')}</Text>
           </View>
         </View>
@@ -574,6 +574,18 @@ export function HomeScreen() {
 
         <View style={{ height: spacing.xl }} />
       </ScrollView>
+
+      <ConfirmModal
+        visible={notifModal}
+        emoji="🔔"
+        title={t('home.notifications.comingSoonTitle')}
+        message={t('home.notifications.comingSoonMessage')}
+        confirmLabel="OK"
+        cancelLabel="OK"
+        variant="primary"
+        onConfirm={() => setNotifModal(false)}
+        onCancel={() => setNotifModal(false)}
+      />
     </SafeAreaView>
   );
 }
