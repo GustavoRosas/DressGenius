@@ -319,21 +319,22 @@ export function AnalyzeScreen() {
         // Close sheet and show error
         setSheetVisible(false);
         const status = err?.response?.status;
-        const serverMsg = err?.response?.data?.message;
+        const { extractApiError } = require('../api/translateApiError');
+        const translatedMsg = extractApiError(err, 'screens.analyze.error');
         if (status === 429 && err?.response?.data?.limit_reached) {
           Alert.alert(
             t('errors.limitReached'),
-            serverMsg || t('errors.limitReached'),
+            translatedMsg,
             [{ text: 'OK' }],
           );
         } else {
           Alert.alert(
             t('common.error'),
-            serverMsg || t('screens.analyze.error'),
+            translatedMsg,
             [{ text: 'OK' }],
           );
         }
-        setError(serverMsg || t('screens.analyze.error'));
+        setError(translatedMsg);
       } finally {
         setLoading(false);
       }

@@ -3,6 +3,22 @@
     "name": "DressGenius",
     "tagline": "Your style, reinvented by AI"
   },
+  "apiErrors": {
+    "generic": "Something went wrong. Please try again.",
+    "emailTaken": "This email is already registered.",
+    "invalidCredentials": "Invalid email or password.",
+    "passwordTooShort": "Password must be at least 8 characters.",
+    "passwordMismatch": "Passwords do not match.",
+    "emailInvalid": "Please enter a valid email address.",
+    "nameRequired": "Name is required.",
+    "emailRequired": "Email is required.",
+    "passwordRequired": "Password is required.",
+    "tooManyAttempts": "Too many attempts. Please wait a moment.",
+    "unauthenticated": "Session expired. Please sign in again.",
+    "tokenExpired": "Session expired. Please sign in again.",
+    "serverError": "Server error. Please try again later.",
+    "serviceUnavailable": "Service temporarily unavailable."
+  },
   "login": {
     "title": "DressGenius",
     "subtitle": "Your style, reinvented by AI",

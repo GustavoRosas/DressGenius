@@ -74,11 +74,8 @@ export function LoginScreen({ navigation }: Props) {
       const { data } = await api.post('/login', { email: email.trim(), password });
       await signIn(data.token, data.user ?? null);
     } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        t('auth.errors.invalidCredentials');
-      setError(msg);
+      const { extractApiError } = require('../api/translateApiError');
+      setError(extractApiError(err, 'auth.errors.invalidCredentials'));
     } finally {
       setLoading(false);
     }

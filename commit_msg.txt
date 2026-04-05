@@ -1,6 +1,8 @@
-fix: onboarding loop after register - state not updating navigator
+fix: translate all API errors to user language
 
-- OnboardingScreen now accepts onComplete callback
-- RootNavigator passes setOnboardingDone(true) as onComplete
-- Fixes: register -> redirected to onboarding -> stuck in loop
-- completeOnboarding updates React state instead of just SecureStore
+- Created translateApiError helper (maps Laravel messages to i18n keys)
+- extractApiError handles validation errors object + message + error fields
+- RegisterScreen: "email already taken" now shows in PT-BR
+- LoginScreen: "invalid credentials" translated
+- AnalyzeScreen: server errors translated
+- Added 14 apiErrors keys to both en.json and pt-BR.json

@@ -94,11 +94,8 @@ export function RegisterScreen({ navigation }: Props) {
       });
       await signIn(data.token, data.user ?? null);
     } catch (err: any) {
-      const msg =
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        t('auth.errors.accountCreationFailed');
-      setError(msg);
+      const { extractApiError } = require('../api/translateApiError');
+      setError(extractApiError(err, 'auth.errors.accountCreationFailed'));
     } finally {
       setLoading(false);
     }
