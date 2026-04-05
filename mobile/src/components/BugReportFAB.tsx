@@ -8,6 +8,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  KeyboardAvoidingView,
   Modal,
   Platform,
   Pressable,
@@ -106,12 +107,13 @@ export function BugReportFAB() {
 
       {/* Report Modal */}
       <Modal visible={visible} transparent animationType="slide" onRequestClose={() => setVisible(false)}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding" keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
         <Pressable style={styles.backdrop} onPress={() => setVisible(false)}>
           <View />
         </Pressable>
         <View style={styles.sheet}>
           <View style={styles.handle} />
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
             <Text style={styles.title}>{t('feedback.title')}</Text>
 
             {/* Type Selector */}
@@ -176,6 +178,7 @@ export function BugReportFAB() {
             </Pressable>
           </ScrollView>
         </View>
+        </KeyboardAvoidingView>
       </Modal>
     </>
   );
