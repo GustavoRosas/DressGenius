@@ -5,9 +5,8 @@
  * Persistidos localmente no SecureStore (backend endpoint futuro).
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Pressable,
   ScrollView,
   StyleSheet,
   Switch,
@@ -16,13 +15,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { useNavigation } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
 
-import { lightColors as colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import { typography } from '../theme/typography';
 import { borderRadius, spacing } from '../theme/spacing';
 import { shadows } from '../theme/shadows';
+import type { ColorScheme } from '../theme/colors';
 
 const STORAGE_KEY = 'notification_prefs';
 
@@ -40,10 +39,10 @@ const DEFAULT_PREFS: NotificationPrefs = {
 
 export function NotificationPrefsScreen() {
   const { t } = useTranslation();
-  const navigation = useNavigation();
+  const { colors } = useTheme();
   const [prefs, setPrefs] = useState<NotificationPrefs>(DEFAULT_PREFS);
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
-  // Load persisted prefs
   useEffect(() => {
     (async () => {
       try {
@@ -68,127 +67,78 @@ export function NotificationPrefsScreen() {
     [],
   );
 
+  const renderRow = (label: string, value: boolean, key: keyof NotificationPrefs) => (
+    <View style={styles.row}>
+      <View style={styles.rowText}>
+        <Text style={styles.rowLabel}>{label}</Text>
+      </View>
+      <Switch
+        value={value}
+        onValueChange={(v) => updatePref(key, v)}
+        trackColor={{ false: colors.disabled, true: colors.primaryLight }}
+        thumbColor={value ? colors.primary : colors.textTertiary}
+      />
+    </View>
+  );
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()} hitSlop={12}>
-          <Text style={styles.backButton}>‹</Text>
-        </Pressable>
-        <Text style={styles.title}>{t('notifications.title')}</Text>
-        <View style={styles.headerSpacer} />
-      </View>
-
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
+        <Text style={styles.title}>{t('notifications.title')}</Text>
+
         <View style={styles.card}>
-          {/* Daily outfit suggestion */}
-          <View style={styles.row}>
-            <View style={styles.rowText}>
-              <Text style={styles.rowLabel}>
-                {t('notifications.dailySuggestion')}
-              </Text>
-            </View>
-            <Switch
-              value={prefs.dailySuggestion}
-              onValueChange={(v) => updatePref('dailySuggestion', v)}
-              trackColor={{ false: colors.disabled, true: colors.primaryLight }}
-              thumbColor={prefs.dailySuggestion ? colors.primary : colors.textTertiary}
-            />
-          </View>
-
+          {renderRow(t('notifications.dailySuggestion'), prefs.dailySuggestion, 'dailySuggestion')}
           <View style={styles.divider} />
-
-          {/* Analysis complete */}
-          <View style={styles.row}>
-            <View style={styles.rowText}>
-              <Text style={styles.rowLabel}>
-                {t('notifications.analysisComplete')}
-              </Text>
-            </View>
-            <Switch
-              value={prefs.analysisComplete}
-              onValueChange={(v) => updatePref('analysisComplete', v)}
-              trackColor={{ false: colors.disabled, true: colors.primaryLight }}
-              thumbColor={prefs.analysisComplete ? colors.primary : colors.textTertiary}
-            />
-          </View>
-
+          {renderRow(t('notifications.analysisComplete'), prefs.analysisComplete, 'analysisComplete')}
           <View style={styles.divider} />
-
-          {/* New features */}
-          <View style={styles.row}>
-            <View style={styles.rowText}>
-              <Text style={styles.rowLabel}>
-                {t('notifications.newFeatures')}
-              </Text>
-            </View>
-            <Switch
-              value={prefs.newFeatures}
-              onValueChange={(v) => updatePref('newFeatures', v)}
-              trackColor={{ false: colors.disabled, true: colors.primaryLight }}
-              thumbColor={prefs.newFeatures ? colors.primary : colors.textTertiary}
-            />
-          </View>
+          {renderRow(t('notifications.newFeatures'), prefs.newFeatures, 'newFeatures')}
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.md,
-  },
-  backButton: {
-    ...typography.h1,
-    color: colors.primary,
-    lineHeight: 36,
-  },
-  title: {
-    ...typography.h3,
-    color: colors.text,
-    flex: 1,
-    textAlign: 'center',
-  },
-  headerSpacer: {
-    width: 24,
-  },
-  scroll: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xxxl,
-  },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
-    padding: spacing.xl,
-    ...shadows.sm,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: spacing.md,
-  },
-  rowText: {
-    flex: 1,
-    marginRight: spacing.md,
-  },
-  rowLabel: {
-    ...typography.body1,
-    color: colors.text,
-  },
-  divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.divider,
-  },
-});
+const createStyles = (colors: ColorScheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    scroll: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xxxl,
+    },
+    title: {
+      ...typography.h3,
+      color: colors.text,
+      marginBottom: spacing.xl,
+      marginTop: spacing.md,
+    },
+    card: {
+      backgroundColor: colors.card,
+      borderRadius: borderRadius.lg,
+      padding: spacing.xl,
+      ...shadows.sm,
+    },
+    row: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingVertical: spacing.md,
+    },
+    rowText: {
+      flex: 1,
+      marginRight: spacing.md,
+    },
+    rowLabel: {
+      ...typography.body1,
+      color: colors.text,
+    },
+    divider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: colors.divider,
+    },
+  });
