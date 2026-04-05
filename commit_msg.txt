@@ -1,6 +1,5 @@
-fix: add missing native deps causing APK crash
+fix: move useCallback before early return - hooks order rule
 
-- Install react-native-gesture-handler (required by React Navigation)
-- Install react-native-reanimated (required by React Navigation)
-- Add babel.config.js with reanimated plugin
-- New DB: dressgenius-db-v2 in dressgenius org
+- screenWithBack useCallback was after conditional return
+- React requires all hooks to run in same order every render
+- Moved hook before the isLoading/onboardingDone early return

@@ -54,15 +54,6 @@ export function RootNavigator() {
     })();
   }, []);
 
-  if (isLoading || onboardingDone === null) {
-    return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color={defaultColors.primary} />
-      </View>
-    );
-  }
-
-
   const screenWithBack = useCallback(
     ({ navigation }: any) => ({
       animation: 'slide_from_right' as const,
@@ -78,6 +69,14 @@ export function RootNavigator() {
     }),
     [colors],
   );
+
+  if (isLoading || onboardingDone === null) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color={defaultColors.primary} />
+      </View>
+    );
+  }
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
