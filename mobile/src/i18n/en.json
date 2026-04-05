@@ -3,6 +3,25 @@
     "name": "DressGenius",
     "tagline": "Your style, reinvented by AI"
   },
+  "feedback": {
+    "title": "Report a Problem",
+    "type": {
+      "bug": "Bug",
+      "suggestion": "Suggestion",
+      "question": "Question"
+    },
+    "descriptionPlaceholder": "What happened? Describe the issue...",
+    "severityLabel": "Severity",
+    "severity": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "submit": "Send Report",
+    "sent": "Report sent! Thank you \uD83D\uDE4F",
+    "error": "Failed to send. Try again."
+  },
   "apiErrors": {
     "generic": "Something went wrong. Please try again.",
     "emailTaken": "This email is already registered.",

@@ -5,6 +5,7 @@ import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/
 import { AuthProvider, PremiumProvider, ThemeProvider, NotificationProvider, ToastProvider, useTheme } from './src/context';
 import { RootNavigator } from './src/navigation';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
+import { BugReportFAB } from './src/components/BugReportFAB';
 
 function AppInner() {
   const { isDark, colors } = useTheme();
@@ -38,6 +39,7 @@ function AppInner() {
   return (
     <NavigationContainer theme={navTheme}>
       <RootNavigator />
+      <BugReportFAB />
     </NavigationContainer>
   );
 }

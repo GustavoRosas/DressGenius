@@ -1,18 +1,15 @@
-fix: home reorder, notifications modal, profile photo sheet, fixes batch
+feat: bug report system - FAB + backend + form
 
-Home:
-- Premium banner moved to top (below header)
-- Tip of Day moved after hero card
-- Notifications bell shows "coming soon" alert
-- useFocusEffect re-fetches data on tab focus
-- image_url field support for last analysis thumbnail
+Backend:
+- Migration: feedback_reports table (UUID, type, severity, context, triage)
+- FeedbackReport model with user relation + duplicate detection
+- FeedbackReportController: POST /feedback-reports + GET /feedback-reports
+- Duplicate check: same screen + same type in last 7 days
+- Routes added to api.php
 
-Profile:
-- Photo picker modal with Camera/Gallery/Cancel options
-- Photo sheet styles added
-
-Other (from sub-agent partial):
-- ConfirmModal fallback labels
-- TabNavigator visual improvements
-- Login/Register keyboard handling
-- i18n: notifications coming soon keys EN + PT-BR
+Mobile:
+- BugReportFAB component: floating bug button + slide-up form
+- Type selector (bug/suggestion/question), description, severity
+- Auto-collects: app version, device model, OS name/version
+- i18n: feedback keys EN + PT-BR
+- Integrated in App.tsx (visible on all screens)

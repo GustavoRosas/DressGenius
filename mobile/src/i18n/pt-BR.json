@@ -3,6 +3,25 @@
     "name": "DressGenius",
     "tagline": "Seu estilo, reinventado por IA"
   },
+  "feedback": {
+    "title": "Reportar Problema",
+    "type": {
+      "bug": "Bug",
+      "suggestion": "Sugest\u00e3o",
+      "question": "D\u00favida"
+    },
+    "descriptionPlaceholder": "O que aconteceu? Descreva o problema...",
+    "severityLabel": "Gravidade",
+    "severity": {
+      "critical": "Cr\u00edtico",
+      "high": "Alto",
+      "medium": "M\u00e9dio",
+      "low": "Baixo"
+    },
+    "submit": "Enviar Report",
+    "sent": "Report enviado! Obrigado \uD83D\uDE4F",
+    "error": "Falha ao enviar. Tente novamente."
+  },
   "apiErrors": {
     "generic": "Algo deu errado. Tente novamente.",
     "emailTaken": "Este e-mail j\u00e1 est\u00e1 cadastrado.",
