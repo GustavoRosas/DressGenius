@@ -11,6 +11,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { Button } from './Button';
 import { typography } from '../theme/typography';
@@ -23,8 +24,8 @@ interface ConfirmModalProps {
   emoji?: string;
   title: string;
   message: string;
-  confirmLabel: string;
-  cancelLabel: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
   /** 'danger' for red confirm button, 'primary' for violet */
@@ -36,14 +37,17 @@ export function ConfirmModal({
   emoji,
   title,
   message,
-  confirmLabel,
-  cancelLabel,
+  confirmLabel: confirmLabelProp,
+  cancelLabel: cancelLabelProp,
   onConfirm,
   onCancel,
   variant = 'danger',
 }: ConfirmModalProps) {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const styles = useMemo(() => createStyles(colors), [colors]);
+  const confirmLabel = confirmLabelProp || t('common.confirm');
+  const cancelLabel = cancelLabelProp || t('common.cancel');
 
   return (
     <Modal

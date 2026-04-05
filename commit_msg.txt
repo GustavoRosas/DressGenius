@@ -1,8 +1,18 @@
-fix: translate all API errors to user language
+fix: home reorder, notifications modal, profile photo sheet, fixes batch
 
-- Created translateApiError helper (maps Laravel messages to i18n keys)
-- extractApiError handles validation errors object + message + error fields
-- RegisterScreen: "email already taken" now shows in PT-BR
-- LoginScreen: "invalid credentials" translated
-- AnalyzeScreen: server errors translated
-- Added 14 apiErrors keys to both en.json and pt-BR.json
+Home:
+- Premium banner moved to top (below header)
+- Tip of Day moved after hero card
+- Notifications bell shows "coming soon" alert
+- useFocusEffect re-fetches data on tab focus
+- image_url field support for last analysis thumbnail
+
+Profile:
+- Photo picker modal with Camera/Gallery/Cancel options
+- Photo sheet styles added
+
+Other (from sub-agent partial):
+- ConfirmModal fallback labels
+- TabNavigator visual improvements
+- Login/Register keyboard handling
+- i18n: notifications coming soon keys EN + PT-BR

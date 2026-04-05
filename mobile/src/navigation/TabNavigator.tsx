@@ -82,15 +82,15 @@ const fabStyles = StyleSheet.create({
     ...Platform.select({
       ios: {
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.25,
-        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 12,
       },
       android: {
-        elevation: 8,
+        elevation: 12,
       },
       default: {
-        elevation: 8,
+        elevation: 12,
       },
     }),
   },
@@ -165,11 +165,12 @@ const createDynamicStyles = (colors: ColorScheme, safeBottom: number) =>
   StyleSheet.create({
     tabBar: {
       backgroundColor: colors.surface,
-      borderTopWidth: 0,
+      borderTopWidth: 1,
+      borderTopColor: colors.border,
       elevation: 0,
       shadowOpacity: 0,
-      height: 60 + safeBottom,
-      paddingBottom: safeBottom > 0 ? safeBottom : 6,
+      height: 65 + (safeBottom > 0 ? safeBottom : 0),
+      paddingBottom: safeBottom > 0 ? safeBottom : 8,
       paddingTop: 4,
     },
   });

@@ -77,7 +77,7 @@
   },
   "screens": {
     "analyze": {
-      "title": "Analyze Your Outfit",
+      "title": "Outfit Analysis",
       "subtitle": "Take a photo or choose from gallery to get AI-powered style feedback",
       "takePhoto": "Take Photo",
       "takePhotoDesc": "Use your camera to capture your outfit",
@@ -580,12 +580,20 @@
     "tip": {
       "title": "Tip of the Day"
     },
+    "notifications": {
+      "comingSoonTitle": "Coming Soon!",
+      "comingSoonMessage": "We're working on notifications. Stay tuned!"
+    },
     "formatRelative": {
       "justNow": "Just now",
       "minsAgo": "{{count}}m ago",
       "hoursAgo": "{{count}}h ago",
       "yesterday": "Yesterday",
       "daysAgo": "{{count}}d ago"
+    },
+    "notifications": {
+      "title": "\uD83D\uDD14 Notifications",
+      "comingSoon": "We're working on this feature. Stay tuned!"
     }
   },
   "detectedItems": {

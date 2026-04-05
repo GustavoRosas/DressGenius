@@ -31,6 +31,7 @@ import { usePremium } from '../context/PremiumContext';
 import { useTheme } from '../context/ThemeContext';
 import { useToast } from '../context/ToastContext';
 import { Button } from '../components/Button';
+import { BottomSheet } from '../components/BottomSheet';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { Input } from '../components/Input';
 import { typography } from '../theme/typography';
@@ -95,6 +96,7 @@ export function ProfileScreen() {
 
   // Photo
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoPickerVisible, setPhotoPickerVisible] = useState(false);
 
   // History
   const [recentChats, setRecentChats] = useState<OutfitChat[]>([]);
@@ -191,20 +193,23 @@ export function ProfileScreen() {
     }
   };
 
-  // Photo picker
+  // Photo picker — opens beautiful bottom sheet
   const handlePickPhoto = () => {
-    Alert.alert(t('screens.profile.editPhoto'), '', [
-      {
-        text: t('screens.analyze.takePhoto'),
-        onPress: () => pickImage('camera'),
-      },
-      {
-        text: t('screens.analyze.chooseGallery'),
-        onPress: () => pickImage('gallery'),
-      },
-      { text: t('common.cancel'), style: 'cancel' },
-    ]);
+    setPhotoPickerVisible(true);
   };
+
+  const handlePickFromCamera = useCallback(async () => {
+    setPhotoPickerVisible(false);
+    // Small delay to let sheet close before opening camera
+    await new Promise((res) => setTimeout(res, 300));
+    await pickImage('camera');
+  }, []);
+
+  const handlePickFromGallery = useCallback(async () => {
+    setPhotoPickerVisible(false);
+    await new Promise((res) => setTimeout(res, 300));
+    await pickImage('gallery');
+  }, []);
 
   const pickImage = async (source: 'camera' | 'gallery') => {
     const permResult =
@@ -261,8 +266,13 @@ export function ProfileScreen() {
       });
       const u = data.data ?? data;
       setPhotoUrl(u.photo_url ?? u.avatar_url ?? uri);
-    } catch {
-      Alert.alert(t('common.error'), t('screens.profile.photoError'));
+    } catch (err: any) {
+      const status = err?.response?.status;
+      if (status === 500) {
+        showToast(t('screens.profile.photoErrorStorage'), 'error');
+      } else {
+        showToast(t('screens.profile.photoError'), 'error');
+      }
     } finally {
       setUploadingPhoto(false);
     }
@@ -459,6 +469,40 @@ export function ProfileScreen() {
         </Text>
       </ScrollView>
 
+      {/* ── Photo Picker Bottom Sheet ── */}
+      <BottomSheet
+        visible={photoPickerVisible}
+        onClose={() => setPhotoPickerVisible(false)}
+        heightFraction={0.32}
+      >
+        <View style={styles.photoSheetContent}>
+          <Text style={styles.photoSheetTitle}>{t('screens.profile.editPhoto')}</Text>
+
+          <Pressable
+            style={({ pressed }) => [styles.photoSheetOption, pressed && { opacity: 0.7 }]}
+            onPress={handlePickFromCamera}
+          >
+            <Text style={styles.photoSheetOptionIcon}>📷</Text>
+            <Text style={styles.photoSheetOptionText}>{t('screens.analyze.takePhoto')}</Text>
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [styles.photoSheetOption, pressed && { opacity: 0.7 }]}
+            onPress={handlePickFromGallery}
+          >
+            <Text style={styles.photoSheetOptionIcon}>🖼️</Text>
+            <Text style={styles.photoSheetOptionText}>{t('screens.analyze.chooseGallery')}</Text>
+          </Pressable>
+
+          <Pressable
+            style={({ pressed }) => [styles.photoSheetCancel, pressed && { opacity: 0.7 }]}
+            onPress={() => setPhotoPickerVisible(false)}
+          >
+            <Text style={styles.photoSheetCancelText}>{t('common.cancel')}</Text>
+          </Pressable>
+        </View>
+      </BottomSheet>
+
       <ConfirmModal
         visible={showSignOutModal}
         emoji="👋"
@@ -618,5 +662,39 @@ const createStyles = (colors: ColorScheme) =>
       color: colors.textTertiary,
       textAlign: 'center',
       marginTop: spacing.sm,
+    },
+    // Photo Sheet
+    photoSheetContent: {
+      padding: spacing.xl,
+    },
+    photoSheetTitle: {
+      ...typography.h3,
+      color: colors.text,
+      textAlign: 'center',
+      marginBottom: spacing.xl,
+    },
+    photoSheetOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.lg,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: colors.divider,
+    },
+    photoSheetOptionIcon: {
+      fontSize: 24,
+      marginRight: spacing.md,
+    },
+    photoSheetOptionText: {
+      ...typography.body1,
+      color: colors.text,
+    },
+    photoSheetCancel: {
+      paddingVertical: spacing.lg,
+      alignItems: 'center',
+      marginTop: spacing.sm,
+    },
+    photoSheetCancelText: {
+      ...typography.subtitle2,
+      color: colors.error,
     },
   });

@@ -77,7 +77,7 @@
   },
   "screens": {
     "analyze": {
-      "title": "Analise Seu Look",
+      "title": "Análise de Look",
       "subtitle": "Tire uma foto ou escolha da galeria para receber feedback de estilo com IA",
       "takePhoto": "Tirar Foto",
       "takePhotoDesc": "Use sua câmera para capturar seu look",
@@ -580,12 +580,20 @@
     "tip": {
       "title": "Dica do Dia"
     },
+    "notifications": {
+      "comingSoonTitle": "Em Breve!",
+      "comingSoonMessage": "Estamos trabalhando nas notifica\u00e7\u00f5es. Fique ligado!"
+    },
     "formatRelative": {
       "justNow": "Agora",
       "minsAgo": "{{count}}min atrás",
       "hoursAgo": "{{count}}h atrás",
       "yesterday": "Ontem",
       "daysAgo": "{{count}}d atrás"
+    },
+    "notifications": {
+      "title": "\uD83D\uDD14 Notificações",
+      "comingSoon": "Estamos trabalhando nesta funcionalidade. Em breve!"
     }
   },
   "detectedItems": {

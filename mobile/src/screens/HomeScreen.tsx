@@ -8,6 +8,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Alert,
   ActivityIndicator,
   Animated,
   Image,
@@ -20,7 +21,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -66,6 +67,7 @@ interface OutfitScan {
   occasion?: string | null;
   overall_score?: number | null;
   preview_image_url?: string | null;
+  image_url?: string | null;
   created_at: string;
 }
 
@@ -272,6 +274,14 @@ export function HomeScreen() {
     }
   }, [loading, heroOpacity, heroTranslateY]);
 
+  // Re-fetch when screen gains focus (after analysis, etc.)
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+      refetchAnalytics();
+    }, [fetchData, refetchAnalytics])
+  );
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await Promise.all([fetchData(), refetchAnalytics()]);
@@ -335,11 +345,17 @@ export function HomeScreen() {
             <Text style={styles.date}>{formatDateLocalized(i18n.language)}</Text>
           </View>
 
-          <Pressable style={styles.bellContainer}>
+          <Pressable
+            style={styles.bellContainer}
+            onPress={() => Alert.alert('🔔 ' + t('home.notifications.comingSoonTitle'), t('home.notifications.comingSoonMessage'))}
+          >
             <Text style={styles.bellIcon}>🔔</Text>
             <View style={styles.notifDot} />
           </Pressable>
         </View>
+
+        {/* ═══ Premium Banner (top, if free) ═══ */}
+        {!isPremium && <View style={{ marginBottom: spacing.lg }}><PremiumBanner /></View>}
 
         {/* ═══ 2. Hero Card — Usage + CTA ═══ */}
         <Animated.View style={{ opacity: heroOpacity, transform: [{ translateY: heroTranslateY }] }}>
@@ -371,6 +387,15 @@ export function HomeScreen() {
           </LinearGradient>
         </Animated.View>
 
+        {/* ═══ Tip of the Day ═══ */}
+        <View style={styles.tipCard}>
+          <View style={styles.tipAccent} />
+          <View style={styles.tipContent}>
+            <Text style={styles.tipTitle}>💡 {t('home.tip.title')}</Text>
+            <Text style={styles.tipText}>"{tip}"</Text>
+          </View>
+        </View>
+
         {/* ═══ 3. Last Analysis Card ═══ */}
         <Text style={styles.sectionTitle}>{t('home.lastAnalysis.title')}</Text>
         {lastScan ? (
@@ -378,9 +403,9 @@ export function HomeScreen() {
             style={({ pressed }) => [styles.lastAnalysisCard, pressed && { opacity: 0.9 }]}
             onPress={() => navigation.navigate('ScanDetail', { scanId: lastScan.id })}
           >
-            {lastScan.preview_image_url ? (
+            {(lastScan.image_url || lastScan.preview_image_url) ? (
               <Image
-                source={{ uri: lastScan.preview_image_url }}
+                source={{ uri: (lastScan.image_url || lastScan.preview_image_url) ?? undefined }}
                 style={styles.lastAnalysisThumbnail}
                 resizeMode="cover"
               />
@@ -545,17 +570,7 @@ export function HomeScreen() {
           </Pressable>
         )}
 
-        {/* ═══ 8. Tip of the Day ═══ */}
-        <View style={styles.tipCard}>
-          <View style={styles.tipAccent} />
-          <View style={styles.tipContent}>
-            <Text style={styles.tipTitle}>💡 {t('home.tip.title')}</Text>
-            <Text style={styles.tipText}>"{tip}"</Text>
-          </View>
-        </View>
-
-        {/* ═══ 9. Premium Banner ═══ */}
-        {!isPremium && <PremiumBanner />}
+        {/* Premium banner already at top */}
 
         <View style={{ height: spacing.xl }} />
       </ScrollView>
