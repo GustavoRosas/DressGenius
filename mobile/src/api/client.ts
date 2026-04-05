@@ -27,6 +27,12 @@ api.interceptors.request.use(
 
 // ── Response interceptor — auto-log every API error ─────────────────────────
 
+// Callback for 401 handling — set by AuthContext
+let onSessionExpired: (() => void) | null = null;
+export function setOnSessionExpired(cb: () => void) {
+  onSessionExpired = cb;
+}
+
 api.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
@@ -34,6 +40,11 @@ api.interceptors.response.use(
     const url = error.config?.url ?? 'unknown';
 
     ErrorLogger.logError('api', `${error.config?.method?.toUpperCase()} ${url}`, error, status);
+
+    // Auto sign-out on 401
+    if (status === 401 && onSessionExpired) {
+      onSessionExpired();
+    }
 
     return Promise.reject(error);
   },

@@ -4,14 +4,18 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
+import { Alert } from 'react-native';
+import i18n from '../i18n';
 import {
   clearAuthSession,
   getStoredAccessToken,
   getStoredUser,
   persistAuthSession,
 } from '../api/secureStorage';
+import { setOnSessionExpired } from '../api/client';
 import type { AuthUser } from '../types/auth';
 
 export type AuthContextValue = {
@@ -60,6 +64,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await clearAuthSession();
     setToken(null);
     setUser(null);
+  }, []);
+
+  // Wire up 401 auto-signout with nice alert
+  const signOutRef = useRef(signOut);
+  signOutRef.current = signOut;
+
+  useEffect(() => {
+    setOnSessionExpired(() => {
+      Alert.alert(
+        '🔒 ' + i18n.t('apiErrors.unauthenticated'),
+        i18n.t('apiErrors.tokenExpired'),
+        [{ text: 'OK', onPress: () => signOutRef.current() }],
+      );
+    });
   }, []);
 
   const value = useMemo<AuthContextValue>(
