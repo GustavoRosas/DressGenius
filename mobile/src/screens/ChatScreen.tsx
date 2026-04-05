@@ -496,7 +496,7 @@ export function ChatScreen() {
         emoji="💬"
         title={t('screens.chat.finishConfirm')}
         message={t('screens.chat.finishConfirmMessage')}
-        confirmLabel={t('screens.chat.finishButton')}
+        confirmLabel={t('screens.chat.finish')}
         cancelLabel={t('common.cancel')}
         variant="danger"
         onConfirm={confirmFinish}

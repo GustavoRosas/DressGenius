@@ -171,6 +171,5 @@ const styles = StyleSheet.create({
   label: {
     ...typography.button,
     textAlign: 'center',
-    flex: 1,
   },
 });
