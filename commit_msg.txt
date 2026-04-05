@@ -1,6 +1,6 @@
-chore: EAS config, Fly deploy with anti-sleep, app.json prod ready
+fix: add missing native deps causing APK crash
 
-- eas.json: preview profile (APK build) + production profile
-- app.json: name=DressGenius, package=com.gustavrosas.dressgenius
-- fly.toml: auto_stop=off, min_machines=1 (no sleep for demo)
-- Deployed to Fly.io with R2 storage + all recent code
+- Install react-native-gesture-handler (required by React Navigation)
+- Install react-native-reanimated (required by React Navigation)
+- Add babel.config.js with reanimated plugin
+- New DB: dressgenius-db-v2 in dressgenius org

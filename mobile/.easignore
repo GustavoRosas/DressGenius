@@ -1,0 +1,5 @@
+../backend
+../frontend
+../.git
+../commit_msg.txt
+node_modules
