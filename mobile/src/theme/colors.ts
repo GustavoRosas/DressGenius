@@ -146,7 +146,7 @@ export const darkColors: ColorScheme = {
   text: palette.neutral50,
   textSecondary: palette.neutral400,
   textTertiary: palette.neutral500,
-  textInverse: palette.neutral900,
+  textInverse: palette.neutral0,
 
   border: palette.neutral700,
   borderFocused: palette.violet400,

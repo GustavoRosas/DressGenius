@@ -68,12 +68,14 @@ export function ConfirmModal({
               variant="outline"
               onPress={onCancel}
               style={styles.button}
+              textStyle={{ color: colors.primary }}
             />
             <Button
               title={confirmLabel}
               variant="primary"
               onPress={onConfirm}
               style={variant === 'danger' ? StyleSheet.flatten([styles.button, styles.dangerButton]) : styles.button}
+              textStyle={{ color: '#FFFFFF' }}
             />
           </View>
         </Pressable>
