@@ -66,7 +66,7 @@ export function SettingsScreen() {
             style={styles.row}
             onPress={() => navigation.navigate('AIPreferences')}
           >
-            <Text style={styles.rowIcon}>🤖</Text>
+            <Text style={styles.rowIcon}>👗</Text>
             <Text style={styles.rowLabel}>{t('settings.aiPreferences')}</Text>
             <Text style={styles.chevron}>›</Text>
           </Pressable>
