@@ -41,6 +41,7 @@ import type { RootStackParamList } from '../navigation/types';
 import { Button } from '../components/Button';
 import { DetectedItemsList, type DetectedItem } from '../components/DetectedItemsList';
 import { LockedSection } from '../components/LockedSection';
+import { AnalysisLoadingScreen } from '../components/AnalysisLoadingScreen';
 import { BetaPremiumSheet } from '../components/BetaPremiumSheet';
 import { UsageChip } from '../components/UsageChip';
 import { SoftPaywallModal } from '../components/SoftPaywallModal';
@@ -927,6 +928,12 @@ export function AnalyzeScreen() {
         visible={betaSheetVisible}
         onClose={() => setBetaSheetVisible(false)}
         onActivate={activateBetaPremium}
+      />
+
+      {/* Analysis Loading Screen */}
+      <AnalysisLoadingScreen
+        imageUri={imageUri ?? ''}
+        visible={loading}
       />
     </SafeAreaView>
   );
